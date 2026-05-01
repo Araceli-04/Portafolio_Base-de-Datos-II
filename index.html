@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portafolio 2026 | Base de Datos II</title>
+    
+    <!-- Fuentes y Iconos -->
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        :root {
+            --pink-light: #fdf2f7;
+            --pink-accent: #f48fb1;
+            --purple-accent: #a696e7;
+            --text-dark: #1a1a1a;
+            --glass: rgba(255, 255, 255, 0.6);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(120deg, #fff5f7 0%, #f0efff 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- NAVEGACIÓN --- */
+        nav {
+            position: fixed; top: 0; width: 100%; padding: 20px 8%;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(10px); z-index: 1000;
+        }
+
+        .logo { display: flex; align-items: center; gap: 15px; font-family: 'Instrument Serif', serif; font-size: 1.8rem; }
+        .logo img { height: 45px; width: auto; object-fit: contain; }
+        
+        .logo-text {
+            background: linear-gradient(90deg, var(--pink-accent), var(--purple-accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        .nav-links { display: flex; gap: 15px; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 50px; }
+        .nav-links button {
+            border: none; background: transparent; padding: 10px 25px; border-radius: 50px;
+            cursor: pointer; font-weight: 600; color: #666; transition: 0.3s;
+        }
+        .nav-links button.active { background: white; color: var(--pink-accent); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+        /* --- SECCIONES --- */
+        .container { display: none; padding: 120px 8% 50px; animation: fadeIn 0.5s ease; }
+        .container.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- INICIO (CENTRADO CON GRÁFICO) --- */
+        .hero-wrapper { 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            text-align: center;
+            gap: 20px; 
+            min-height: 75vh;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .hero h3 { color: var(--purple-accent); letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 15px; }
+        .hero h1 { font-family: 'Instrument Serif', serif; font-size: 5rem; line-height: 1; margin-bottom: 25px; }
+        .hero h1 em { color: var(--pink-accent); font-style: italic; }
+        .hero p { font-size: 1.1rem; color: #666; line-height: 1.6; margin-bottom: 30px; }
+
+        .hero-img { width: 100%; max-width: 400px; margin-top: 20px; }
+
+        /* --- BITÁCORA --- */
+        .tabs { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
+        .tab-btn { padding: 12px 30px; border-radius: 15px; border: none; background: white; cursor: pointer; font-weight: 700; transition: 0.3s; }
+        .tab-btn.active { background: var(--pink-accent); color: white; }
+
+        #unit-title { text-align: center; font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 40px; }
+
+        .weeks-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 30px; 
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .week-card { background: var(--glass); border-radius: 40px; padding: 35px; border: 1px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.02); }
+        .week-card span { color: var(--purple-accent); font-weight: 800; font-size: 0.7rem; }
+        .week-card h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; margin-bottom: 25px; }
+
+        .task-item { 
+            background: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 12px;
+            display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
+        }
+        .task-item h4 { font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn-icon { width: 38px; height: 38px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
+        .btn-view { background: #f0efff; color: var(--purple-accent); }
+        .btn-download { background: #fff2f5; color: var(--pink-accent); text-decoration: none; }
+        .btn-delete { background: #ffebee; color: #ff5252; display: none; } 
+
+        /* --- LOGIN (CENTRADO) --- */
+        #acceso.container.active { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+        .login-box { width: 100%; max-width: 450px; background: white; padding: 50px; border-radius: 45px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
+        .login-box input { width: 100%; padding: 18px; margin-bottom: 15px; border-radius: 15px; border: 1px solid #eee; background: #fafafa; font-family: inherit; }
+        .btn-submit { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, var(--pink-accent), var(--purple-accent)); color: white; font-weight: 700; cursor: pointer; }
+
+        /* --- MODAL --- */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { width: 90%; height: 90%; background: white; border-radius: 30px; position: relative; overflow: hidden; }
+        .close-modal { position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; }
+
+        #logoutBtn { position: fixed; bottom: 30px; right: 30px; background: white; color: #ff5252; padding: 15px 25px; border-radius: 50px; border: none; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.1); cursor: pointer; display: none; align-items: center; gap: 10px; z-index: 1000; }
+        .admin-only { display: none; }
+
+        @media (max-width: 850px) {
+            .weeks-grid { grid-template-columns: 1fr; }
+            .hero h1 { font-size: 3.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="logo">
+            <img src="img/LogoUpla.png" alt="UPLA Logo">
+            <span class="logo-text">Base de Datos II</span>
+        </div>
+        <div class="nav-links">
+            <button class="active" onclick="showSec('inicio', this)">Inicio</button>
+            <button onclick="showSec('bitacora', this)">Bitácora</button>
+            <button onclick="showSec('acceso', this)">Acceso</button>
+        </div>
+    </nav>
+
+    <!-- INICIO -->
+    <div id="inicio" class="container active">
+        <div class="hero-wrapper">
+            <div class="hero">
+                <h3>JIHOMARA MEDRANO HUERTAS</h3>
+                <h1>Gestión de<br><em>Evidencias</em></h1>
+                <p>Recopilación académica de la asignatura Base de Datos II. Gestión, modelado e implementación de sistemas de información.</p>
+                <button class="btn-submit" style="width: 200px; margin: 0 auto;" onclick="showSec('bitacora')">Ver mi Bitácora</button>
+            </div>
+            
+            <!-- EL GRÁFICO INCREÍBLE REINSTALADO -->
+            <div class="hero-img">
+                <svg viewBox="0 0 400 300" width="100%" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:var(--pink-accent);stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:var(--purple-accent);stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M100,50 Q200,20 300,50 L300,200 Q200,230 100,200 Z" fill="none" stroke="url(#grad1)" stroke-width="4" stroke-dasharray="10,5" />
+                    <ellipse cx="200" cy="50" rx="100" ry="25" fill="white" stroke="url(#grad1)" stroke-width="4" />
+                    <ellipse cx="200" cy="100" rx="100" ry="25" fill="none" stroke="var(--purple-accent)" stroke-width="2" opacity="0.3" />
+                    <ellipse cx="200" cy="150" rx="100" ry="25" fill="none" stroke="var(--purple-accent)" stroke-width="2" opacity="0.3" />
+                    <circle cx="200" cy="50" r="8" fill="var(--pink-accent)">
+                        <animate attributeName="r" values="8;11;8" dur="3s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- BITÁCORA -->
+    <div id="bitacora" class="container">
+        <div class="tabs">
+            <button class="tab-btn active" onclick="changeUnit(0, this)">Unidad I</button>
+            <button class="tab-btn" onclick="changeUnit(1, this)">Unidad II</button>
+            <button class="tab-btn" onclick="changeUnit(2, this)">Unidad III</button>
+        </div>
+        
+        <h2 id="unit-title">Introducción a la Arquitectura de BD</h2>
+        
+        <div class="weeks-grid" id="weeks-container"></div>
+    </div>
+
+    <!-- ACCESO -->
+    <div id="acceso" class="container">
+        <div class="login-box">
+            <p style="color: var(--purple-accent); font-weight: 800; font-size: 0.7rem; margin-bottom: 10px;">PASO 01: IDENTIFICACIÓN</p>
+            <h2 style="font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 30px;">Portal de Gestión</h2>
+            <input type="email" id="email" placeholder="codigo@ms.upla.edu.pe">
+            <input type="password" id="pass" placeholder="Tu contraseña">
+            <button class="btn-submit" onclick="handleLogin()">Activar Herramientas ✨</button>
+        </div>
+    </div>
+
+    <button id="logoutBtn" onclick="handleLogout()">
+        <i data-lucide="log-out" size="18"></i> Salir del Sistema
+    </button>
+
+    <div id="pdfModal" class="modal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closePDF()"><i data-lucide="x"></i></button>
+            <iframe id="pdfFrame" src="" width="100%" height="100%" style="border:none;"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const nombresUnidades = [
+            "Introducción a la Arquitectura de BD",
+            "Modelamiento y Diseño Estructural",
+            "Implementación y Consultas SQL"
+        ];
+
+        const dataPortafolio = [
+            [ // UNIDAD I
+                { sem: "01", titulo: "Introducción a la Arquitectura de B.D", tareas: [{ nombre: "Arquitectura BDD.pdf", ruta: "docs/Arquitectura de BDD.pdf" }, { nombre: "Repositorios.pdf", ruta: "docs/Tipos de Repositorios.pdf" }] },
+                { sem: "02", titulo: "Gestores de B.D", tareas: [{ nombre: "Resumen 02.pdf", ruta: "docs/Resumen_02.pdf" }, { nombre: "Modelo E-R.pdf", ruta: "docs/Ejerciciod de Modelo E-R.pdf" }, { nombre: "Manual SQL.pdf", ruta: "docs/Manual SQL.pdf" }] },
+                { sem: "03", titulo: "Arquitectura de B.D", tareas: [{ nombre: "Resumen 03.pdf", ruta: "docs/Resumen 03.pdf" }, { nombre: "Ejercicios E-R.pdf", ruta: "docs/Ejercicios de Modelo E-R.pdf" }] },
+                { sem: "04", titulo: "Diseño de la Arquitectura de B.D", tareas: [{ nombre: "Resumen 04.pdf", ruta: "docs/Resumen 04.pdf" }] }
+            ],
+            [], // UNIDAD II
+            []  // UNIDAD III
+        ];
+
+        let currentUnit = 0;
+        let isAdmin = false;
+
+        function changeUnit(index, btn) {
+            currentUnit = index;
+            document.getElementById('unit-title').innerText = nombresUnidades[index];
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderSemanas();
+        }
+
+        function renderSemanas() {
+            const container = document.getElementById('weeks-container');
+            container.innerHTML = "";
+            const semanas = dataPortafolio[currentUnit];
+
+            if(!semanas || semanas.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; padding: 50px; opacity: 0.5;'>Contenido disponible próximamente.</p>";
+                return;
+            }
+
+            semanas.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'week-card';
+                card.innerHTML = `
+                    <span>SEMANA ${item.sem}</span>
+                    <h2>${item.titulo}</h2>
+                    <div class="tasks-list">
+                        ${item.tareas.map((t, tIndex) => `
+                            <div class="task-item">
+                                <h4>${t.nombre}</h4>
+                                <div class="actions">
+                                    <button class="btn-icon btn-view" onclick="openPDF('${t.ruta}')"><i data-lucide="eye" size="16"></i></button>
+                                    <a href="${t.ruta}" download class="btn-icon btn-download"><i data-lucide="download" size="16"></i></a>
+                                    <button class="btn-icon btn-delete admin-only" onclick="deleteTask(${index}, ${tIndex})"><i data-lucide="trash-2" size="16"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="upload-area admin-only">
+                        <input type="file" id="file-${index}" accept=".pdf" style="display:none" onchange="uploadFile(${index})">
+                        <button class="btn-submit" style="margin-top:20px; padding:10px; font-size:0.8rem;" onclick="document.getElementById('file-${index}').click()">Subir PDF</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+            lucide.createIcons();
+            updateAdminVisibility();
+        }
+
+        function uploadFile(weekIndex) {
+            const fileInput = document.getElementById(`file-${weekIndex}`);
+            if (fileInput.files[0]) {
+                dataPortafolio[currentUnit][weekIndex].tareas.push({ 
+                    nombre: fileInput.files[0].name, 
+                    ruta: URL.createObjectURL(fileInput.files[0]) 
+                });
+                renderSemanas();
+            }
+        }
+
+        function deleteTask(weekIndex, taskIndex) {
+            if(confirm("¿Eliminar archivo?")) { 
+                dataPortafolio[currentUnit][weekIndex].tareas.splice(taskIndex, 1); 
+                renderSemanas(); 
+            }
+        }
+
+        function showSec(id, btn) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            if(btn) {
+                document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+        }
+
+        function openPDF(ruta) { 
+            document.getElementById('pdfFrame').src = ruta; 
+            document.getElementById('pdfModal').style.display = 'flex'; 
+        }
+        
+        function closePDF() { 
+            document.getElementById('pdfModal').style.display = 'none'; 
+            document.getElementById('pdfFrame').src = "";
+        }
+
+        function handleLogin() {
+            const email = document.getElementById('email').value;
+            if(email.includes('@ms.upla.edu.pe')) {
+                isAdmin = true;
+                document.getElementById('logoutBtn').style.display = 'flex';
+                showSec('bitacora');
+                renderSemanas();
+            } else {
+                alert("Por favor, usa tu correo institucional.");
+            }
+        }
+
+        function handleLogout() { 
+            isAdmin = false; 
+            document.getElementById('logoutBtn').style.display = 'none'; 
+            renderSemanas(); 
+            showSec('inicio'); 
+        }
+
+        function updateAdminVisibility() {
+            document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'flex' : 'none');
+        }
+
+        window.onload = renderSemanas;
+    </script>
+</body>
+</html>
