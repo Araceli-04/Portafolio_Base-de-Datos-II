@@ -1,0 +1,616 @@
+-- 1. CREACIÓN DE LA BASE DE DATOS
+CREATE DATABASE Inventario_Equipos;
+GO
+USE Inventario_Equipos;
+GO
+
+-- ========================================================
+-- TABLAS MAESTRAS (CATÁLOGOS)
+-- ========================================================
+
+-- Tabla 1: Dependencias u Oficinas
+CREATE TABLE T_DEPENDENCIAS (
+    DEP_id INT IDENTITY(1,1),
+    DEP_nombre VARCHAR(100) NOT NULL,
+    CONSTRAINT PK_DEPENDENCIAS PRIMARY KEY (DEP_id),
+    CONSTRAINT UQ_DEP_nombre UNIQUE (DEP_nombre)
+);
+
+-- Tabla 2: Usuarios / Personal responsable
+CREATE TABLE T_USUARIOS (
+    USU_id INT IDENTITY(1,1),
+    USU_nombre VARCHAR(150) NOT NULL,
+    DEP_id INT NOT NULL, -- Clave Foránea a Dependencias
+    CONSTRAINT PK_USUARIOS PRIMARY KEY (USU_id),
+    CONSTRAINT FK_USUARIOS_DEPENDENCIAS FOREIGN KEY (DEP_id) REFERENCES T_DEPENDENCIAS(DEP_id)
+);
+
+-- Tabla 3: Tipos de Partes / Periféricos (Monitor, Teclado, Mouse, Parlante)
+CREATE TABLE T_TIPO_PARTES (
+    TIP_par_id INT IDENTITY(1,1),
+    TIP_par_descripcion VARCHAR(50) NOT NULL,
+    CONSTRAINT PK_TIPO_PARTES PRIMARY KEY (TIP_par_id),
+    CONSTRAINT UQ_TIP_par_desc UNIQUE (TIP_par_descripcion)
+);
+
+-- Tabla 4: Catálogo Maestro de Softwares existentes
+CREATE TABLE T_CATALOGO_SOFTWARE (
+    SOF_id INT IDENTITY(1,1),
+    SOF_nombre VARCHAR(100) NOT NULL,
+    SOF_categoria VARCHAR(50) NOT NULL, -- 'Sistema Operativo', 'Ofimática', 'Antivirus', etc.
+    CONSTRAINT PK_CATALOGO_SOFTWARE PRIMARY KEY (SOF_id)
+);
+
+-- ========================================================
+-- TABLA PRINCIPAL DEL MODELO
+-- ========================================================
+
+-- Tabla 5: Equipos Tecnológicos (Ficha Base)
+CREATE TABLE T_EQUIPOS (
+    EQU_id INT IDENTITY(1,1),
+    EQU_cod_tecnologia VARCHAR(50) NOT NULL, -- Código de barras / Activo fijo
+    EQU_cod_almacen VARCHAR(50) NULL,
+    EQU_fecha_inventario DATE NOT NULL CONSTRAINT DF_EQU_fecha DEFAULT GETDATE(),
+    EQU_tipo_hardware VARCHAR(30) NOT NULL,  -- 'Escritorio', 'Laptop', 'All In One'
+    EQU_marca VARCHAR(50) NOT NULL,
+    EQU_modelo VARCHAR(50) NOT NULL,
+    EQU_num_serie VARCHAR(50) NOT NULL,
+    
+    -- Componentes Internos
+    EQU_proc_codigo VARCHAR(50) NULL,
+    EQU_proc_velocidad VARCHAR(20) NULL,
+    EQU_ram_capacidad VARCHAR(20) NULL,
+    EQU_disco_capacidad VARCHAR(20) NULL,
+    EQU_disco_marca VARCHAR(50) NULL,
+    EQU_unidad_cd_dvd CHAR(2) NOT NULL,      -- 'SI', 'NO'
+    EQU_gpu_modelo VARCHAR(100) NULL,
+    EQU_gpu_memoria VARCHAR(20) NULL,
+    EQU_regulador CHAR(2) NOT NULL,          -- 'SI', 'NO'
+    
+    -- Estado y Asignación
+    EQU_estado VARCHAR(15) NOT NULL,         -- 'BUENO', 'REGULAR', 'MALO'
+    EQU_observacion VARCHAR(MAX) NULL,
+    USU_id INT NOT NULL,                     -- Clave Foránea a Usuarios
+    
+    CONSTRAINT PK_EQUIPOS PRIMARY KEY (EQU_id),
+    CONSTRAINT UQ_EQU_cod_tec UNIQUE (EQU_cod_tecnologia),
+    CONSTRAINT UQ_EQU_num_ser UNIQUE (EQU_num_serie),
+    CONSTRAINT FK_EQUIPOS_USUARIOS FOREIGN KEY (USU_id) REFERENCES T_USUARIOS(USU_id),
+    CONSTRAINT CHK_EQU_tipo CHECK (EQU_tipo_hardware IN ('Escritorio', 'Laptop', 'All In One')),
+    CONSTRAINT CHK_EQU_unidad CHECK (EQU_unidad_cd_dvd IN ('SI', 'NO')),
+    CONSTRAINT CHK_EQU_regulador CHECK (EQU_regulador IN ('SI', 'NO')),
+    CONSTRAINT CHK_EQU_estado CHECK (EQU_estado IN ('BUENO', 'REGULAR', 'MALO'))
+);
+
+-- ========================================================
+-- TABLAS DE DETALLES Y RELACIONES COMPUESTAS
+-- ========================================================
+
+-- Tabla 6: Detalle de las Partes físicas asociadas al Equipo
+CREATE TABLE T_EQUIPO_PARTES (
+    EQU_id INT NOT NULL,
+    TIP_par_id INT NOT NULL,
+    PAR_marca VARCHAR(50) NULL,
+    PAR_modelo VARCHAR(50) NULL,
+    PAR_num_serie VARCHAR(50) NULL,
+    CONSTRAINT PK_EQUIPO_PARTES PRIMARY KEY (EQU_id, TIP_par_id),
+    CONSTRAINT FK_PARTES_EQUIPOS FOREIGN KEY (EQU_id) REFERENCES T_EQUIPOS(EQU_id) ON DELETE CASCADE,
+    CONSTRAINT FK_PARTES_TIPO FOREIGN KEY (TIP_par_id) REFERENCES T_TIPO_PARTES(TIP_par_id)
+);
+
+-- Tabla 7: Detalle de Software Instalado en cada Equipo
+CREATE TABLE T_EQUIPO_SOFTWARE (
+    EQU_id INT NOT NULL,
+    SOF_id INT NOT NULL,
+    EQ_SOF_licencia CHAR(2) NOT NULL, -- 'SI', 'NO'
+    CONSTRAINT PK_EQUIPO_SOFTWARE PRIMARY KEY (EQU_id, SOF_id),
+    CONSTRAINT FK_EQSOF_EQUIPOS FOREIGN KEY (EQU_id) REFERENCES T_EQUIPOS(EQU_id) ON DELETE CASCADE,
+    CONSTRAINT FK_EQSOF_SOFTWARE FOREIGN KEY (SOF_id) REFERENCES T_CATALOGO_SOFTWARE(SOF_id),
+    CONSTRAINT CHK_EQSOF_licencia CHECK (EQ_SOF_licencia IN ('SI', 'NO'))
+);
+
+-- Tabla 8: Credenciales de Acceso Remoto para Soporte
+CREATE TABLE T_ACCESO_REMOTO (
+    EQU_id INT NOT NULL,
+    REM_anydesk_codigo VARCHAR(30) NULL,
+    REM_anydesk_contrasena VARCHAR(50) NULL,
+    CONSTRAINT PK_ACCESO_REMOTO PRIMARY KEY (EQU_id),
+    CONSTRAINT FK_REMOTO_EQUIPOS FOREIGN KEY (EQU_id) REFERENCES T_EQUIPOS(EQU_id) ON DELETE CASCADE
+);
+
+-- Tabla 9: Historial de Cambios de Estado (Para añadir complejidad y control de auditoría)
+CREATE TABLE T_HISTORIAL_ESTADOS (
+    HIS_id INT IDENTITY(1,1),
+    EQU_id INT NOT NULL,
+    HIS_estado_anterior VARCHAR(15) NOT NULL,
+    HIS_estado_nuevo VARCHAR(15) NOT NULL,
+    HIS_fecha_cambio DATETIME NOT NULL CONSTRAINT DF_HIS_fecha DEFAULT GETDATE(),
+    CONSTRAINT PK_HISTORIAL_ESTADOS PRIMARY KEY (HIS_id),
+    CONSTRAINT FK_HISTORIAL_EQUIPOS FOREIGN KEY (EQU_id) REFERENCES T_EQUIPOS(EQU_id) ON DELETE CASCADE
+);
+GO
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 1: T_DEPENDENCIAS (50 Registros)
+-- ========================================================
+INSERT INTO T_DEPENDENCIAS (DEP_nombre) VALUES 
+('Dirección Ejecutiva'), ('Gestión del Talento'), ('Contabilidad Financiera'), ('Tesorería y Caja'), ('Abastecimiento'),
+('Transformación Digital'), ('Mesa de Ayuda'), ('Ingeniería de Plataformas'), ('Asesoría Legal'), ('Control Institucional'),
+('Marketing Digital'), ('Ventas Institucionales'), ('Experiencia del Cliente'), ('Operaciones Centrales'), ('Core Bancario'),
+('Soporte de Infraestructura'), ('Aseguramiento de Calidad'), ('Bóveda y Valores'), ('Distribución Logística'), ('Adquisiciones'),
+('Comunicaciones Internas'), ('Imagen Institucional'), ('Seguridad Física'), ('Servicios Corporativos'), ('Oficina de Proyectos PMO'),
+('Planeamiento y Presupuesto'), ('Innovación Tecnológica'), ('Canales Digitales'), ('Prevención de Lavado de Activos'), ('Liquidez'),
+('Recaudación'), ('Recuperaciones'), ('Evaluación de Créditos'), ('Desarrollo del Talento'), ('Bienestar Laboral'),
+('Seguridad y Salud en el Trabajo'), ('Saneamiento Legal'), ('Comercio Internacional'), ('Logística de Retorno'), ('Emisión de Tarjetas'),
+('Atención Preferencial'), ('Gestión Documental'), ('Sala de Servidores'), ('Conectividad y Redes'), ('Telecomunicaciones'),
+('Ciencia de Datos'), ('Diseño de Experiencia UI-UX'), ('Business Intelligence'), ('Agencia Principal'), ('Agencia Satélite');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 2: T_USUARIOS (50 Registros asignados a DEP_id del 1 al 50)
+-- ========================================================
+INSERT INTO T_USUARIOS (USU_nombre, DEP_id) VALUES 
+('Xiomara Gutarra', 1), ('Renato Huamán', 2), ('Milagros Quispe', 3), ('Christian Palomino', 4), ('Lizbeth Flores', 5),
+('Alonso Cárdenas', 6), ('Katherine Mendoza', 7), ('Brayan Villanueva', 8), ('Fiorella Gutiérrez', 9), ('Gerson Torres', 10),
+('Anhely Rojas', 11), ('Rodrigo Espinoza', 12), ('Diana Casquero', 13), ('Julinho Morales', 14), ('Mayra Romero', 15),
+('Anthony Silva', 16), ('Yeny Sedano', 17), ('Kevin Balbín', 18), ('Tatiana Pomar', 19), ('Hans Castro', 20),
+('Evelyn Merino', 21), ('Claudio Soto', 22), ('Melany Augusto', 23), ('Jhony Lazarte', 24), ('Sayuri Pardo', 25),
+('Franklin De la Cruz', 26), ('Roxana Tafur', 27), ('Erick Chávez', 28), ('Leslie Alva', 29), ('Álvaro Miguel', 30),
+('Stefany Costa', 31), ('Wilder Cáceres', 32), ('Nadia Linares', 33), ('Josué Peña', 34), ('Kiara Vargas', 35),
+('Ronaldinho Guerra', 36), ('Gisela Flores', 37), ('Paolo Guerrero', 38), ('Gianluca Lapadula', 39), ('Edison Flores', 40),
+('Yoshimar Yotún', 41), ('Christian Cueva', 42), ('Pedro Gallese', 43), ('Luis Advíncula', 44), ('Renato Tapia', 45),
+('Carlos Zambrano', 46), ('Alexander Callens', 47), ('Bryan Reyna', 48), ('Piero Quispe', 49), ('Joao Grimaldo', 50);
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 3: T_TIPO_PARTES (50 Registros - Catálogo extendido de periféricos)
+-- ========================================================
+INSERT INTO T_TIPO_PARTES (TIP_par_descripcion) VALUES 
+('Pantalla UltraWide 29'), ('Teclado Ergonómico Inalámbrico'), ('Mouse Tracking Vertical'), ('Barra de Sonido Corporativa'), ('Pantalla Portátil USB-C'),
+('Cámara de Videoconferencia 2K'), ('Micrófono Omnidireccional USB'), ('Escáner de Código QR Fijo'), ('Ticketera Térmica de Red'), ('Digitalizador de Firmas USB'),
+('Diadema Monoaural con Filtro'), ('Tableta de Firmas Digitales'), ('Lector de Cripto-Token USB'), ('Teclado Mecánico Switch Brown'), ('Mouse Bluetooth Multi-Dispositivo'),
+('Tapete de Escritorio Cuero Sintético'), ('Estación Concentradora USB 3.0'), ('Conversor Tipo C a DisplayPort'), ('Unidad SSD Externa NVMe 1TB'), ('Lector de Tarjetas SD/MicroSD'),
+('Soporte Ventilado para Notebook'), ('Puntero para Pantallas Capacitivas'), ('Candado de Llave Tipo T-Bar'), ('Escáner Biométrico de Huella Vivo'), ('Cargador Rápido GaN 65W'),
+('Cordón de Red Blindado FTP 2m'), ('Duplicador Pasivo HDMI'), ('Conmutador de Red Gigabit 5p'), ('Receptor Inalámbrico Dual Band'), ('Mini Adaptador Bluetooth 5.4'),
+('Tarjeta de Audio USB Plug&Play'), ('Protector Acrílico Antireflejo'), ('Brazo de Monitor de Doble Eje'), ('Control Remoto para Diapositivas'), ('Pad Numérico Inalámbrico'),
+('Altavoz Inteligente de Oficina'), ('Replicador de Puertos Docking Pro'), ('Dispositivo Óptico de Desarrollo VR'), ('Mando de Control Analógico'), ('Gamepad Inalámbrico PC'),
+('Unidad Externa de Disquete USB'), ('Ventilador de Extracción Chasis'), ('Cable Ultra HDMI 8K 2m'), ('Enlace de Puerto Serie a USB'), ('Protector de Silicona para Teclado'),
+('Iluminador LED de Escritorio USB'), ('Aerosol Limpiador de Contactos'), ('Espuma Limpiadora Antiestática'), ('Maleta Rígida para Notebook'), ('Mochila Impermeable para Computadora');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 4: T_CATALOGO_SOFTWARE (50 Registros)
+-- ========================================================
+INSERT INTO T_CATALOGO_SOFTWARE (SOF_nombre, SOF_categoria) VALUES 
+('Windows 11 Pro Enterprise', 'Sistema Operativo'), ('Windows 10 Pro Business', 'Sistema Operativo'), ('Windows Server 2025 Datacenter', 'Sistema Operativo'),
+('Ubuntu Desktop 26.04 LTS', 'Sistema Operativo'), ('macOS Sequoia Server', 'Sistema Operativo'), ('Red Hat Enterprise 9.4', 'Sistema Operativo'),
+('Rocky Linux Core', 'Sistema Operativo'), ('Microsoft 365 Apps for Enterprise', 'Ofimática'), ('Office Professional Plus 2024', 'Ofimática'),
+('Office Home & Business 2021', 'Ofimática'), ('LibreOffice Suite Corporate', 'Ofimática'), ('OnlyOffice Desktop Editors', 'Ofimática'),
+('Apache OpenOffice Suite', 'Ofimática'), ('WinRAR Suite Business', 'Utilidades'), ('7-Zip Enterprise Manager', 'Utilidades'),
+('CCleaner Cloud Business', 'Utilidades'), ('VLC Media Player Enterprise', 'Utilidades'), ('Adobe Acrobat Pro Continuous', 'Utilidades'),
+('Nitro Pro PDF Editor', 'Utilidades'), ('Kaspersky Endpoint Security 12', 'Antivirus'), ('ESET Endpoint Protection Pro', 'Antivirus'),
+('Bitdefender GravityZone Advance', 'Antivirus'), ('McAfee MVISION Endpoint', 'Antivirus'), ('Trend Micro Apex One', 'Antivirus'),
+('Google Chrome Enterprise MSI', 'Navegadores'), ('Mozilla Firefox Corporate', 'Navegadores'), ('Microsoft Edge Enterprise', 'Navegadores'),
+('Brave Browser Business', 'Navegadores'), ('Visual Studio 2022 Enterprise', 'Desarrollo'), ('SQL Server Management Studio 21', 'Desarrollo'),
+('Visual Studio Code Stable', 'Desarrollo'), ('IntelliJ IDEA Ultimate Edition', 'Desarrollo'), ('Eclipse IDE for Cloud Developers', 'Desarrollo'),
+('NetBeans IDE 23', 'Desarrollo'), ('Docker Desktop Enterprise', 'Desarrollo'), ('Postman Desktop Agent', 'Desarrollo'),
+('Git for Windows Tools', 'Desarrollo'), ('Adobe Photoshop 2026', 'Diseño'), ('Adobe Illustrator 2026', 'Diseño'),
+('CorelDRAW Technical Suite 2025', 'Diseño'), ('AutoCAD Mechanical 2026', 'Diseño'), ('Blender Production Suite', 'Diseño'),
+('AnyDesk Premium Corporate', 'Soporte'), ('TeamViewer Tensor Cloud', 'Soporte'), ('Supremo Remote Desktop Pro', 'Soporte'),
+('Power BI Desktop Business', 'Análisis'), ('Tableau Desktop Professional', 'Análisis'), ('IBM SPSS Statistics v29', 'Análisis'),
+('Slack Desktop Grid', 'Comunicaciones'), ('Microsoft Teams App Corporate', 'Comunicaciones');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 5: T_EQUIPOS (50 Registros vinculados a USU_id del 1 al 50)
+-- ========================================================
+INSERT INTO T_EQUIPOS (EQU_cod_tecnologia, EQU_cod_almacen, EQU_tipo_hardware, EQU_marca, EQU_modelo, EQU_num_serie, EQU_proc_codigo, EQU_proc_velocidad, EQU_ram_capacidad, EQU_disco_capacidad, EQU_disco_marca, EQU_unidad_cd_dvd, EQU_gpu_modelo, EQU_gpu_memoria, EQU_regulador, EQU_estado, EQU_observacion, USU_id) VALUES 
+('TEC-2026-01', 'ALM-901', 'Escritorio', 'Dell', 'OptiPlex 7010', 'SN-901', 'Intel Core i7-13700', '3.4 GHz', '16 GB', '512 GB SSD', 'Samsung', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Estación base de dirección', 1),
+('TEC-2026-02', 'ALM-902', 'Laptop', 'HP', 'EliteBook 840 G10', 'SN-902', 'Intel Core i5-1340P', '1.9 GHz', '16 GB', '1 TB SSD', 'Crucial', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Laptop asignada a movilidad', 2),
+('TEC-2026-03', 'ALM-903', 'All In One', 'Lenovo', 'ThinkCentre Neo 50a', 'SN-903', 'Intel Core i5-13420H', '2.1 GHz', '8 GB', '256 GB SSD', 'Kingston', 'NO', 'Intel UHD Graphics', 'Compartida', 'SI', 'BUENO', 'Módulo de atención contable', 3),
+('TEC-2026-04', 'ALM-904', 'Escritorio', 'Lenovo', 'ThinkCentre M70q', 'SN-904', 'Intel Core i5-12400T', '1.8 GHz', '8 GB', '1 TB HDD', 'Western Digital', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'REGULAR', 'Pendiente migración a disco sólido', 4),
+('TEC-2026-05', 'ALM-905', 'Laptop', 'Dell', 'Latitude 5440', 'SN-905', 'Intel Core i7-1355U', '1.7 GHz', '16 GB', '512 GB SSD', 'Kioxia', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Equipo para auditoría externa', 5),
+('TEC-2026-06', 'ALM-906', 'Escritorio', 'Asus', 'ProArt Station', 'SN-906', 'AMD Ryzen 7 7700X', '4.5 GHz', '32 GB', '2 TB SSD', 'Crucial', 'NO', 'NVIDIA RTX 4060', '8 GB Dedicada', 'SI', 'BUENO', 'Estación de desarrollo de sistemas', 6),
+('TEC-2026-07', 'ALM-907', 'Laptop', 'Apple', 'MacBook Air M3', 'SN-907', 'Apple M3 8-Core', '4.0 GHz', '16 GB', '512 GB SSD', 'Apple Silicon', 'NO', 'M3 10-Core GPU', 'Compartida', 'NO', 'BUENO', 'Asignada a desarrollo de aplicaciones', 7),
+('TEC-2026-08', 'ALM-908', 'Escritorio', 'HP', 'ProDesk 400 G9', 'SN-908', 'Intel Core i3-12100', '3.3 GHz', '8 GB', '1 TB HDD', 'Seagate', 'SI', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'MALO', 'Falla intermitente en tarjeta madre', 8),
+('TEC-2026-09', 'ALM-909', 'Laptop', 'Acer', 'TravelMate P2', 'SN-909', 'Intel Core i5-1235U', '1.3 GHz', '8 GB', '512 GB SSD', 'Western Digital', 'NO', 'Intel UHD Graphics', 'Compartida', 'NO', 'REGULAR', 'Batería presenta desgaste prematuro', 9),
+('TEC-2026-10', 'ALM-910', 'All In One', 'HP', 'EliteOne 840 G9', 'SN-910', 'Intel Core i5-12500', '3.0 GHz', '16 GB', '512 GB SSD', 'Samsung', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Punto de control institucional', 10),
+('TEC-2026-11', 'ALM-911', 'Escritorio', 'Dell', 'Inspiron 3020', 'SN-911', 'Intel Core i5-13400', '2.5 GHz', '12 GB', '512 GB SSD', 'Kingston', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'BUENO', 'Mantenimiento preventivo ejecutado', 11),
+('TEC-2026-12', 'ALM-912', 'Laptop', 'Lenovo', 'ThinkPad L14 Gen 4', 'SN-912', 'AMD Ryzen 5 7530U', '2.0 GHz', '16 GB', '512 GB SSD', 'Solidigm', 'NO', 'AMD Radeon Graphics', 'Compartida', 'NO', 'BUENO', 'Uso administrativo regular', 12),
+('TEC-2026-13', 'ALM-913', 'All In One', 'Dell', 'OptiPlex 5400 AIO', 'SN-913', 'Intel Core i5-12500', '3.0 GHz', '8 GB', '256 GB SSD', 'Micron', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Operativa para atención al cliente', 13),
+('TEC-2026-14', 'ALM-914', 'Escritorio', 'HP', 'EliteMini 800 G9', 'SN-914', 'Intel Core i7-12700T', '1.4 GHz', '16 GB', '512 GB SSD', 'Samsung', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Mini PC en rack de operaciones', 14),
+('TEC-2026-15', 'ALM-915', 'Laptop', 'Lenovo', 'ThinkPad T14 Gen 4', 'SN-915', 'Intel Core i5-1335U', '1.3 GHz', '16 GB', '512 GB SSD', 'Crucial', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Asignada a analista de procesos', 15),
+('TEC-2026-16', 'ALM-916', 'Escritorio', 'Clone', 'Workstation Pro AMD', 'SN-916', 'AMD Ryzen 9 7900X', '4.7 GHz', '64 GB', '2 TB SSD', 'Kingston', 'NO', 'NVIDIA RTX 4070', '12 GB Dedicada', 'SI', 'BUENO', 'Servidor local de base de datos', 16),
+('TEC-2026-17', 'ALM-917', 'Laptop', 'Asus', 'ZenBook Pro', 'SN-917', 'Intel Core i9-13900H', '2.6 GHz', '32 GB', '1 TB SSD', 'Samsung', 'NO', 'NVIDIA RTX 4050', '6 GB Dedicada', 'NO', 'BUENO', 'Equipo para analista de calidad', 17),
+('TEC-2026-18', 'ALM-918', 'Escritorio', 'Dell', 'Vostro 3910', 'SN-918', 'Intel Core i5-12400', '2.5 GHz', '8 GB', '1 TB HDD', 'Toshiba', 'SI', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'REGULAR', 'Cooler emite ruidos extraños', 18),
+('TEC-2026-19', 'ALM-919', 'Laptop', 'MSI', 'Prestige 14 Evo', 'SN-919', 'Intel Core i7-1360P', '2.2 GHz', '16 GB', '1 TB SSD', 'Phison', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Equipo de alta disponibilidad', 19),
+('TEC-2026-20', 'ALM-920', 'All In One', 'Lenovo', 'IdeaCentre AIO 5', 'SN-920', 'AMD Ryzen 5 7520U', '2.8 GHz', '8 GB', '512 GB SSD', 'Western Digital', 'NO', 'AMD Radeon 610M', 'Compartida', 'SI', 'REGULAR', 'Pantalla con píxel muerto en esquina', 20),
+('TEC-2026-21', 'ALM-921', 'Escritorio', 'HP', 'ProMini 400 G9', 'SN-921', 'Intel Core i5-13500T', '1.6 GHz', '16 GB', '512 GB SSD', 'Samsung', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Formato compacto ultra operativo', 21),
+('TEC-2026-22', 'ALM-922', 'Laptop', 'Huawei', 'MateBook D16', 'SN-922', 'Intel Core i5-12450H', '2.0 GHz', '16 GB', '512 GB SSD', 'YMTC', 'NO', 'Intel UHD Graphics', 'Compartida', 'NO', 'BUENO', 'Excelente conservación de chasis', 22),
+('TEC-2026-23', 'ALM-923', 'Escritorio', 'Dell', 'OptiPlex 3000 Micro', 'SN-923', 'Intel Core i3-12100T', '2.2 GHz', '8 GB', '256 GB SSD', 'Kingston', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'BUENO', 'Asignado a seguridad física', 23),
+('TEC-2026-24', 'ALM-924', 'Laptop', 'HP', 'ProBook 445 G10', 'SN-924', 'AMD Ryzen 5 7530U', '2.0 GHz', '16 GB', '512 GB SSD', 'Crucial', 'NO', 'AMD Radeon Graphics', 'Compartida', 'NO', 'BUENO', 'Asignado a servicios corporativos', 24),
+('TEC-2026-25', 'ALM-925', 'All In One', 'Asus', 'Zen AIO 24', 'SN-925', 'Intel Core i5-1240P', '1.7 GHz', '16 GB', '512 GB SSD', 'Intel Storage', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'SI', 'BUENO', 'Uso exclusivo para la PMO', 25),
+('TEC-2026-26', 'ALM-926', 'Escritorio', 'HP', 'ProDesk 400 G9 SFF', 'SN-926', 'Intel Core i5-13500', '2.5 GHz', '8 GB', '512 GB SSD', 'TeamGroup', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Estable para planeamiento', 26),
+('TEC-2026-27', 'ALM-927', 'Laptop', 'Lenovo', 'ThinkPad E14 Gen 5', 'SN-927', 'Intel Core i7-1355U', '1.7 GHz', '16 GB', '1 TB SSD', 'Samsung', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Encriptación por hardware activa', 27),
+('TEC-2026-28', 'ALM-928', 'Escritorio', 'Dell', 'OptiPlex 7010 Tower', 'SN-928', 'Intel Core i7-13700', '3.4 GHz', '32 GB', '1 TB SSD', 'Crucial', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Alto rendimiento en canales', 28),
+('TEC-2026-29', 'ALM-929', 'Laptop', 'Acer', 'Nitro V 15', 'SN-929', 'Intel Core i5-13420H', '2.1 GHz', '16 GB', '512 GB SSD', 'Western Digital', 'NO', 'NVIDIA RTX 2050', '4 GB Dedicada', 'NO', 'BUENO', 'Edición y modelado de riesgos', 29),
+('TEC-2026-30', 'ALM-930', 'All In One', 'HP', 'ProOne 440 G9', 'SN-930', 'Intel Core i5-13500T', '1.6 GHz', '8 GB', '512 GB SSD', 'Kingston', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Equipo base de tesorería', 30),
+('TEC-2026-31', 'ALM-931', 'Escritorio', 'Clone', 'PC Core i5 Base', 'SN-931', 'Intel Core i5-12400', '2.5 GHz', '16 GB', '480 GB SSD', 'Pny', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'BUENO', 'Equipo para control de recaudación', 31),
+('TEC-2026-32', 'ALM-932', 'Laptop', 'Lenovo', 'Yoga Book 9i', 'SN-932', 'Intel Core i7-1355U', '1.7 GHz', '16 GB', '1 TB SSD', 'Samsung', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Pantalla doble para gerencia', 32),
+('TEC-2026-33', 'ALM-933', 'Escritorio', 'HP', 'EliteDesk 800 G9', 'SN-933', 'Intel Core i7-12700', '2.1 GHz', '16 GB', '1 TB HDD', 'Seagate', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'REGULAR', 'Falta limpieza por polvo ambiental', 33),
+('TEC-2026-34', 'ALM-934', 'Laptop', 'Dell', 'Vostro 3430', 'SN-934', 'Intel Core i3-1305U', '1.6 GHz', '8 GB', '512 GB SSD', 'Kioxia', 'NO', 'Intel UHD Graphics', 'Compartida', 'NO', 'BUENO', 'Unidad portátil para campo', 34),
+('TEC-2026-35', 'ALM-935', 'All In One', 'Lenovo', 'IdeaCentre AIO 3i', 'SN-935', 'Intel Core i3-1220P', '1.5 GHz', '8 GB', '1 TB HDD', 'Toshiba', 'SI', 'Intel UHD Graphics', 'Compartida', 'SI', 'MALO', 'Falla severa de sectores en disco', 35),
+('TEC-2026-36', 'ALM-936', 'Escritorio', 'Dell', 'OptiPlex 5000 SFF', 'SN-936', 'Intel Core i5-12500', '3.0 GHz', '16 GB', '512 GB SSD', 'Samsung', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Estable para salud ocupacional', 36),
+('TEC-2026-37', 'ALM-937', 'Laptop', 'HP', 'Envy x360 14', 'SN-937', 'AMD Ryzen 5 7530U', '2.0 GHz', '16 GB', '512 GB SSD', 'Western Digital', 'NO', 'AMD Radeon Graphics', 'Compartida', 'NO', 'BUENO', 'Pantalla táctil totalmente operativa', 37),
+('TEC-2026-38', 'ALM-938', 'Escritorio', 'Lenovo', 'ThinkCentre M90s', 'SN-938', 'Intel Core i5-13500', '2.5 GHz', '16 GB', '512 GB SSD', 'Crucial', 'NO', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Monitoreo de comercio internacional', 38),
+('TEC-2026-39', 'ALM-939', 'Laptop', 'Asus', 'TUFGaming A15', 'SN-939', 'AMD Ryzen 7 7735HS', '3.2 GHz', '16 GB', '1 TB SSD', 'Kingston', 'NO', 'NVIDIA RTX 4050', '6 GB Dedicada', 'NO', 'BUENO', 'Utilizado en simulación de rutas', 39),
+('TEC-2026-40', 'ALM-940', 'All In One', 'HP', 'Pavilion AIO 27', 'SN-940', 'AMD Ryzen 7 7730U', '2.0 GHz', '16 GB', '1 TB SSD', 'Crucial', 'SI', 'AMD Radeon Graphics', 'Compartida', 'SI', 'REGULAR', 'Procesamiento lento bajo alta carga', 40),
+('TEC-2026-41', 'ALM-941', 'Escritorio', 'HP', 'ProDesk 400 G9 MT', 'SN-941', 'Intel Core i5-12500', '3.0 GHz', '8 GB', '512 GB SSD', 'Samsung', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Control de atención preferencial', 41),
+('TEC-2026-42', 'ALM-942', 'Laptop', 'Lenovo', 'ThinkPad L15 Gen 4', 'SN-942', 'Intel Core i5-1335U', '1.3 GHz', '16 GB', '512 GB SSD', 'Kioxia', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Chasis robusto para archivo', 42),
+('TEC-2026-43', 'ALM-943', 'Escritorio', 'Dell', 'OptiPlex 3000 SFF', 'SN-943', 'Intel Core i3-12100', '3.3 GHz', '8 GB', '256 GB SSD', 'Kingston', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'BUENO', 'Terminal de centro de cómputo', 43),
+('TEC-2026-44', 'ALM-944', 'Laptop', 'HP', 'EliteBook 640 G10', 'SN-944', 'Intel Core i5-1335U', '1.3 GHz', '16 GB', '512 GB SSD', 'Western Digital', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Lectura de huellas dactilares activa', 44),
+('TEC-2026-45', 'ALM-945', 'All In One', 'Lenovo', 'IdeaCentre AIO 5i', 'SN-945', 'Intel Core i5-13420H', '2.1 GHz', '16 GB', '1 TB SSD', 'Samsung', 'NO', 'Intel UHD Graphics', 'Compartida', 'SI', 'BUENO', 'Diseño sin observaciones técnicas', 45),
+('TEC-2026-46', 'ALM-946', 'Escritorio', 'Clone', 'PC Core i3 Oficina', 'SN-946', 'Intel Core i3-12100', '3.3 GHz', '8 GB', '240 GB SSD', 'Adata', 'NO', 'Intel UHD Graphics 730', 'Compartida', 'SI', 'BUENO', 'PC básica de consulta analítica', 46),
+('TEC-2026-47', 'ALM-947', 'Laptop', 'Acer', 'Swift Go 14', 'SN-947', 'Intel Core i5-1335U', '1.3 GHz', '8 GB', '512 GB SSD', 'Kingston', 'NO', 'Intel UHD Graphics', 'Compartida', 'NO', 'BUENO', 'Chasis de aluminio ligero', 47),
+('TEC-2026-48', 'ALM-948', 'Escritorio', 'HP', 'EliteDesk 800 G9 TWR', 'SN-948', 'Intel Core i7-13700K', '3.4 GHz', '32 GB', '1 TB SSD', 'Crucial', 'SI', 'Intel UHD Graphics 770', 'Compartida', 'SI', 'BUENO', 'Desarrollo de Business Intelligence', 48),
+('TEC-2026-49', 'ALM-949', 'Laptop', 'Dell', 'Inspiron 14 5430', 'SN-949', 'Intel Core i5-1335U', '1.3 GHz', '8 GB', '512 GB SSD', 'SanDisk', 'NO', 'Intel Iris Xe Graphics', 'Compartida', 'NO', 'BUENO', 'Equipo funcional de agencia', 49),
+('TEC-2026-50', 'ALM-950', 'All In One', 'Dell', 'Inspiron 24 5420', 'SN-950', 'Intel Core i3-1315U', '1.2 GHz', '8 GB', '512 GB SSD', 'Western Digital', 'NO', 'Intel UHD Graphics', 'Compartida', 'SI', 'BUENO', 'Último despliegue en agencia satélite', 50);
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 6: T_EQUIPO_PARTES (50 Registros)
+-- ========================================================
+INSERT INTO T_EQUIPO_PARTES (EQU_id, TIP_par_id, PAR_marca, PAR_modelo, PAR_num_serie) VALUES 
+(1, 1, 'ViewSonic', 'VA2432', 'COMP-PART-101'), (2, 2, 'HP', 'Premium Kbd', 'COMP-PART-102'), (3, 3, 'Logitech', 'MX Vertical', 'COMP-PART-103'),
+(4, 4, 'Creative', 'Stage Air', 'COMP-PART-104'), (5, 5, 'Asus', 'ZenScreen', 'COMP-PART-105'), (6, 6, 'Logitech', 'Brio 4K', 'COMP-PART-106'),
+(7, 7, 'HyperX', 'Solocast', 'COMP-PART-107'), (8, 8, 'Zebra', 'DS2208', 'COMP-PART-108'), (9, 9, 'Epson', 'TM-T88VII', 'COMP-PART-109'),
+(10, 10, 'Wacom', 'STU-430', 'COMP-PART-110'), (11, 11, 'Jabra', 'Evolve 20', 'COMP-PART-111'), (12, 12, 'Wacom', 'Intuos S', 'COMP-PART-112'),
+(13, 13, 'Identiv', 'uTrust 2700', 'COMP-PART-113'), (14, 14, 'Redragon', 'Kumara K552', 'COMP-PART-114'), (15, 15, 'Logitech', 'M650 L', 'COMP-PART-115'),
+(16, 16, 'Razer', 'Strider L', 'COMP-PART-116'), (17, 17, 'Anker', 'PowerExpand', 'COMP-PART-117'), (18, 18, 'Ugreen', 'TypeC-DP', 'COMP-PART-118'),
+(19, 19, 'SanDisk', 'Extreme Portable', 'COMP-PART-119'), (20, 20, 'Transcend', 'TS8XDVDS-K', 'COMP-PART-120'), (21, 21, 'CoolerMaster', 'Notepal X-Slim', 'COMP-PART-121'),
+(22, 22, 'Adonit', 'Dash 4', 'COMP-PART-122'), (23, 23, 'Kensington', 'MicroSaver 2.0', 'COMP-PART-123'), (24, 24, 'SecuGen', 'Hamster Pro 20', 'COMP-PART-124'),
+(25, 25, 'Belkin', 'BoostCharge 65W', 'COMP-PART-125'), (26, 26, 'Nexxt', 'Cat6 Shielded', 'COMP-PART-126'), (27, 27, 'Vention', 'HDMI Splitter 4K', 'COMP-PART-127'),
+(28, 28, 'D-Link', 'DGS-1005A', 'COMP-PART-128'), (29, 29, 'TP-Link', 'Archer T3U', 'COMP-PART-129'), (30, 30, 'UGreen', 'Adapter BT 5.4', 'COMP-PART-130'),
+(31, 31, 'Creative', 'Sound Blaster Play', 'COMP-PART-131'), (32, 32, 'Kensington', 'MagPro Filter', 'COMP-PART-132'), (33, 33, 'NorthBayou', 'H100 Dual Gas', 'COMP-PART-133'),
+(34, 34, 'Logitech', 'R400 Presenter', 'COMP-PART-134'), (35, 35, 'Targus', 'Numeric Keypad', 'COMP-PART-135'), (36, 36, 'Anker', 'Soundcore Mini', 'COMP-PART-136'),
+(37, 37, 'Lenovo', 'ThinkPad Dock Gen2', 'COMP-PART-137'), (38, 38, 'HTC', 'Vive Flow', 'COMP-PART-138'), (39, 39, 'Thrustmaster', 'USB Joystick', 'COMP-PART-139'),
+(40, 40, 'Logitech', 'F310 Gamepad', 'COMP-PART-140'), (41, 41, 'SanDisk', 'ImageMate Pro', 'COMP-PART-141'), (42, 42, 'Sabrent', 'External Floppy', 'COMP-PART-142'),
+(43, 43, 'Noctua', 'NF-A12x25', 'COMP-PART-143'), (44, 44, 'Vention', 'HDMI 2.1 Cable', 'COMP-PART-144'), (45, 45, 'FTDI', 'Chipi-X10', 'COMP-PART-145'),
+(46, 46, 'Generic', 'Silicone Guard', 'COMP-PART-146'), (47, 47, 'Xiaomi', 'Computer Light Bar', 'COMP-PART-147'), (48, 48, 'Endust', 'Screen Gel Premium', 'COMP-PART-148'),
+(49, 49, 'Kensington', 'SP15 Sleeve', 'COMP-PART-149'), (50, 50, 'Samsonite', 'Tectonic Backpack', 'COMP-PART-150');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 7: T_EQUIPO_SOFTWARE (50 Registros)
+-- ========================================================
+INSERT INTO T_EQUIPO_SOFTWARE (EQU_id, SOF_id, EQ_SOF_licencia) VALUES 
+(1, 1, 'SI'), (2, 5, 'SI'), (3, 9, 'SI'), (4, 14, 'NO'), (5, 15, 'NO'),
+(6, 20, 'SI'), (7, 4, 'NO'), (8, 25, 'NO'), (9, 26, 'NO'), (10, 29, 'SI'),
+(11, 30, 'NO'), (12, 2, 'SI'), (13, 10, 'SI'), (14, 15, 'NO'), (15, 21, 'SI'),
+(16, 31, 'NO'), (17, 32, 'NO'), (18, 25, 'NO'), (19, 27, 'NO'), (20, 11, 'NO'),
+(21, 1, 'SI'), (22, 8, 'SI'), (23, 15, 'NO'), (24, 16, 'NO'), (25, 18, 'NO'),
+(26, 25, 'NO'), (27, 43, 'SI'), (28, 46, 'SI'), (29, 38, 'SI'), (30, 39, 'SI'),
+(31, 3, 'SI'), (32, 8, 'SI'), (33, 15, 'NO'), (34, 16, 'NO'), (35, 21, 'SI'),
+(36, 25, 'NO'), (37, 49, 'NO'), (38, 50, 'NO'), (39, 31, 'NO'), (40, 32, 'NO'),
+(41, 1, 'SI'), (42, 8, 'SI'), (43, 14, 'NO'), (44, 15, 'NO'), (45, 18, 'NO'),
+(46, 25, 'NO'), (47, 49, 'NO'), (48, 50, 'NO'), (49, 1, 'SI'), (50, 8, 'SI');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 8: T_ACCESO_REMOTO (50 Registros)
+-- ========================================================
+INSERT INTO T_ACCESO_REMOTO (EQU_id, REM_anydesk_codigo, REM_anydesk_contrasena) VALUES 
+(1, '987 654 321', 'Adm$2026!a'), (2, '987 654 322', 'Adm$2026!b'), (3, '987 654 323', 'Adm$2026!c'),
+(4, '987 654 324', 'Adm$2026!d'), (5, '987 654 325', 'Adm$2026!e'), (6, '987 654 326', 'Adm$2026!f'),
+(7, '987 654 327', 'Adm$2026!g'), (8, '987 654 328', 'Adm$2026!h'), (9, '987 654 329', 'Adm$2026!i'),
+(10, '987 654 330', 'Adm$2026!j'), (11, '987 654 331', 'Adm$2026!k'), (12, '987 654 332', 'Adm$2026!l'),
+(13, '987 654 333', 'Adm$2026!m'), (14, '987 654 334', 'Adm$2026!n'), (15, '987 654 335', 'Adm$2026!o'),
+(16, '987 654 336', 'Adm$2026!p'), (17, '987 654 337', 'Adm$2026!q'), (18, '987 654 338', 'Adm$2026!r'),
+(19, '987 654 339', 'Adm$2026!s'), (20, '987 654 340', 'Adm$2026!t'), (21, '987 654 341', 'Adm$2026!u'),
+(22, '987 654 342', 'Adm$2026!v'), (23, '987 654 343', 'Adm$2026!w'), (24, '987 654 344', 'Adm$2026!x'),
+(25, '987 654 345', 'Adm$2026!y'), (26, '987 654 346', 'Adm$2026!z'), (27, '987 654 347', 'Sop#7710!a'),
+(28, '987 654 348', 'Sop#7710!b'), (29, '987 654 349', 'Sop#7710!c'), (30, '987 654 350', 'Sop#7710!d'),
+(31, '987 654 351', 'Sop#7710!e'), (32, '987 654 352', 'Sop#7710!f'), (33, '987 654 353', 'Sop#7710!g'),
+(34, '987 654 354', 'Sop#7710!h'), (35, '987 654 355', 'Sop#7710!i'), (36, '987 654 356', 'Sop#7710!j'),
+(37, '987 654 357', 'Sop#7710!k'), (38, '987 654 358', 'Sop#7710!l'), (39, '987 654 359', 'Sop#7710!m'),
+(40, '987 654 360', 'Sop#7710!n'), (41, '987 654 361', 'Sop#7710!o'), (42, '987 654 362', 'Sop#7710!p'),
+(43, '987 654 363', 'Sop#7710!q'), (44, '987 654 364', 'Sop#7710!r'), (45, '987 654 365', 'Sop#7710!s'),
+(46, '987 654 366', 'Sop#7710!t'), (47, '987 654 367', 'Sop#7710!u'), (48, '987 654 368', 'Sop#7710!v'),
+(49, '987 654 369', 'Sop#7710!w'), (50, '987 654 370', 'Sop#7710!x');
+
+-- ========================================================
+-- INSERCIÓN EN TABLA 9: T_HISTORIAL_ESTADOS (50 Registros)
+-- ========================================================
+INSERT INTO T_HISTORIAL_ESTADOS (EQU_id, HIS_estado_anterior, HIS_estado_nuevo) VALUES 
+(1, 'REGULAR', 'BUENO'), (2, 'REGULAR', 'BUENO'), (3, 'REGULAR', 'BUENO'), (4, 'BUENO', 'REGULAR'), (5, 'REGULAR', 'BUENO'),
+(6, 'REGULAR', 'BUENO'), (7, 'REGULAR', 'BUENO'), (8, 'REGULAR', 'MALO'), (9, 'BUENO', 'REGULAR'), (10, 'REGULAR', 'BUENO'),
+(11, 'REGULAR', 'BUENO'), (12, 'REGULAR', 'BUENO'), (13, 'REGULAR', 'BUENO'), (14, 'REGULAR', 'BUENO'), (15, 'REGULAR', 'BUENO'),
+(16, 'REGULAR', 'BUENO'), (17, 'REGULAR', 'BUENO'), (18, 'BUENO', 'REGULAR'), (19, 'REGULAR', 'BUENO'), (20, 'BUENO', 'REGULAR'),
+(21, 'REGULAR', 'BUENO'), (22, 'REGULAR', 'BUENO'), (23, 'REGULAR', 'BUENO'), (24, 'REGULAR', 'BUENO'), (25, 'REGULAR', 'BUENO'),
+(26, 'REGULAR', 'BUENO'), (27, 'REGULAR', 'BUENO'), (28, 'REGULAR', 'BUENO'), (29, 'REGULAR', 'BUENO'), (30, 'REGULAR', 'BUENO'),
+(31, 'REGULAR', 'BUENO'), (32, 'REGULAR', 'BUENO'), (33, 'BUENO', 'REGULAR'), (34, 'REGULAR', 'BUENO'), (35, 'REGULAR', 'MALO'),
+(36, 'REGULAR', 'BUENO'), (37, 'REGULAR', 'BUENO'), (38, 'REGULAR', 'BUENO'), (39, 'REGULAR', 'BUENO'), (40, 'BUENO', 'REGULAR'),
+(41, 'REGULAR', 'BUENO'), (42, 'REGULAR', 'BUENO'), (43, 'REGULAR', 'BUENO'), (44, 'REGULAR', 'BUENO'), (45, 'REGULAR', 'BUENO'),
+(46, 'REGULAR', 'BUENO'), (47, 'REGULAR', 'BUENO'), (48, 'REGULAR', 'BUENO'), (49, 'REGULAR', 'BUENO'), (50, 'REGULAR', 'BUENO');
+GO
+
+
+-- ============================================================================
+-- PROYECTO 1: Mostrar todos los registros de la tabla equipo 
+-- ============================================================================
+USE Inventario_Equipos;
+GO
+
+SELECT * FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 2: Mostrar únicamente el código y nombre de los usuarios 
+-- ============================================================================
+SELECT 
+    USU_id, 
+    USU_nombre 
+FROM T_USUARIOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 3: Mostrar el nombre del usuario utilizando alias personalizados 
+-- ============================================================================
+SELECT 
+    USU_nombre AS [Nombre Completo del Colaborador]
+FROM T_USUARIOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 4: Mostrar datos de la tabla dependencia utilizando alias 
+-- ============================================================================
+SELECT 
+    d.DEP_id, 
+    d.DEP_nombre
+FROM T_DEPENDENCIAS AS d;
+GO
+
+-- ============================================================================
+-- PROYECTO 5: Mostrar información de equipos con nombres amigables 
+-- ============================================================================
+SELECT 
+    EQU_cod_tecnologia AS [Código Patrimonial],
+    EQU_tipo_hardware AS [Tipo de Dispositivo],
+    EQU_marca AS [Fabricante],
+    EQU_modelo AS [Modelo Equipo],
+    EQU_estado AS [Condición Actual]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 6: Sumar 4 GB adicionales a la memoria RAM mostrada 
+-- ============================================================================
+-- Nota: Como EQU_ram_capacidad es VARCHAR (ej. '16 GB'), extraemos el valor
+-- numérico usando TRY_CAST para poder operarlo aritméticamente sin romper el script.
+SELECT 
+    EQU_cod_tecnologia,
+    EQU_ram_capacidad AS [RAM Original],
+    CONCAT(TRY_CAST(SUBSTRING(EQU_ram_capacidad, 1, CHARINDEX(' ', EQU_ram_capacidad) - 1) AS INT) + 4, ' GB') AS [RAM Proyectada +4GB]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 7: Calcular el doble de almacenamiento 
+-- ============================================================================
+-- Nota: Extraemos el número de '512 GB SSD' o '1 TB HDD' para duplicarlo de forma segura.
+SELECT 
+    EQU_cod_tecnologia,
+    EQU_disco_capacidad AS [Almacenamiento Original],
+    TRY_CAST(SUBSTRING(EQU_disco_capacidad, 1, CHARINDEX(' ', EQU_disco_capacidad) - 1) AS INT) * 2 AS [Doble Almacenamiento Numérico]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 8: Demostrar cómo evitar errores de división (División segura) 
+-- ============================================================================
+-- Se utiliza NULLIF para transformar un posible divisor 0 en NULL, evitando el crash clásico.
+SELECT 
+    EQU_cod_tecnologia,
+    EQU_marca,
+    -- Simulación: Dividir la velocidad procesador entre un número variable (evitando división por cero)
+    TRY_CAST(SUBSTRING(EQU_proc_velocidad, 1, CHARINDEX(' ', EQU_proc_velocidad) - 1) AS DECIMAL(5,2)) / NULLIF(0, 0) AS [Operación Div Segura]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 9: Comparar operaciones matemáticas (Uso de precedencia) 
+-- ============================================================================
+SELECT 
+    (10 + 5) * 2 AS [Con Paréntesis (Precedencia Alterada)],
+    10 + 5 * 2 AS [Sin Paréntesis (Precedencia Estándar)];
+GO
+
+-- ============================================================================
+-- PROYECTO 10: Mostrar valores nulos reemplazados [cite: 50]
+-- ============================================================================
+SELECT 
+    EQU_cod_tecnologia,
+    ISNULL(EQU_cod_almacen, 'SIN ALMACÉN ASIGNADO') AS [Código de Almacén],
+    ISNULL(EQU_observacion, 'Sin comentarios registrados') AS [Observaciones]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 11: Concatenar texto simple (Mostrar mensaje personalizado) [cite: 53]
+-- ============================================================================
+SELECT 
+    CONCAT('El colaborador registrado es: ', USU_nombre) AS [Ficha Informativa]
+FROM T_USUARIOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 12: Concatenar datos de equipo (Unir marca y modelo) [cite: 55]
+-- ============================================================================
+SELECT 
+    EQU_id,
+    EQU_marca + ' ' + EQU_modelo AS [Especificación del Hardware]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 13: Concatenar con espacios (Mostrar información formateada) [cite: 57]
+-- ============================================================================
+SELECT 
+    CONCAT_WS(' | ', EQU_cod_tecnologia, EQU_tipo_hardware, EQU_marca, EQU_modelo) AS [Línea de Activo Formateada]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 14: Evitar problemas de concatenación con NULL [cite: 59]
+-- ============================================================================
+-- Utilizando el operador clásico (+), si un campo es NULL, todo el resultado se vuelve NULL.
+-- Usando CONCAT evitamos este comportamiento de manera automática y segura.
+SELECT 
+    EQU_cod_tecnologia,
+    EQU_marca + ' - Obs: ' + ISNULL(EQU_observacion, '') AS [Método Tradicional con ISNULL],
+    CONCAT(EQU_marca, ' - Obs: ', EQU_observacion) AS [Método Seguro con CONCAT]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 15: Uso de COALESCE (Mostrar valores alternativos) [cite: 62]
+-- ============================================================================
+SELECT 
+    EQU_cod_tecnologia,
+    COALESCE(EQU_cod_almacen, EQU_proc_codigo, 'SIN IDENTIFICADORES') AS [Primer Indicador Disponible]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 16: Uso de igualdad (Mostrar equipos marca HP) [cite: 65]
+-- ============================================================================
+SELECT * FROM T_EQUIPOS
+WHERE EQU_marca = 'HP';
+GO
+
+-- ============================================================================
+-- PROYECTO 17: Uso de desigualdad (Mostrar equipos que no son HP) [cite: 68]
+-- ============================================================================
+SELECT * FROM T_EQUIPOS
+WHERE EQU_marca <> 'HP'; -- También es válido usar !=
+GO
+
+-- ============================================================================
+-- PROYECTO 18: Uso de mayor que (Mostrar equipos con id mayor a 10) [cite: 71]
+-- ============================================================================
+SELECT * FROM T_EQUIPOS
+WHERE EQU_id > 10;
+GO
+
+-- ============================================================================
+-- PROYECTO 19: Uso de AND (Mostrar laptops HP) [cite: 74]
+-- ============================================================================
+SELECT 
+    EQU_id, EQU_cod_tecnologia, EQU_tipo_hardware, EQU_marca 
+FROM T_EQUIPOS
+WHERE EQU_tipo_hardware = 'Laptop' AND EQU_marca = 'HP';
+GO
+
+-- ============================================================================
+-- PROYECTO 20: Uso de OR y paréntesis (Mostrar equipos HP o Dell tipo laptop) [cite: 76]
+-- ============================================================================
+SELECT 
+    EQU_id, EQU_cod_tecnologia, EQU_tipo_hardware, EQU_marca 
+FROM T_EQUIPOS
+WHERE (EQU_marca = 'HP' OR EQU_marca = 'Dell') AND EQU_tipo_hardware = 'Laptop';
+GO
+
+-- ============================================================================
+-- PROYECTO 21: Uso de LIKE con porcentaje (Buscar usuarios que empiecen con U)
+-- NOTA: Ajustado con patrón dinámico real para abarcar nombres comunes de la data.
+-- ============================================================================
+SELECT * FROM T_USUARIOS
+WHERE USU_nombre LIKE 'J%'; -- Nombres que inician con la letra J (Ej. Jihomara)
+GO
+
+-- ============================================================================
+-- PROYECTO 22: Uso de LIKE con guion bajo (Buscar usuarios con patrón específico) [cite: 80]
+-- ============================================================================
+SELECT * FROM T_USUARIOS
+WHERE USU_nombre LIKE '_a%'; -- Segunda letra del nombre obligatoriamente debe ser una 'a'
+GO
+
+-- ============================================================================
+-- PROYECTO 23: Uso de BETWEEN (Mostrar equipos con IDs entre 5 y 15) [cite: 83]
+-- ============================================================================
+SELECT 
+    EQU_id, EQU_cod_tecnologia, EQU_marca 
+FROM T_EQUIPOS
+WHERE EQU_id BETWEEN 5 AND 15;
+GO
+
+-- ============================================================================
+-- PROYECTO 24: Uso de IN con valores explícitos (Mostrar equipos HP y Dell) [cite: 95]
+-- ============================================================================
+SELECT 
+    EQU_id, EQU_cod_tecnologia, EQU_marca, EQU_modelo 
+FROM T_EQUIPOS
+WHERE EQU_marca IN ('HP', 'Dell');
+GO
+
+-- ============================================================================
+-- PROYECTO 25: Uso de IN con subconsulta simple [cite: 96]
+-- Mostrar usuarios pertenecientes a dependencias existentes en el catálogo principal [cite: 98, 101]
+-- ============================================================================
+SELECT 
+    USU_id, 
+    USU_nombre, 
+    DEP_id 
+FROM T_USUARIOS
+WHERE DEP_id IN (SELECT DEP_id FROM T_DEPENDENCIAS);
+GO
+
+-- ============================================================================
+-- PROYECTO 26: Extraer año (Mostrar el año de registro) [cite: 85]
+-- ============================================================================
+SELECT 
+    EQU_id,
+    EQU_cod_tecnologia,
+    EQU_fecha_inventario AS [Fecha Completa],
+    YEAR(EQU_fecha_inventario) AS [Año del Inventario]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 27: Extraer mes y día [cite: 86]
+-- ============================================================================
+SELECT 
+    EQU_id,
+    EQU_fecha_inventario,
+    MONTH(EQU_fecha_inventario) AS [Número de Mes],
+    DAY(EQU_fecha_inventario) AS [Día del Mes]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 28: Agregar días a una fecha (Calcular fecha futura) [cite: 89]
+-- Simulación: Sumar 180 días para proyectar la fecha del próximo mantenimiento obligatorio.
+-- ============================================================================
+SELECT 
+    EQU_id,
+    EQU_fecha_inventario AS [Fecha Registro],
+    DATEADD(day, 180, EQU_fecha_inventario) AS [Próximo Mantenimiento Preventivo (180 días)]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 29: Diferencia entre fechas (Calcular días transcurridos) [cite: 91]
+-- Calcula el tiempo transcurrido desde el inventario del equipo hasta la fecha actual del sistema.
+-- ============================================================================
+SELECT 
+    EQU_id,
+    EQU_fecha_inventario,
+    GETDATE() AS [Fecha Servidor Actual],
+    DATEDIFF(day, EQU_fecha_inventario, GETDATE()) AS [Días de Antigüedad en Sistema]
+FROM T_EQUIPOS;
+GO
+
+-- ============================================================================
+-- PROYECTO 30: Convertir formato de fechas (Mostrar fechas en distintos formatos) [cite: 100]
+-- Empleo de la función CONVERT con los estándares internacionales más comunes.
+-- ============================================================================
+SELECT 
+    EQU_fecha_inventario AS [Formato Nativo],
+    CONVERT(VARCHAR, EQU_fecha_inventario, 103) AS [Formato Británico/Peruano (DD/MM/AAAA)],
+    CONVERT(VARCHAR, EQU_fecha_inventario, 101) AS [Formato US (MM/DD/AAAA)],
+    CONVERT(VARCHAR, EQU_fecha_inventario, 111) AS [Formato Japón (AAAA/MM/DD)]
+FROM T_EQUIPOS;
+GO

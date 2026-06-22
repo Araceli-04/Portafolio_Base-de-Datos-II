@@ -1,340 +1,367 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portafolio 2026 | Base de Datos II</title>
-    
-    <!-- Fuentes y Iconos -->
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest"></script>
-
-    <style>
-        :root {
-            --pink-light: #fdf2f7;
-            --pink-accent: #f48fb1;
-            --purple-accent: #a696e7;
-            --text-dark: #1a1a1a;
-            --glass: rgba(255, 255, 255, 0.6);
-        }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background: linear-gradient(120deg, #fff5f7 0%, #f0efff 100%);
-            color: var(--text-dark);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* --- NAVEGACIÓN --- */
-        nav {
-            position: fixed; top: 0; width: 100%; padding: 20px 8%;
-            display: flex; justify-content: space-between; align-items: center;
-            backdrop-filter: blur(10px); z-index: 1000;
-        }
-
-        .logo { display: flex; align-items: center; gap: 15px; font-family: 'Instrument Serif', serif; font-size: 1.8rem; }
-        .logo img { height: 45px; width: auto; object-fit: contain; }
-        
-        .logo-text {
-            background: linear-gradient(90deg, var(--pink-accent), var(--purple-accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-weight: 800;
-        }
-
-        .nav-links { display: flex; gap: 15px; background: rgba(255,255,255,0.4); padding: 8px; border-radius: 50px; }
-        .nav-links button {
-            border: none; background: transparent; padding: 10px 25px; border-radius: 50px;
-            cursor: pointer; font-weight: 600; color: #666; transition: 0.3s;
-        }
-        .nav-links button.active { background: white; color: var(--pink-accent); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-
-        /* --- SECCIONES --- */
-        .container { display: none; padding: 120px 8% 50px; animation: fadeIn 0.5s ease; }
-        .container.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- INICIO (CENTRADO CON GRÁFICO) --- */
-        .hero-wrapper { 
-            display: flex; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            text-align: center;
-            gap: 20px; 
-            min-height: 75vh;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .hero h3 { color: var(--purple-accent); letter-spacing: 3px; font-size: 0.9rem; margin-bottom: 15px; }
-        .hero h1 { font-family: 'Instrument Serif', serif; font-size: 5rem; line-height: 1; margin-bottom: 25px; }
-        .hero h1 em { color: var(--pink-accent); font-style: italic; }
-        .hero p { font-size: 1.1rem; color: #666; line-height: 1.6; margin-bottom: 30px; }
-
-        .hero-img { width: 100%; max-width: 400px; margin-top: 20px; }
-
-        /* --- BITÁCORA --- */
-        .tabs { display: flex; gap: 15px; margin-bottom: 20px; justify-content: center; }
-        .tab-btn { padding: 12px 30px; border-radius: 15px; border: none; background: white; cursor: pointer; font-weight: 700; transition: 0.3s; }
-        .tab-btn.active { background: var(--pink-accent); color: white; }
-
-        #unit-title { text-align: center; font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 40px; }
-
-        .weeks-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 30px; 
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-        .week-card { background: var(--glass); border-radius: 40px; padding: 35px; border: 1px solid white; box-shadow: 0 20px 40px rgba(0,0,0,0.02); }
-        .week-card span { color: var(--purple-accent); font-weight: 800; font-size: 0.7rem; }
-        .week-card h2 { font-family: 'Instrument Serif', serif; font-size: 2.2rem; margin-bottom: 25px; }
-
-        .task-item { 
-            background: white; padding: 15px 20px; border-radius: 20px; margin-bottom: 12px;
-            display: flex; justify-content: space-between; align-items: center; transition: 0.3s;
-        }
-        .task-item h4 { font-weight: 500; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
-
-        .actions { display: flex; gap: 10px; }
-        .btn-icon { width: 38px; height: 38px; border-radius: 12px; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; }
-        .btn-view { background: #f0efff; color: var(--purple-accent); }
-        .btn-download { background: #fff2f5; color: var(--pink-accent); text-decoration: none; }
-        .btn-delete { background: #ffebee; color: #ff5252; display: none; } 
-
-        /* --- LOGIN (CENTRADO) --- */
-        #acceso.container.active { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
-        .login-box { width: 100%; max-width: 450px; background: white; padding: 50px; border-radius: 45px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.05); }
-        .login-box input { width: 100%; padding: 18px; margin-bottom: 15px; border-radius: 15px; border: 1px solid #eee; background: #fafafa; font-family: inherit; }
-        .btn-submit { width: 100%; padding: 18px; border-radius: 15px; border: none; background: linear-gradient(90deg, var(--pink-accent), var(--purple-accent)); color: white; font-weight: 700; cursor: pointer; }
-
-        /* --- MODAL --- */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { width: 90%; height: 90%; background: white; border-radius: 30px; position: relative; overflow: hidden; }
-        .close-modal { position: absolute; top: 20px; right: 20px; background: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; z-index: 10; }
-
-        #logoutBtn { position: fixed; bottom: 30px; right: 30px; background: white; color: #ff5252; padding: 15px 25px; border-radius: 50px; border: none; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.1); cursor: pointer; display: none; align-items: center; gap: 10px; z-index: 1000; }
-        .admin-only { display: none; }
-
-        @media (max-width: 850px) {
-            .weeks-grid { grid-template-columns: 1fr; }
-            .hero h1 { font-size: 3.5rem; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portafolio — Base de Datos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-    <nav>
-        <div class="logo">
-            <img src="img/LogoUpla.png" alt="UPLA Logo">
-            <span class="logo-text">Base de Datos II</span>
-        </div>
-        <div class="nav-links">
-            <button class="active" onclick="showSec('inicio', this)">Inicio</button>
-            <button onclick="showSec('bitacora', this)">Bitácora</button>
-            <button onclick="showSec('acceso', this)">Acceso</button>
-        </div>
-    </nav>
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <img src="img/LogoUpla.png" alt="UPLA" class="logo-img" />
+        <span class="nav-title">Base de Datos</span>
+      </div>
+      <div class="nav-links" id="navLinks">
+        <a href="#" class="nav-link active" onclick="showSec('inicio',this)">Inicio</a>
+        <a href="#" class="nav-link" onclick="showSec('unidad1',this)">Unidad I</a>
+        <a href="#" class="nav-link" onclick="showSec('unidad2',this)">Unidad II</a>
+        <a href="#" class="nav-link" onclick="showSec('unidad3',this)">Unidad III</a>
+        <a href="#" class="nav-link" onclick="showSec('unidad4',this)">Unidad IV</a>
+        <!-- Solo visible cuando hay sesión activa -->
+        <a href="#" class="nav-link" id="linkMisDocs" style="display:none;color:var(--menta-d)"
+           onclick="showSec('mis-docs',this)">📂 Mis Docs</a>
+      </div>
+      <div class="nav-right">
+        <span class="admin-badge" id="adminBadge" style="display:none">⚙ Admin</span>
+        <!-- ID único del usuario -->
+        <span class="user-id-chip" id="navUID" style="display:none"></span>
+        <span class="nav-user" id="navUser" style="display:none"></span>
+        <button class="btn-login" id="btnLogin" onclick="showSec('login',null)">Ingresar</button>
+        <button class="btn-logout" id="btnLogout" onclick="handleLogout()" style="display:none">Salir</button>
+      </div>
+    </div>
+  </nav>
 
-    <!-- INICIO -->
-    <div id="inicio" class="container active">
-        <div class="hero-wrapper">
-            <div class="hero">
-                <h3>JIHOMARA MEDRANO HUERTAS</h3>
-                <h1>Gestión de<br><em>Evidencias</em></h1>
-                <p>Recopilación académica de la asignatura Base de Datos II. Gestión, modelado e implementación de sistemas de información.</p>
-                <button class="btn-submit" style="width: 200px; margin: 0 auto;" onclick="showSec('bitacora')">Ver mi Bitácora</button>
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ══════════════════════════
+       LOGIN
+  ══════════════════════════ -->
+  <section class="sec" id="login">
+    <div class="login-wrap">
+      <div class="login-card">
+        <img src="img/LogoUpla.png" alt="UPLA" class="login-logo" />
+        <h2 class="login-title">Bienvenida</h2>
+        <p class="login-sub">Ingresa con tu correo institucional UPLA</p>
+        <div class="form-group">
+          <label class="form-label">Correo institucional</label>
+          <input type="email" class="form-input" id="loginUser"
+                 placeholder="codigo@ms.upla.edu.pe" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña</label>
+          <input type="password" class="form-input" id="loginPass"
+                 placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter') handleLogin()" />
+        </div>
+        <button class="btn-primary full" onclick="handleLogin()">Ingresar</button>
+        <p class="login-note">Solo cuentas <strong>@ms.upla.edu.pe</strong></p>
+        <p class="login-switch">¿No tienes cuenta?
+          <a onclick="showSec('registro',null)">Regístrate aquí</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       REGISTRO
+  ══════════════════════════ -->
+  <section class="sec" id="registro">
+    <div class="login-wrap">
+      <div class="login-card">
+        <img src="img/LogoUpla.png" alt="UPLA" class="login-logo" />
+        <h2 class="login-title">Crear cuenta</h2>
+        <p class="login-sub">Regístrate con tu correo institucional</p>
+
+        <div class="form-group">
+          <label class="form-label">Nombre completo</label>
+          <input type="text" class="form-input" id="regNombre"
+                 placeholder="Ej: Ana García López" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Correo institucional</label>
+          <input type="email" class="form-input" id="regEmail"
+                 placeholder="codigo@ms.upla.edu.pe" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Contraseña (mín. 8 caracteres)</label>
+          <input type="password" class="form-input" id="regPass"
+                 placeholder="••••••••" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirmar contraseña</label>
+          <input type="password" class="form-input" id="regPass2"
+                 placeholder="••••••••"
+                 onkeydown="if(event.key==='Enter') handleRegistro()" />
+        </div>
+
+        <button class="btn-menta full" onclick="handleRegistro()">Crear cuenta</button>
+
+        <!-- ID único generado tras registro -->
+        <div class="id-badge" id="uidResult" style="display:none">
+          🪪 <span id="uidGenerado"></span>
+        </div>
+
+        <p class="login-note">Solo cuentas <strong>@ms.upla.edu.pe</strong></p>
+        <p class="login-switch">¿Ya tienes cuenta?
+          <a onclick="showSec('login',null)">Iniciar sesión</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       INICIO
+  ══════════════════════════ -->
+  <section class="sec active" id="inicio">
+
+    <div class="hero-strip">
+      <canvas id="constellationCanvas"></canvas>
+      <div class="hero-strip-text">
+        <p class="hero-eyebrow">Universidad Peruana Los Andes — Ingeniería de Sistemas</p>
+        <h1 class="hero-title">Base de<br /><em>Datos</em></h1>
+      </div>
+      <div class="hero-strip-deco" aria-hidden="true">
+        <div class="deco-circle c1"></div>
+        <div class="deco-circle c2"></div>
+        <div class="deco-circle c3"></div>
+      </div>
+    </div>
+
+    <div class="bento-wrap">
+
+      <div class="bento-card bento-intro">
+        <p class="bento-label">Mi portafolio</p>
+        <p class="bento-text">Recopilación de apuntes, prácticas y actividades desarrolladas durante el ciclo académico en el curso de Base de Datos.</p>
+        <div class="bento-chips">
+          <span class="bchip">Arquitectura</span>
+          <span class="bchip">Modelo E-R</span>
+          <span class="bchip">SQL Server</span>
+          <span class="bchip-menta">Normalización</span>
+        </div>
+      </div>
+
+      <div class="bento-card bento-stat">
+        <span class="bento-stat-num">16</span>
+        <span class="bento-stat-label">Semanas</span>
+      </div>
+
+      <div class="bento-card bento-stat bento-stat-lila">
+        <span class="bento-stat-num">4</span>
+        <span class="bento-stat-label">Unidades</span>
+      </div>
+
+      <div class="bento-card bento-er">
+        <p class="bento-label">Diagrama E-R de muestra</p>
+        <div class="er-mini">
+          <div class="er-table er-float-1">
+            <div class="er-head">ESTUDIANTE</div>
+            <div class="er-row"><span class="pk">PK</span> id_estudiante</div>
+            <div class="er-row">nombre</div>
+          </div>
+          <div class="er-arrow">→</div>
+          <div class="er-table er-float-2">
+            <div class="er-head">MATRÍCULA</div>
+            <div class="er-row"><span class="pk">PK</span> id_matricula</div>
+            <div class="er-row"><span class="fk">FK</span> id_estudiante</div>
+          </div>
+          <div class="er-arrow">→</div>
+          <div class="er-table er-float-3">
+            <div class="er-head">CURSO</div>
+            <div class="er-row"><span class="pk">PK</span> id_curso</div>
+            <div class="er-row">nombre_curso</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bento-card bento-temas">
+        <p class="bento-label">Temas del curso</p>
+        <ul class="temas-list">
+          <li><span class="tema-dot"></span>Arquitectura de BD</li>
+          <li><span class="tema-dot"></span>Modelado Entidad-Relación</li>
+          <li><span class="tema-dot"></span>SQL y consultas avanzadas</li>
+          <li><span class="tema-dot"></span>Normalización 1FN – 3FN</li>
+          <li><span class="tema-dot"></span>Microsoft SQL Server 2022</li>
+          <li><span class="tema-dot"></span>Procedimientos almacenados</li>
+        </ul>
+      </div>
+
+      <div class="bento-card bento-cta">
+        <p class="bento-label">Explorar contenido</p>
+        <p style="font-size:13px;color:var(--text-s);margin-bottom:14px;line-height:1.5">Navega por las unidades desde el menú superior o accede directamente aquí.</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn-bento" onclick="showSec('unidad1', document.querySelectorAll('.nav-link')[1])">Unidad I — Fundamentos</button>
+          <button class="btn-bento btn-bento-lila" onclick="showSec('unidad2', document.querySelectorAll('.nav-link')[2])">Unidad II — Modelado</button>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       UNIDAD I
+  ══════════════════════════ -->
+  <section class="sec" id="unidad1">
+    <div class="unit-header">
+      <div class="container">
+        <p class="unit-eyebrow">Unidad I</p>
+        <h2 class="unit-title" id="bannerU1">Fundamentos de Base de Datos</h2>
+        <p class="unit-desc">Semanas 01 – 04</p>
+      </div>
+    </div>
+    <div class="container semanas-wrap">
+      <div class="semanas-grid" id="gridU1"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       UNIDAD II
+  ══════════════════════════ -->
+  <section class="sec" id="unidad2">
+    <div class="unit-header">
+      <div class="container">
+        <p class="unit-eyebrow">Unidad II</p>
+        <h2 class="unit-title">Modelado y Diseño Relacional</h2>
+        <p class="unit-desc">Semanas 05 – 08</p>
+      </div>
+    </div>
+    <div class="container semanas-wrap">
+      <div class="semanas-grid" id="gridU2"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       UNIDAD III
+  ══════════════════════════ -->
+  <section class="sec" id="unidad3">
+    <div class="unit-header">
+      <div class="container">
+        <p class="unit-eyebrow">Unidad III</p>
+        <h2 class="unit-title">SQL y Consultas Avanzadas</h2>
+        <p class="unit-desc">Semanas 09 – 12</p>
+      </div>
+    </div>
+    <div class="container semanas-wrap">
+      <div class="semanas-grid" id="gridU3"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       UNIDAD IV
+  ══════════════════════════ -->
+  <section class="sec" id="unidad4">
+    <div class="unit-header">
+      <div class="container">
+        <p class="unit-eyebrow">Unidad IV</p>
+        <h2 class="unit-title">Administración y Optimización</h2>
+        <p class="unit-desc">Semanas 13 – 16</p>
+      </div>
+    </div>
+    <div class="container semanas-wrap">
+      <div class="semanas-grid" id="gridU4"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       MIS DOCUMENTOS
+  ══════════════════════════ -->
+  <section class="sec" id="mis-docs">
+    <div class="docs-header">
+      <div class="container">
+        <p class="unit-eyebrow">Mi espacio personal</p>
+        <h2 class="unit-title">Mis Documentos</h2>
+        <p class="unit-desc">Sube y gestiona tus archivos desde aquí</p>
+      </div>
+    </div>
+    <div class="docs-wrap">
+
+      <!-- Zona de carga -->
+      <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" multiple
+               accept=".pdf,.docx,.jpg,.jpeg,.png,.txt,.sql"
+               onchange="subirDocumento(this)" />
+        <div class="upload-icon">📤</div>
+        <div class="upload-title">Arrastra archivos aquí</div>
+        <div class="upload-sub">o haz clic para seleccionar desde tu dispositivo</div>
+        <div class="upload-sub" style="font-size:11px;margin-top:4px;opacity:.7">
+          Formatos: PDF · DOCX · JPG · PNG · TXT · SQL
+        </div>
+        <button class="btn-upload-trigger" onclick="event.stopPropagation();document.getElementById('fileInput').click()">
+          Seleccionar archivos
+        </button>
+      </div>
+
+      <!-- Grid de documentos subidos -->
+      <div class="docs-grid" id="docsGrid">
+        <div class="docs-empty" style="grid-column:1/-1">
+          <span>📂</span>
+          Inicia sesión para ver y subir tus documentos.
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════════════════════
+       MODAL PDF
+  ══════════════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closePDF()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modalTitle">Documento</h3>
+        <div class="modal-actions">
+          <a class="btn-download" id="modalDownload" download>⬇ Descargar</a>
+          <button class="btn-close" onclick="closePDF()">✕</button>
+        </div>
+      </div>
+      <iframe id="pdfFrame" class="pdf-frame" src=""></iframe>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════
+       MODAL AGREGAR TAREA (Admin)
+  ══════════════════════════ -->
+  <div class="modal-overlay" id="addModalOverlay" onclick="closeAddModal()">
+    <div class="modal-box modal-add" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Agregar tarea</h3>
+        <button class="btn-close" onclick="closeAddModal()">✕</button>
+      </div>
+      <div style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+        <input type="hidden" id="addModalSemNum" />
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Nombre visible de la tarea</label>
+          <input type="text" class="form-input" id="addLabel" placeholder="Ej: Resumen sobre Normalización" />
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Selecciona el archivo desde tu computadora</label>
+          <div class="upload-zone" style="padding:18px 16px;margin-top:4px"
+               onclick="document.getElementById('addFileInput').click()">
+            <input type="file" id="addFileInput" style="display:none"
+                   accept=".pdf,.docx,.jpg,.jpeg,.png,.txt,.sql"
+                   onchange="previsualizarArchivoAdmin(this)" />
+            <div id="addFilePreview" style="font-size:13px;color:var(--text-s);text-align:center">
+              📁 Haz clic aquí para elegir un archivo
             </div>
-            
-            <!-- EL GRÁFICO INCREÍBLE REINSTALADO -->
-            <div class="hero-img">
-                <svg viewBox="0 0 400 300" width="100%" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:var(--pink-accent);stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:var(--purple-accent);stop-opacity:1" />
-                        </linearGradient>
-                    </defs>
-                    <path d="M100,50 Q200,20 300,50 L300,200 Q200,230 100,200 Z" fill="none" stroke="url(#grad1)" stroke-width="4" stroke-dasharray="10,5" />
-                    <ellipse cx="200" cy="50" rx="100" ry="25" fill="white" stroke="url(#grad1)" stroke-width="4" />
-                    <ellipse cx="200" cy="100" rx="100" ry="25" fill="none" stroke="var(--purple-accent)" stroke-width="2" opacity="0.3" />
-                    <ellipse cx="200" cy="150" rx="100" ry="25" fill="none" stroke="var(--purple-accent)" stroke-width="2" opacity="0.3" />
-                    <circle cx="200" cy="50" r="8" fill="var(--pink-accent)">
-                        <animate attributeName="r" values="8;11;8" dur="3s" repeatCount="indefinite" />
-                    </circle>
-                </svg>
-            </div>
+          </div>
         </div>
-    </div>
-
-    <!-- BITÁCORA -->
-    <div id="bitacora" class="container">
-        <div class="tabs">
-            <button class="tab-btn active" onclick="changeUnit(0, this)">Unidad I</button>
-            <button class="tab-btn" onclick="changeUnit(1, this)">Unidad II</button>
-            <button class="tab-btn" onclick="changeUnit(2, this)">Unidad III</button>
+        <div style="display:flex;gap:10px;margin-top:6px">
+          <button class="btn-primary" style="flex:1" onclick="confirmarAgregarTarea()">✅ Agregar tarea</button>
+          <button class="btn-logout" style="flex:1" onclick="closeAddModal()">Cancelar</button>
         </div>
-        
-        <h2 id="unit-title">Introducción a la Arquitectura de BD</h2>
-        
-        <div class="weeks-grid" id="weeks-container"></div>
+      </div>
     </div>
+  </div>
 
-    <!-- ACCESO -->
-    <div id="acceso" class="container">
-        <div class="login-box">
-            <p style="color: var(--purple-accent); font-weight: 800; font-size: 0.7rem; margin-bottom: 10px;">PASO 01: IDENTIFICACIÓN</p>
-            <h2 style="font-family: 'Instrument Serif', serif; font-size: 2.5rem; margin-bottom: 30px;">Portal de Gestión</h2>
-            <input type="email" id="email" placeholder="codigo@ms.upla.edu.pe">
-            <input type="password" id="pass" placeholder="Tu contraseña">
-            <button class="btn-submit" onclick="handleLogin()">Activar Herramientas ✨</button>
-        </div>
-    </div>
-
-    <button id="logoutBtn" onclick="handleLogout()">
-        <i data-lucide="log-out" size="18"></i> Salir del Sistema
-    </button>
-
-    <div id="pdfModal" class="modal">
-        <div class="modal-content">
-            <button class="close-modal" onclick="closePDF()"><i data-lucide="x"></i></button>
-            <iframe id="pdfFrame" src="" width="100%" height="100%" style="border:none;"></iframe>
-        </div>
-    </div>
-
-    <script>
-        const nombresUnidades = [
-            "Introducción a la Arquitectura de BD",
-            "Modelamiento y Diseño Estructural",
-            "Implementación y Consultas SQL"
-        ];
-
-        const dataPortafolio = [
-            [ // UNIDAD I
-                { sem: "01", titulo: "Introducción a la Arquitectura de B.D", tareas: [{ nombre: "Arquitectura BDD.pdf", ruta: "docs/Arquitectura de BDD.pdf" }, { nombre: "Repositorios.pdf", ruta: "docs/Tipos de Repositorios.pdf" }] },
-                { sem: "02", titulo: "Gestores de B.D", tareas: [{ nombre: "Resumen 02.pdf", ruta: "docs/Resumen_02.pdf" }, { nombre: "Modelo E-R.pdf", ruta: "docs/Ejerciciod de Modelo E-R.pdf" }, { nombre: "Manual SQL.pdf", ruta: "docs/Manual SQL.pdf" }] },
-                { sem: "03", titulo: "Arquitectura de B.D", tareas: [{ nombre: "Resumen 03.pdf", ruta: "docs/Resumen 03.pdf" }, { nombre: "Ejercicios E-R.pdf", ruta: "docs/Ejercicios de Modelo E-R.pdf" }] },
-                { sem: "04", titulo: "Diseño de la Arquitectura de B.D", tareas: [{ nombre: "Resumen 04.pdf", ruta: "docs/Resumen 04.pdf" }] }
-            ],
-            [], // UNIDAD II
-            []  // UNIDAD III
-        ];
-
-        let currentUnit = 0;
-        let isAdmin = false;
-
-        function changeUnit(index, btn) {
-            currentUnit = index;
-            document.getElementById('unit-title').innerText = nombresUnidades[index];
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderSemanas();
-        }
-
-        function renderSemanas() {
-            const container = document.getElementById('weeks-container');
-            container.innerHTML = "";
-            const semanas = dataPortafolio[currentUnit];
-
-            if(!semanas || semanas.length === 0) {
-                container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; padding: 50px; opacity: 0.5;'>Contenido disponible próximamente.</p>";
-                return;
-            }
-
-            semanas.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'week-card';
-                card.innerHTML = `
-                    <span>SEMANA ${item.sem}</span>
-                    <h2>${item.titulo}</h2>
-                    <div class="tasks-list">
-                        ${item.tareas.map((t, tIndex) => `
-                            <div class="task-item">
-                                <h4>${t.nombre}</h4>
-                                <div class="actions">
-                                    <button class="btn-icon btn-view" onclick="openPDF('${t.ruta}')"><i data-lucide="eye" size="16"></i></button>
-                                    <a href="${t.ruta}" download class="btn-icon btn-download"><i data-lucide="download" size="16"></i></a>
-                                    <button class="btn-icon btn-delete admin-only" onclick="deleteTask(${index}, ${tIndex})"><i data-lucide="trash-2" size="16"></i></button>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <div class="upload-area admin-only">
-                        <input type="file" id="file-${index}" accept=".pdf" style="display:none" onchange="uploadFile(${index})">
-                        <button class="btn-submit" style="margin-top:20px; padding:10px; font-size:0.8rem;" onclick="document.getElementById('file-${index}').click()">Subir PDF</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-            lucide.createIcons();
-            updateAdminVisibility();
-        }
-
-        function uploadFile(weekIndex) {
-            const fileInput = document.getElementById(`file-${weekIndex}`);
-            if (fileInput.files[0]) {
-                dataPortafolio[currentUnit][weekIndex].tareas.push({ 
-                    nombre: fileInput.files[0].name, 
-                    ruta: URL.createObjectURL(fileInput.files[0]) 
-                });
-                renderSemanas();
-            }
-        }
-
-        function deleteTask(weekIndex, taskIndex) {
-            if(confirm("¿Eliminar archivo?")) { 
-                dataPortafolio[currentUnit][weekIndex].tareas.splice(taskIndex, 1); 
-                renderSemanas(); 
-            }
-        }
-
-        function showSec(id, btn) {
-            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            if(btn) {
-                document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-            }
-        }
-
-        function openPDF(ruta) { 
-            document.getElementById('pdfFrame').src = ruta; 
-            document.getElementById('pdfModal').style.display = 'flex'; 
-        }
-        
-        function closePDF() { 
-            document.getElementById('pdfModal').style.display = 'none'; 
-            document.getElementById('pdfFrame').src = "";
-        }
-
-        function handleLogin() {
-            const email = document.getElementById('email').value;
-            if(email.includes('@ms.upla.edu.pe')) {
-                isAdmin = true;
-                document.getElementById('logoutBtn').style.display = 'flex';
-                showSec('bitacora');
-                renderSemanas();
-            } else {
-                alert("Por favor, usa tu correo institucional.");
-            }
-        }
-
-        function handleLogout() { 
-            isAdmin = false; 
-            document.getElementById('logoutBtn').style.display = 'none'; 
-            renderSemanas(); 
-            showSec('inicio'); 
-        }
-
-        function updateAdminVisibility() {
-            document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'flex' : 'none');
-        }
-
-        window.onload = renderSemanas;
-    </script>
+  <script src="script.js"></script>
 </body>
 </html>
