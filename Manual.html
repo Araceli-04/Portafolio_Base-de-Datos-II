@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Manual Azure — GradosTitulos UPLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --rosa:#f06292;--rosa-l:#fce4ec;--lila:#ce93d8;--lila-l:#ede7f6;--morado:#9c27b0;
+      --menta:#4db6ac;--menta-l:#e0f2f1;--menta-d:#00897b;
+      --azul:#1565c0;--azul-l:#e3f2fd;--azul-m:#42a5f5;
+      --text:#2d2d2d;--text-s:#6b6b6b;--bg:#fdfbfe;--white:#ffffff;--border:#f0e6f8;
+      --shadow:0 2px 16px rgba(206,147,216,.13);--shadow-h:0 8px 32px rgba(240,98,146,.18);
+      --rad:14px;--rad-sm:8px;--rad-pill:99px;
+      --font-d:'Instrument Serif',Georgia,serif;--font-b:'DM Sans',system-ui,sans-serif;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-b);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;padding-top:64px}
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,251,254,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:background .3s,box-shadow .3s}
+    .nav.scrolled{background:rgba(253,251,254,.98);box-shadow:0 2px 20px rgba(206,147,216,.15)}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo-img{height:36px;width:auto;object-fit:contain}
+    .nav-title{font-family:var(--font-d);font-size:16px;color:var(--text);letter-spacing:.01em}
+    .nav-tabs{display:flex;gap:4px;flex:1}
+    .nav-tab{font-size:13px;color:var(--text-s);padding:6px 14px;border-radius:var(--rad-pill);transition:background .18s,color .18s;font-weight:400;cursor:pointer;border:none;background:none;font-family:var(--font-b)}
+    .nav-tab:hover,.nav-tab.active{background:var(--rosa-l);color:var(--rosa);font-weight:500}
+    .btn-back{display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-size:13px;font-weight:500;padding:7px 16px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);text-decoration:none;transition:background .18s,border-color .18s,color .18s;margin-left:auto}
+    .btn-back:hover{background:var(--rosa-l);border-color:var(--rosa);color:var(--rosa)}
+    .panel{display:none}.panel.active{display:block}
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--white);color:var(--morado);border:1.5px solid var(--lila);border-radius:var(--rad-pill);padding:10px 24px;font-size:14px;font-weight:500;box-shadow:var(--shadow-h);z-index:999;opacity:0;transition:transform .3s,opacity .3s;pointer-events:none}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    .hero{position:relative;height:280px;background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 25%,#ede7f6 60%,#e8eaf6 100%);overflow:hidden;display:flex;align-items:flex-end;padding:0 48px 36px}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 10% 60%,rgba(21,101,192,.15) 0%,transparent 60%),radial-gradient(ellipse 45% 60% at 70% 30%,rgba(206,147,216,.16) 0%,transparent 60%);animation:holo 8s ease-in-out infinite alternate}
+    @keyframes holo{0%{opacity:.8;transform:scale(1)}100%{opacity:1;transform:scale(1.04)}}
+    .deco-c{position:absolute;border-radius:50%;opacity:.18;animation:floatC 7s ease-in-out infinite}
+    .deco-c.a{width:200px;height:200px;background:var(--azul-m);top:-50px;right:16%}
+    .deco-c.b{width:130px;height:130px;background:var(--lila);top:40px;right:7%;animation-delay:1.5s}
+    .deco-c.c{width:80px;height:80px;background:var(--menta);bottom:10px;right:28%;animation-delay:3s}
+    @keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+    .hero-text{position:relative;z-index:2}
+    .hero-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--azul);margin-bottom:10px;font-weight:500;opacity:.8}
+    .hero-title{font-family:var(--font-d);font-size:clamp(40px,7vw,72px);font-weight:400;color:#0d2b5e;line-height:.95}
+    .hero-title em{font-style:italic;color:var(--azul-m)}
+    .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sec-header{padding:48px 0 32px}
+    .sec-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--menta-d);font-weight:600;margin-bottom:8px}
+    .sec-title{font-family:var(--font-d);font-size:34px;color:var(--text);line-height:1.1}
+    .sec-desc{font-size:14px;color:var(--text-s);margin-top:6px}
+    .overview-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:48px}
+    .ov-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+    .ov-card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px)}
+    .ov-card.span2{grid-column:span 2}
+    .ov-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-s);margin-bottom:10px}
+    .ov-stat-num{font-family:var(--font-d);font-size:56px;line-height:1;color:var(--azul-m);display:block}
+    .ov-stat-label{font-size:12px;color:var(--text-s);margin-top:4px}
+    .ov-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .chip{font-size:11px;font-weight:500;padding:3px 11px;border-radius:var(--rad-pill);background:var(--azul-l);color:var(--azul);border:1px solid #90caf9}
+    .chip.lila{background:var(--lila-l);color:var(--morado);border-color:#dbbfed}
+    .chip.menta{background:var(--menta-l);color:var(--menta-d);border-color:#b2dfdb}
+    .ov-intro{font-size:14px;color:var(--text-s);line-height:1.7}
+    .ov-intro strong{color:var(--text)}
+    .paso-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+    .paso-pill{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:7px 18px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);transition:all .18s}
+    .paso-pill:hover{border-color:var(--azul-m);color:var(--azul)}
+    .paso-pill.active{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(21,101,192,.25)}
+    .paso-card{background:var(--white);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:32px}
+    .paso-card-header{padding:28px 32px 22px;border-bottom:1px solid var(--border)}
+    .paso-num{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--menta-d);margin-bottom:6px}
+    .paso-title{font-family:var(--font-d);font-size:24px;color:var(--text);line-height:1.2}
+    .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto}
+    .sub-tab{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:12px 22px;cursor:pointer;border:none;background:none;color:var(--text-s);border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap}
+    .sub-tab:hover{color:var(--azul-m)}
+    .sub-tab.active{color:var(--azul);border-bottom-color:var(--azul-m)}
+    .sub-tab.active.lila{color:var(--morado);border-bottom-color:var(--lila)}
+    .sub-tab.active.menta{color:var(--menta-d);border-bottom-color:var(--menta)}
+    .sub-panel{display:none;padding:28px 32px 32px}
+    .sub-panel.active{display:block}
+    .sub-title{font-family:var(--font-d);font-size:19px;color:var(--text);margin-bottom:14px}
+    .enunciado{background:linear-gradient(135deg,var(--azul-l) 0%,var(--lila-l) 100%);border:1px solid #90caf9;border-radius:var(--rad);padding:18px 20px;margin-bottom:20px}
+    .enunciado-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--azul);margin-bottom:6px}
+    .enunciado p{font-size:13.5px;color:var(--text);line-height:1.7}
+    /* Steps */
+    .steps-list{margin-bottom:20px}
+    .step-item{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+    .step-item:last-child{border-bottom:none}
+    .step-num{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);color:#fff;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center}
+    .step-body{flex:1}
+    .step-action{font-size:14px;font-weight:500;color:var(--text);margin-bottom:4px}
+    .step-detail{font-size:13px;color:var(--text-s);line-height:1.6}
+    /* Code */
+    .code-wrap{background:#1e1b2e;border-radius:var(--rad);overflow:hidden;margin-bottom:20px;box-shadow:0 4px 24px rgba(21,50,80,.18)}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#11233a;border-bottom:1px solid rgba(255,255,255,.06)}
+    .code-lang{font-size:11px;font-weight:600;color:var(--azul-m);letter-spacing:.08em;text-transform:uppercase}
+    .btn-copy{font-family:var(--font-b);font-size:11.5px;font-weight:500;padding:5px 14px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid rgba(66,165,245,.4);background:rgba(66,165,245,.12);color:var(--azul-m);transition:background .18s,border-color .18s}
+    .btn-copy:hover{background:rgba(66,165,245,.25);border-color:var(--azul-m)}
+    .code-body{padding:20px;overflow-x:auto;max-height:380px}
+    .code-body pre{font-family:'Courier New',Courier,monospace;font-size:12.5px;line-height:1.7;color:#cfe2ff;white-space:pre}
+    /* Alert */
+    .alert-box{display:flex;gap:12px;align-items:flex-start;border-radius:var(--rad);padding:14px 18px;margin-bottom:20px}
+    .alert-box.info{background:var(--azul-l);border:1px solid #90caf9}
+    .alert-box.warn{background:#fff8e1;border:1px solid #ffe082}
+    .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+    .alert-text{font-size:13px;color:var(--text);line-height:1.6}
+    .alert-text strong{color:var(--azul)}
+    /* Info grid */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .info-card{border-radius:var(--rad);padding:18px 20px}
+    .info-card.just{background:var(--menta-l);border:1px solid #b2dfdb}
+    .info-card.prac{background:var(--lila-l);border:1px solid #dbbfed}
+    .info-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .info-card.just .info-label{color:var(--menta-d)}
+    .info-card.prac .info-label{color:var(--morado)}
+    .info-card p,.info-card ul{font-size:13px;color:var(--text);line-height:1.65}
+    .info-card ul{padding-left:16px}
+    .info-card li{margin-bottom:4px}
+    /* Mockup screen */
+    .mockup-screen{border-radius:12px;overflow:hidden;margin:20px 0;border:1.5px solid rgba(21,101,192,.2);box-shadow:0 8px 32px rgba(21,101,192,.15)}
+    .mockup-bar{background:#1a1a2e;padding:8px 14px;display:flex;align-items:center;gap:8px}
+    .mockup-dot{width:10px;height:10px;border-radius:50%}
+    .mockup-url{flex:1;background:#0f3460;border-radius:4px;padding:4px 10px;font-size:11px;color:#90caf9;font-family:'Courier New',monospace}
+    .mockup-body{background:#fff}
+    /* SQL table */
+    .sql-table-wrap{margin:20px 0;border-radius:var(--rad);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--shadow)}
+    .sql-table-header{background:linear-gradient(90deg,var(--azul) 0%,var(--azul-m) 100%);padding:10px 16px;display:flex;align-items:center;gap:10px}
+    .sql-table-header span{font-size:11px;font-weight:600;color:#fff;letter-spacing:.06em;text-transform:uppercase}
+    .sql-table-header .tbl-name{font-size:13px;font-weight:700;color:#fff}
+    table.sqltbl{width:100%;border-collapse:collapse;font-family:'Courier New',monospace;font-size:12px}
+    table.sqltbl thead tr{background:#e3f2fd}
+    table.sqltbl thead th{padding:8px 12px;text-align:left;font-size:11px;font-weight:700;color:var(--azul);letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #90caf9}
+    table.sqltbl tbody tr{border-bottom:1px solid #e3f2fd;transition:background .15s}
+    table.sqltbl tbody tr:hover{background:#f0f8ff}
+    table.sqltbl tbody td{padding:7px 12px;color:var(--text);font-size:12px}
+    table.sqltbl tbody td.pk{font-weight:700;color:var(--azul)}
+    table.sqltbl tbody td.fk{color:var(--morado)}
+    table.sqltbl tbody td.bit{color:var(--menta-d);font-weight:600}
+    table.sqltbl tbody td.num{color:#e65100;font-weight:600}
+    table.sqltbl tbody td.str{color:#2e7d32}
+    .col-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-family:var(--font-b);font-weight:600;vertical-align:middle}
+    .col-badge.pk{background:#e3f2fd;color:var(--azul);border:1px solid #90caf9}
+    .col-badge.fk{background:var(--lila-l);color:var(--morado);border:1px solid #dbbfed}
+    .col-badge.nn{background:#e8f5e9;color:#2e7d32;border:1px solid #a5d6a7}
+    /* Azure portal mockup styles */
+    .az-portal{font-family:'DM Sans',system-ui,sans-serif;font-size:13px}
+    .az-topbar{background:#0078d4;color:#fff;padding:0 16px;height:40px;display:flex;align-items:center;gap:16px}
+    .az-topbar-logo{font-weight:700;font-size:14px;letter-spacing:.02em}
+    .az-topbar-search{flex:1;max-width:320px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:4px;padding:4px 10px;font-size:12px;color:#fff;display:flex;align-items:center;gap:8px}
+    .az-sidebar{background:#f3f2f1;width:200px;padding:8px 0;border-right:1px solid #edebe9}
+    .az-sidebar-item{padding:8px 14px;font-size:12px;color:#323130;cursor:pointer;display:flex;align-items:center;gap:8px}
+    .az-sidebar-item:hover,.az-sidebar-item.active{background:#e1dfdd;color:#0078d4}
+    .az-content{flex:1;padding:20px;background:#faf9f8}
+    .az-breadcrumb{font-size:11px;color:#605e5c;margin-bottom:16px}
+    .az-h1{font-size:18px;font-weight:600;color:#323130;margin-bottom:16px}
+    .az-card{background:#fff;border:1px solid #edebe9;border-radius:4px;padding:16px;margin-bottom:12px;box-shadow:0 1.6px 3.6px rgba(0,0,0,.13)}
+    .az-form-row{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+    .az-label{font-size:11px;font-weight:600;color:#323130}
+    .az-input{border:1px solid #8a8886;border-radius:2px;padding:5px 8px;font-size:12px;color:#323130;background:#fff}
+    .az-input.filled{background:#f3f2f1;color:#323130}
+    .az-btn{background:#0078d4;color:#fff;border:none;border-radius:2px;padding:6px 16px;font-size:12px;font-weight:600;cursor:pointer}
+    .az-btn.secondary{background:#fff;color:#0078d4;border:1px solid #0078d4}
+    .az-tab-bar{display:flex;border-bottom:2px solid #edebe9;margin-bottom:16px}
+    .az-tab{padding:8px 16px;font-size:12px;font-weight:500;color:#605e5c;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+    .az-tab.active{color:#0078d4;border-bottom-color:#0078d4}
+    .az-select{border:1px solid #8a8886;border-radius:2px;padding:5px 8px;font-size:12px;width:100%;background:#fff}
+    .az-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:10px;font-weight:600}
+    .az-badge.green{background:#dff6dd;color:#107c10}
+    .az-badge.blue{background:#e8f3ff;color:#0078d4}
+    .az-row{display:flex;gap:0}
+    .az-flex{display:flex;gap:12px;align-items:center}
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,43,94,.5);backdrop-filter:blur(4px);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--white);border-radius:20px;width:100%;max-width:900px;margin:20px auto;box-shadow:0 24px 80px rgba(13,43,94,.28);overflow:hidden}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);gap:12px;background:linear-gradient(135deg,var(--azul-l),var(--lila-l))}
+    .modal-title{font-family:var(--font-d);font-size:22px;color:var(--text)}
+    .btn-close{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .18s}
+    .btn-close:hover{background:var(--azul-l);color:var(--azul)}
+    .modal-body{padding:28px 32px 40px}
+    /* Buttons */
+    .btn-primary{font-family:var(--font-b);font-size:13.5px;font-weight:500;padding:10px 24px;border-radius:var(--rad-pill);border:none;cursor:pointer;background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);color:#fff;transition:opacity .18s,transform .15s}
+    .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+    .btn-menta{font-family:var(--font-b);font-size:13.5px;font-weight:500;padding:10px 24px;border-radius:var(--rad-pill);border:none;cursor:pointer;background:linear-gradient(135deg,var(--menta),#80cbc4);color:#fff;transition:opacity .18s,transform .15s}
+    .btn-menta:hover{opacity:.9;transform:translateY(-1px)}
+    .actions-bar{display:flex;gap:10px;padding:0 0 32px;flex-wrap:wrap}
+    @media(max-width:768px){.overview-grid{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:1fr}.nav-tabs{display:none}}
+    @media(max-width:560px){.overview-grid{grid-template-columns:1fr}.ov-card.span2{grid-column:span 1}.hero{padding:0 24px 28px}.sub-panel{padding:20px 18px 24px}}
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <img src="img/LogoUpla.png" alt="UPLA" class="logo-img"/>
+      <span class="nav-title">Base de Datos</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" onclick="switchPanel('inicio',this)">Inicio</button>
+      <button class="nav-tab" onclick="switchPanel('manual',this)">Manual</button>
+      <button class="nav-tab" onclick="openModal()">Vista completa</button>
+    </div>
+    <a class="btn-back" href="index.html">← Volver al portafolio</a>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- INICIO -->
+<div class="panel active" id="panel-inicio">
+  <div class="hero">
+    <div style="position:absolute;inset:0;pointer-events:none">
+      <div class="deco-c a"></div><div class="deco-c b"></div><div class="deco-c c"></div>
+    </div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Universidad Peruana Los Andes · Ingeniería de Sistemas</p>
+      <h1 class="hero-title">Manual<br/><em>Microsoft Azure</em></h1>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Despliegue en la Nube</p>
+      <h2 class="sec-title">GradosTitulos en Azure SQL</h2>
+      <p class="sec-desc">Guía paso a paso para crear cuenta, base de datos y estructura completa usando el correo institucional UPLA.</p>
+    </div>
+    <div class="overview-grid">
+      <div class="ov-card span2">
+        <p class="ov-label">Descripción general</p>
+        <p class="ov-intro">Este manual cubre el proceso completo para desplegar la base de datos <strong>GradosTitulos</strong> en Microsoft Azure. Se parte desde la creación de la cuenta con el correo institucional <strong>T00050A@ms.upla.edu.pe</strong>, se configura un servidor SQL en Azure, y finalmente se ejecutan los scripts de creación de esquemas, 25 tablas, vistas, funciones y stored procedures.</p>
+        <div class="ov-chips" style="margin-top:16px">
+          <span class="chip">Azure Portal</span><span class="chip lila">Azure SQL Database</span><span class="chip menta">Query Editor</span><span class="chip">25 Tablas</span><span class="chip lila">5 Esquemas</span><span class="chip menta">Vistas &amp; SPs</span>
+        </div>
+      </div>
+      <div class="ov-card"><p class="ov-label">Partes del manual</p><span class="ov-stat-num">3</span><span class="ov-stat-label">Secciones principales</span></div>
+      <div class="ov-card" style="background:linear-gradient(135deg,var(--menta-l),#e0f7fa);border-color:#b2dfdb"><p class="ov-label" style="color:var(--menta-d)">Objetos SQL</p><span class="ov-stat-num" style="color:var(--menta-d)">35+</span><span class="ov-stat-label">Tablas, vistas, funciones y SPs</span></div>
+    </div>
+    <div class="actions-bar">
+      <button class="btn-primary" onclick="switchPanel('manual',document.querySelectorAll('.nav-tab')[1])">Ver el manual →</button>
+      <button class="btn-menta" onclick="openModal()">Vista completa</button>
+    </div>
+  </div>
+</div>
+
+<!-- MANUAL -->
+<div class="panel" id="panel-manual">
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Guía paso a paso</p>
+      <h2 class="sec-title">Manual de Despliegue Azure</h2>
+      <p class="sec-desc">Selecciona la parte que deseas revisar.</p>
+    </div>
+    <div class="paso-nav" id="pasoNav"></div>
+    <div id="pasoContainer"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Documento completo — Manual Azure GradosTitulos</h3>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   MOCKUPS SVG/HTML DE AZURE — generados inline
+═══════════════════════════════════════════════════════ */
+
+function mockupAzurePortal() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com</div>
+    </div>
+    <div class="mockup-body az-portal">
+      <div class="az-topbar">
+        <span class="az-topbar-logo">⬡ Microsoft Azure</span>
+        <div class="az-topbar-search">🔍 Buscar recursos, servicios y documentos</div>
+        <span style="font-size:12px;opacity:.8">T00050A@ms.upla.edu.pe ▾</span>
+      </div>
+      <div style="display:flex;min-height:220px">
+        <div class="az-sidebar">
+          <div class="az-sidebar-item active">🏠 Inicio</div>
+          <div class="az-sidebar-item">📊 Panel</div>
+          <div class="az-sidebar-item">🗄️ Bases de datos SQL</div>
+          <div class="az-sidebar-item">🖥️ Servidores SQL</div>
+          <div class="az-sidebar-item">📁 Grupos de recursos</div>
+          <div class="az-sidebar-item">💰 Cost Management</div>
+        </div>
+        <div class="az-content">
+          <p style="font-size:16px;font-weight:600;color:#323130;margin-bottom:14px">Bienvenido de vuelta, T00050A</p>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+            <div class="az-card" style="text-align:center;padding:14px 10px">
+              <div style="font-size:24px;margin-bottom:6px">🗄️</div>
+              <div style="font-size:11px;font-weight:600;color:#0078d4">Bases de datos SQL</div>
+            </div>
+            <div class="az-card" style="text-align:center;padding:14px 10px">
+              <div style="font-size:24px;margin-bottom:6px">🖥️</div>
+              <div style="font-size:11px;font-weight:600;color:#0078d4">Servidores SQL</div>
+            </div>
+            <div class="az-card" style="text-align:center;padding:14px 10px">
+              <div style="font-size:24px;margin-bottom:6px">📁</div>
+              <div style="font-size:11px;font-weight:600;color:#0078d4">Grupos recursos</div>
+            </div>
+          </div>
+          <div class="az-card" style="margin-top:10px;background:#e8f3ff;border-color:#0078d4">
+            <p style="font-size:12px;color:#0078d4;font-weight:600">✅ Sesión activa con cuenta institucional UPLA</p>
+            <p style="font-size:11px;color:#605e5c;margin-top:4px">Directorio: ms.upla.edu.pe · Suscripción: Azure for Students</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupAzureStudents() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 azure.microsoft.com/es-es/free/students</div>
+    </div>
+    <div class="mockup-body az-portal" style="padding:20px;background:#f3f2f1">
+      <div style="background:#0078d4;color:#fff;border-radius:6px;padding:20px;margin-bottom:14px;display:flex;align-items:center;gap:20px">
+        <div>
+          <p style="font-size:16px;font-weight:700;margin-bottom:6px">Azure for Students</p>
+          <p style="font-size:12px;opacity:.9">Comienza con $100 USD en crédito de Azure. Sin tarjeta de crédito.</p>
+          <button class="az-btn" style="margin-top:12px;background:#fff;color:#0078d4">Comenzar gratis →</button>
+        </div>
+        <div style="font-size:48px">🎓</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="az-card">
+          <p style="font-size:13px;font-weight:600;color:#0078d4;margin-bottom:6px">💵 $100 USD en crédito</p>
+          <p style="font-size:11px;color:#605e5c">Válido por 12 meses para explorar más de 25 servicios gratuitos</p>
+        </div>
+        <div class="az-card">
+          <p style="font-size:13px;font-weight:600;color:#107c10;margin-bottom:6px">✅ Sin tarjeta de crédito</p>
+          <p style="font-size:11px;color:#605e5c">Solo necesitas tu correo institucional @ms.upla.edu.pe</p>
+        </div>
+      </div>
+      <div class="az-card" style="margin-top:10px">
+        <p style="font-size:11px;font-weight:600;color:#323130;margin-bottom:8px">Verificación de correo institucional:</p>
+        <div class="az-form-row">
+          <label class="az-label">Correo universitario</label>
+          <div class="az-input filled" style="display:flex;align-items:center;gap:6px">📧 T00050A@ms.upla.edu.pe <span class="az-badge green">✓ Verificado</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupGrupoRecursos() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com/#create/Microsoft.ResourceGroup</div>
+    </div>
+    <div class="mockup-body az-portal">
+      <div class="az-topbar"><span class="az-topbar-logo">⬡ Microsoft Azure</span></div>
+      <div style="padding:20px;background:#faf9f8">
+        <p class="az-breadcrumb">Inicio &gt; Grupos de recursos &gt; Crear</p>
+        <p class="az-h1">Crear grupo de recursos</p>
+        <div class="az-tab-bar">
+          <div class="az-tab active">Datos básicos</div>
+          <div class="az-tab">Etiquetas</div>
+          <div class="az-tab">Revisar y crear</div>
+        </div>
+        <div class="az-card">
+          <p style="font-size:12px;font-weight:600;color:#323130;margin-bottom:12px">Detalles del proyecto</p>
+          <div class="az-form-row">
+            <label class="az-label">Suscripción *</label>
+            <div class="az-input filled">Azure for Students <span class="az-badge blue">Activa</span></div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Grupo de recursos *</label>
+            <div class="az-input" style="color:#0078d4;font-weight:600">rg-gradostitulos-upla</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Región *</label>
+            <select class="az-select"><option>(US) East US</option></select>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:16px">
+            <button class="az-btn">Revisar y crear</button>
+            <button class="az-btn secondary">Anterior</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupServidorSQL() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com/#create/Microsoft.SQLServer</div>
+    </div>
+    <div class="mockup-body az-portal">
+      <div class="az-topbar"><span class="az-topbar-logo">⬡ Microsoft Azure</span></div>
+      <div style="padding:20px;background:#faf9f8">
+        <p class="az-breadcrumb">Inicio &gt; Servidores SQL &gt; Crear</p>
+        <p class="az-h1">Crear servidor SQL</p>
+        <div class="az-card">
+          <div class="az-form-row">
+            <label class="az-label">Suscripción *</label>
+            <div class="az-input filled">Azure for Students</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Grupo de recursos *</label>
+            <div class="az-input filled">rg-gradostitulos-upla</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Nombre del servidor *</label>
+            <div class="az-input" style="color:#0078d4;font-weight:600">srv-gradostitulos-upla<span class="az-badge green" style="margin-left:8px">✓ Disponible</span></div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Región *</label>
+            <div class="az-input filled">(US) East US</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Método de autenticación *</label>
+            <div class="az-input filled">🔐 Autenticación de SQL y Microsoft Entra</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="az-form-row">
+              <label class="az-label">Inicio de sesión admin *</label>
+              <div class="az-input" style="color:#2e7d32">adminUPLA</div>
+            </div>
+            <div class="az-form-row">
+              <label class="az-label">Contraseña *</label>
+              <div class="az-input">••••••••••••</div>
+            </div>
+          </div>
+          <button class="az-btn" style="margin-top:12px">Revisar y crear</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupCrearBD() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com/#create/Microsoft.SQLDatabase</div>
+    </div>
+    <div class="mockup-body az-portal">
+      <div class="az-topbar"><span class="az-topbar-logo">⬡ Microsoft Azure</span></div>
+      <div style="padding:20px;background:#faf9f8">
+        <p class="az-breadcrumb">Inicio &gt; Bases de datos SQL &gt; Crear</p>
+        <p class="az-h1">Crear base de datos SQL</p>
+        <div class="az-tab-bar">
+          <div class="az-tab active">Básico</div><div class="az-tab">Redes</div><div class="az-tab">Seguridad</div><div class="az-tab">Configuración adicional</div>
+        </div>
+        <div class="az-card">
+          <div class="az-form-row">
+            <label class="az-label">Suscripción *</label>
+            <div class="az-input filled">Azure for Students</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Grupo de recursos *</label>
+            <div class="az-input filled">rg-gradostitulos-upla</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Nombre de la base de datos *</label>
+            <div class="az-input" style="color:#0078d4;font-weight:700">GradosTitulos</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Servidor *</label>
+            <div class="az-input filled">srv-gradostitulos-upla.database.windows.net</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Proceso y almacenamiento</label>
+            <div class="az-input filled" style="color:#e65100;font-weight:600">DTU Basic · 5 DTU · 2 GB · ~$4.90 USD/mes</div>
+          </div>
+          <div class="az-form-row">
+            <label class="az-label">Intercalación</label>
+            <div class="az-input" style="color:#2e7d32;font-weight:600">Modern_Spanish_CI_AS</div>
+          </div>
+          <button class="az-btn" style="margin-top:12px">Revisar y crear</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupFirewall() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com — srv-gradostitulos-upla · Redes</div>
+    </div>
+    <div class="mockup-body az-portal" style="padding:20px;background:#faf9f8">
+      <p class="az-breadcrumb">srv-gradostitulos-upla &gt; Redes &gt; Reglas de firewall</p>
+      <p class="az-h1">Redes — Reglas de firewall del servidor</p>
+      <div class="az-card">
+        <p style="font-size:12px;font-weight:600;color:#323130;margin-bottom:10px">Acceso a red pública</p>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+          <div style="width:36px;height:20px;background:#0078d4;border-radius:10px;position:relative;cursor:pointer"><div style="width:16px;height:16px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px"></div></div>
+          <span style="font-size:12px;color:#323130">Habilitar redes seleccionadas</span>
+        </div>
+        <div style="background:#f3f2f1;border-radius:4px;overflow:hidden;margin-bottom:12px">
+          <table style="width:100%;font-size:11px;border-collapse:collapse">
+            <thead><tr style="background:#edebe9"><th style="padding:7px 10px;text-align:left;color:#605e5c">Nombre de regla</th><th style="padding:7px 10px;text-align:left;color:#605e5c">IPv4 inicio</th><th style="padding:7px 10px;text-align:left;color:#605e5c">IPv4 fin</th></tr></thead>
+            <tbody>
+              <tr style="border-top:1px solid #edebe9"><td style="padding:7px 10px;color:#0078d4">ClienteIP_UPLA</td><td style="padding:7px 10px;color:#323130">181.176.63.183</td><td style="padding:7px 10px;color:#323130">181.176.63.183</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <input type="checkbox" checked style="accent-color:#0078d4"/>
+          <span style="font-size:12px;color:#323130">✅ Agregar IP de cliente actual (181.176.63.183)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <input type="checkbox" checked style="accent-color:#0078d4"/>
+          <span style="font-size:12px;color:#323130">✅ Permitir que los servicios y recursos de Azure accedan a este servidor</span>
+        </div>
+        <button class="az-btn" style="margin-top:14px">Guardar</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function mockupQueryEditor() {
+  return `<div class="mockup-screen">
+    <div class="mockup-bar">
+      <div class="mockup-dot" style="background:#ff5f57"></div>
+      <div class="mockup-dot" style="background:#febc2e"></div>
+      <div class="mockup-dot" style="background:#28c840"></div>
+      <div class="mockup-url">🔒 portal.azure.com — GradosTitulos · Editor de consultas</div>
+    </div>
+    <div class="mockup-body az-portal">
+      <div class="az-topbar"><span class="az-topbar-logo">⬡ Microsoft Azure</span></div>
+      <div style="padding:20px;background:#faf9f8">
+        <p class="az-breadcrumb">GradosTitulos &gt; Editor de consultas (versión preliminar)</p>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="width:180px;flex-shrink:0">
+            <div class="az-card" style="padding:12px">
+              <p style="font-size:11px;font-weight:700;color:#323130;margin-bottom:8px">🗄️ GradosTitulos</p>
+              <div style="padding-left:8px">
+                <p style="font-size:11px;color:#605e5c;margin-bottom:4px">📂 Tablas (25)</p>
+                <p style="font-size:10px;color:#0078d4;padding-left:8px;margin-bottom:2px">Catalogo.TipoTramite</p>
+                <p style="font-size:10px;color:#0078d4;padding-left:8px;margin-bottom:2px">Academico.Facultad</p>
+                <p style="font-size:10px;color:#0078d4;padding-left:8px;margin-bottom:2px">Tramite.Tramite</p>
+                <p style="font-size:10px;color:#605e5c;padding-left:8px">...</p>
+                <p style="font-size:11px;color:#605e5c;margin-top:6px;margin-bottom:4px">👁️ Vistas (3)</p>
+                <p style="font-size:11px;color:#605e5c;margin-bottom:4px">⚙️ Funciones (2)</p>
+                <p style="font-size:11px;color:#605e5c">🔧 Procs. almac. (2)</p>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1">
+            <div style="background:#1e1b2e;border-radius:6px;padding:12px;margin-bottom:10px;font-family:'Courier New',monospace;font-size:12px;color:#cfe2ff">
+              <span style="color:#569cd6">SELECT</span> DB_NAME() <span style="color:#569cd6">AS</span> BaseDatos, @@VERSION <span style="color:#569cd6">AS</span> Version;<br/>
+              <span style="color:#569cd6">SELECT</span> s.name <span style="color:#569cd6">AS</span> Esquema, t.name <span style="color:#569cd6">AS</span> Tabla<br/>
+              <span style="color:#569cd6">FROM</span> sys.tables t <span style="color:#569cd6">JOIN</span> sys.schemas s <span style="color:#569cd6">ON</span> s.schema_id = t.schema_id<br/>
+              <span style="color:#569cd6">WHERE</span> s.name <span style="color:#569cd6">IN</span> (<span style="color:#ce9178">'Catalogo'</span>,<span style="color:#ce9178">'Academico'</span>,<span style="color:#ce9178">'Tramite'</span>)<span style="color:#569cd6">ORDER BY</span> s.name;
+            </div>
+            <div style="background:#dff6dd;border:1px solid #107c10;border-radius:4px;padding:8px 12px;margin-bottom:8px">
+              <p style="font-size:11px;font-weight:600;color:#107c10">✅ Consulta ejecutada correctamente — BaseDatos: GradosTitulos</p>
+            </div>
+            <div style="background:#f3f2f1;border-radius:4px;overflow:hidden">
+              <table style="width:100%;font-size:11px;border-collapse:collapse">
+                <thead><tr style="background:#edebe9"><th style="padding:6px 10px;text-align:left;color:#605e5c">Esquema</th><th style="padding:6px 10px;text-align:left;color:#605e5c">Tabla</th></tr></thead>
+                <tbody>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#9c27b0">Academico</td><td style="padding:6px 10px;color:#323130">Docente</td></tr>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#9c27b0">Academico</td><td style="padding:6px 10px;color:#323130">Facultad</td></tr>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#e65100">Catalogo</td><td style="padding:6px 10px;color:#323130">EstadoTramite</td></tr>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#e65100">Catalogo</td><td style="padding:6px 10px;color:#323130">TipoTramite</td></tr>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#00897b">Tramite</td><td style="padding:6px 10px;color:#323130">Tramite</td></tr>
+                  <tr style="border-top:1px solid #edebe9"><td style="padding:6px 10px;color:#605e5c;font-style:italic" colspan="2">... 20 filas más</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── TABLAS SQL con datos de ejemplo ── */
+function tablaTipoTramite() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Catalogo.TipoTramite</span><span style="margin-left:auto;opacity:.7">(4 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdTipoTramite<span class="col-badge pk">PK</span></th><th>Descripcion</th><th>RequiereTesis</th><th>RequiereSuficiencia</th><th>RequiereBachiller</th><th>Activo</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="str">BACHILLER</td><td class="bit">0</td><td class="bit">0</td><td class="bit">0</td><td class="bit">1</td></tr>
+      <tr><td class="pk">2</td><td class="str">TITULO_TESIS_INDIVIDUAL</td><td class="bit">1</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td></tr>
+      <tr><td class="pk">3</td><td class="str">TITULO_TESIS_GRUPAL</td><td class="bit">1</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td></tr>
+      <tr><td class="pk">4</td><td class="str">TITULO_SUFICIENCIA_PROF</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td><td class="bit">1</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaEstadoTramite() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Catalogo.EstadoTramite</span><span style="margin-left:auto;opacity:.7">(8 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdEstadoTramite<span class="col-badge pk">PK</span></th><th>Descripcion</th><th>EsTerminal</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="str">INICIADO</td><td class="bit">0</td></tr>
+      <tr><td class="pk">2</td><td class="str">EN_VERIFICACION</td><td class="bit">0</td></tr>
+      <tr><td class="pk">3</td><td class="str">EN_PROCESO</td><td class="bit">0</td></tr>
+      <tr><td class="pk">4</td><td class="str">OBSERVADO</td><td class="bit">0</td></tr>
+      <tr><td class="pk">5</td><td class="str">APROBADO</td><td class="bit">1</td></tr>
+      <tr><td class="pk">6</td><td class="str">IMPROCEDENTE</td><td class="bit">1</td></tr>
+      <tr><td class="pk">7</td><td class="str">ARCHIVADO</td><td class="bit">1</td></tr>
+      <tr><td class="pk">8</td><td class="str">SUSPENDIDO</td><td class="bit">0</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaFacultad() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Academico.Facultad</span><span style="margin-left:auto;opacity:.7">(6 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdFacultad<span class="col-badge pk">PK</span></th><th>NombreFacultad</th><th>NombreDecano</th><th>Activo</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="str">Ciencias Administrativas y Contables</td><td class="str">NULL</td><td class="bit">1</td></tr>
+      <tr><td class="pk">2</td><td class="str">Derecho y Ciencias Políticas</td><td class="str">NULL</td><td class="bit">1</td></tr>
+      <tr><td class="pk">3</td><td class="str">Ingeniería</td><td class="str">NULL</td><td class="bit">1</td></tr>
+      <tr><td class="pk">4</td><td class="str">Ciencias de la Salud</td><td class="str">NULL</td><td class="bit">1</td></tr>
+      <tr><td class="pk">5</td><td class="str">Educación y Ciencias Humanas</td><td class="str">NULL</td><td class="bit">1</td></tr>
+      <tr><td class="pk">6</td><td class="str">Medicina Humana</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaPersona() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Academico.Persona</span><span style="margin-left:auto;opacity:.7">(ejemplo 3 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdPersona<span class="col-badge pk">PK</span></th><th>DNI</th><th>Nombres</th><th>ApellidoPaterno</th><th>ApellidoMaterno</th><th>TipoPersona</th><th>FechaRegistro</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="num">72345678</td><td class="str">Carlos</td><td class="str">Quispe</td><td class="str">Rojas</td><td class="str">ESTUDIANTE</td><td>2026-06-02</td></tr>
+      <tr><td class="pk">2</td><td class="num">45678901</td><td class="str">María</td><td class="str">Fernández</td><td class="str">Bejarano</td><td class="str">DOCENTE</td><td>2026-06-02</td></tr>
+      <tr><td class="pk">3</td><td class="num">65432109</td><td class="str">Luis</td><td class="str">Huanca</td><td class="str">Torres</td><td class="str">ESTUDIANTE</td><td>2026-06-02</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaTramite() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Tramite.Tramite</span><span style="margin-left:auto;opacity:.7">(ejemplo 3 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdTramite<span class="col-badge pk">PK</span></th><th>IdMatricula<span class="col-badge fk">FK</span></th><th>IdTipoTramite<span class="col-badge fk">FK</span></th><th>IdEstadoTramite<span class="col-badge fk">FK</span></th><th>FechaInicio</th><th>Observaciones</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="fk">1</td><td class="fk">1</td><td class="fk">3</td><td>2026-03-15</td><td class="str">NULL</td></tr>
+      <tr><td class="pk">2</td><td class="fk">2</td><td class="fk">2</td><td class="fk">2</td><td>2026-04-10</td><td class="str">Pendiente verificación</td></tr>
+      <tr><td class="pk">3</td><td class="fk">3</td><td class="fk">4</td><td class="fk">1</td><td>2026-06-01</td><td class="str">NULL</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaSustentacion() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header"><span>SELECT * FROM</span><span class="tbl-name">Evaluacion.Sustentacion</span><span style="margin-left:auto;opacity:.7">(ejemplo 2 filas)</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdSustentacion<span class="col-badge pk">PK</span></th><th>IdTrabajo<span class="col-badge fk">FK</span></th><th>NroIntento</th><th>FechaHora</th><th>Modalidad</th><th>NotaExposicion</th><th>NotaDefensa</th><th>Condicion</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="fk">1</td><td class="num">1</td><td>2026-05-20 09:00</td><td class="str">PRESENCIAL</td><td class="num">15.00</td><td class="num">16.00</td><td class="str">APROBADO</td></tr>
+      <tr><td class="pk">2</td><td class="fk">2</td><td class="num">1</td><td>2026-06-10 10:30</td><td class="str">PRESENCIAL</td><td class="num">11.00</td><td class="num">12.00</td><td class="str">DESAPROBADO</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaVistaCond() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header" style="background:linear-gradient(90deg,#9c27b0,#ce93d8)"><span>SELECT * FROM</span><span class="tbl-name">Academico.V_CondicionEgresado</span><span style="margin-left:auto;opacity:.7">Vista calculada</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdMatricula</th><th>DNI</th><th>NombreCompleto</th><th>NombrePrograma</th><th>CreditosAprobados</th><th>EsEgresado</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="num">72345678</td><td class="str">Carlos Quispe Rojas</td><td class="str">Ingeniería de Sistemas</td><td class="num">220</td><td class="bit">1 ✅</td></tr>
+      <tr><td class="pk">2</td><td class="num">65432109</td><td class="str">Luis Huanca Torres</td><td class="str">Administración</td><td class="num">185</td><td class="bit">0 ❌</td></tr>
+    </tbody></table>
+  </div>`;
+}
+function tablaVistaEstado() {
+  return `<div class="sql-table-wrap">
+    <div class="sql-table-header" style="background:linear-gradient(90deg,#00897b,#4db6ac)"><span>SELECT * FROM</span><span class="tbl-name">Tramite.V_EstadoTrabajo</span><span style="margin-left:auto;opacity:.7">Vista calculada</span></div>
+    <table class="sqltbl"><thead><tr>
+      <th>IdTrabajo</th><th>IdTramite</th><th>TipoTrabajo</th><th>Titulo</th><th>ModalidadAutoria</th><th>EstadoActual</th>
+    </tr></thead><tbody>
+      <tr><td class="pk">1</td><td class="fk">2</td><td class="str">TESIS_CUANTITATIVA</td><td class="str">Impacto del e-learning en UPLA...</td><td class="str">INDIVIDUAL</td><td class="str" style="color:#107c10;font-weight:600">SUSTENTADO_APROBADO ✅</td></tr>
+      <tr><td class="pk">2</td><td class="fk">3</td><td class="str">SUFICIENCIA_PROFESIONAL</td><td class="str">Gestión BDD en PyMEs de Junín...</td><td class="str">INDIVIDUAL</td><td class="str" style="color:#0078d4;font-weight:600">EN_DESARROLLO 🔵</td></tr>
+    </tbody></table>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════════════
+   DATOS DE LAS SECCIONES
+═══════════════════════════════════════════════════════ */
+const secciones = [
+  {
+    num:'Parte 01', titulo:'Crear Cuenta en Microsoft Azure', categoria:'Cuenta & Acceso',
+    intro:'Activación de la suscripción Azure usando el correo institucional UPLA (T00050A@ms.upla.edu.pe). Si tienes cuenta de Microsoft 365 universitaria, Azure puede asociarse directamente sin tarjeta de crédito mediante Azure for Students.',
+    sub1:{
+      subtitulo:'Acceso al Portal de Azure',
+      descripcion:'Ingresa al portal oficial de Microsoft Azure con tus credenciales institucionales de la UPLA. El portal unifica todos los servicios en la nube.',
+      mockup: mockupAzurePortal,
+      nota:{tipo:'info',icono:'ℹ️',texto:'Usa <strong>portal.azure.com</strong> desde Chrome o Edge. Inicia sesión con T00050A@ms.upla.edu.pe y verifica que el directorio mostrado sea ms.upla.edu.pe.'},
+      pasos:[
+        {accion:'Abrir portal.azure.com',detalle:'Usa Chrome o Edge. En la pantalla de bienvenida selecciona "Iniciar sesión".'},
+        {accion:'Ingresar T00050A@ms.upla.edu.pe',detalle:'Escribe el correo y presiona Siguiente. Ingresa la contraseña de Microsoft 365 UPLA.'},
+        {accion:'Completar autenticación MFA si aplica',detalle:'Aprueba la notificación en tu teléfono o ingresa el código de 6 dígitos de la app Authenticator.'},
+        {accion:'Verificar directorio ms.upla.edu.pe',detalle:'En la esquina superior derecha verás tu nombre. Si el directorio es incorrecto, haz clic en tu avatar → "Cambiar directorio".'}
+      ]
+    },
+    sub2:{
+      subtitulo:'Activar Azure for Students',
+      descripcion:'Activa los $100 USD de crédito gratuito disponibles para estudiantes con correo universitario. No requiere tarjeta de crédito.',
+      mockup: mockupAzureStudents,
+      nota:{tipo:'warn',icono:'⚠️',texto:'El crédito de Azure for Students dura 12 meses o hasta agotar los $100 USD. La base de datos SQL consume entre $5 y $15 USD al mes en el tier Basic.'},
+      pasos:[
+        {accion:'Ir a azure.microsoft.com/es-es/free/students',detalle:'Accede desde el navegador a la página de Azure for Students.'},
+        {accion:'Clic en "Comenzar gratis"',detalle:'Botón azul en la parte superior. Se redirige al portal de verificación.'},
+        {accion:'Iniciar sesión con tus credenciales',detalle:'Azure validará automáticamente que es un correo educativo verificado.'},
+        {accion:'Aceptar términos y verificar crédito',detalle:'En "Suscripciones" debe aparecer "Azure for Students" con $100 de crédito disponible.'}
+      ]
+    },
+    sub3:{
+      subtitulo:'Crear el Grupo de Recursos',
+      descripcion:'Un Grupo de Recursos agrupa todos los servicios Azure del proyecto GradosTitulos en un contenedor lógico para gestión y costos.',
+      mockup: mockupGrupoRecursos,
+      nota:{tipo:'info',icono:'ℹ️',texto:'Usa el nombre <strong>rg-gradostitulos-upla</strong> en minúsculas con guiones. Esto facilita identificar todos los recursos del proyecto en el panel de costos.'},
+      pasos:[
+        {accion:'Buscar "Grupos de recursos" en el portal',detalle:'O usa el menú lateral izquierdo → Grupos de recursos.'},
+        {accion:'Clic en + Crear',detalle:'Botón azul en la parte superior de la lista.'},
+        {accion:'Configurar: Suscripción → Azure for Students',detalle:'Nombre: rg-gradostitulos-upla · Región: East US o Brazil South.'},
+        {accion:'Clic en Revisar y crear → Crear',detalle:'El grupo se crea en segundos. Todos los servicios del proyecto irán aquí.'}
+      ]
+    }
+  },
+  {
+    num:'Parte 02', titulo:'Crear la Base de Datos GradosTitulos en Azure', categoria:'Azure SQL Database',
+    intro:'Creación del servidor SQL lógico y de la base de datos GradosTitulos en Azure SQL Database. Se usará el tier DTU Basic (~$4.90 USD/mes), el más económico para el entorno académico.',
+    sub1:{
+      subtitulo:'Crear el Servidor SQL Lógico',
+      descripcion:'El servidor lógico de Azure SQL es el punto de conexión administrado por Microsoft. No es una VM, es un endpoint que aloja la BD.',
+      mockup: mockupServidorSQL,
+      nota:{tipo:'warn',icono:'⚠️',texto:'El nombre del servidor debe ser único globalmente en Azure. Si "srv-gradostitulos-upla" ya existe, agrega un sufijo: srv-gradostitulos-upla01.'},
+      pasos:[
+        {accion:'Buscar "Servidores SQL" en el portal',detalle:'En la barra de búsqueda escribe SQL servers y selecciona "Servidores SQL".'},
+        {accion:'Clic en + Crear',detalle:'Se abre el asistente de creación del servidor lógico.'},
+        {accion:'Configurar nombre, región y autenticación',detalle:'Nombre: srv-gradostitulos-upla · Región: East US · Auth: SQL + Microsoft Entra · Admin: adminUPLA · Contraseña: UPLAGrados2026#'},
+        {accion:'En Redes → Agregar IP del cliente',detalle:'Activa "Agregar IP actual del cliente" y "Permitir servicios Azure". Clic en Revisar y crear → Crear (tarda 1-2 min).'}
+      ]
+    },
+    sub2:{
+      subtitulo:'Crear la Base de Datos GradosTitulos',
+      descripcion:'Con el servidor listo, se crea la base de datos con intercalación española para soporte completo de tildes y ñ.',
+      mockup: mockupCrearBD,
+      nota:{tipo:'info',icono:'ℹ️',texto:'Azure SQL NO permite FILENAME ni rutas físicas. El CREATE DATABASE del script local se omite — la BD ya existe desde el portal. El script adaptado está en la Parte 03.'},
+      pasos:[
+        {accion:'Ir al servidor → + Crear base de datos',detalle:'En rg-gradostitulos-upla → srv-gradostitulos-upla → Bases de datos SQL → + Crear.'},
+        {accion:'Nombre: GradosTitulos (respetar mayúsculas)',detalle:'Exactamente como aparece en los scripts para evitar errores de referencia.'},
+        {accion:'Configurar proceso: DTU Basic 5 DTU / 2GB',detalle:'Clic en "Configurar base de datos" → DTU Basic → Apply. Costo: ~$4.90 USD/mes.'},
+        {accion:'Configuración adicional → Intercalación',detalle:'Cambia a: Modern_Spanish_CI_AS. Luego Revisar y crear → Crear (tarda 2-5 min).'}
+      ]
+    },
+    sub3:{
+      subtitulo:'Verificar Conexión y Firewall',
+      descripcion:'Antes de ejecutar los scripts SQL, verifica la conexión desde el Query Editor del portal y configura las reglas de firewall.',
+      mockup: mockupFirewall,
+      nota:{tipo:'info',icono:'ℹ️',texto:'Cadena de conexión SSMS: Servidor = <strong>srv-gradostitulos-upla.database.windows.net</strong> · Auth: SQL Server · Usuario: adminUPLA'},
+      pasos:[
+        {accion:'Ir a GradosTitulos → Editor de consultas',detalle:'En la base de datos, menú lateral → "Editor de consultas (versión preliminar)".'},
+        {accion:'Si hay error de firewall → clic en el enlace',detalle:'El portal muestra tu IP. Clic en "Incluir IP en lista de permitidos" y vuelve a intentar el login.'},
+        {accion:'Login: adminUPLA / UPLAGrados2026#',detalle:'Autenticación SQL. Si funciona verás el editor con el árbol de objetos a la izquierda.'},
+        {accion:'Ejecutar: SELECT DB_NAME() AS BaseDatos',detalle:'Debe retornar "GradosTitulos". Si retorna "master" cambia la BD en el selector del editor.'}
+      ]
+    }
+  },
+  {
+    num:'Parte 03', titulo:'Crear Esquemas, Tablas, Vistas, Funciones y SPs', categoria:'T-SQL en Azure',
+    intro:'Ejecución de los scripts SQL adaptados para Azure SQL Database. La principal diferencia es que NO se incluye el bloque CREATE DATABASE ni rutas físicas de archivos (FILENAME).',
+    sub1:{
+      subtitulo:'Script 01 — Verificar BD y Crear Esquemas',
+      descripcion:'Verifica que estás conectado a GradosTitulos y crea los 5 esquemas del sistema: Catalogo, Academico, Tramite, Evaluacion y Documento.',
+      tablas: [tablaTipoTramite, tablaEstadoTramite],
+      nota:{tipo:'warn',icono:'⚠️',texto:'Siempre ejecuta <strong>SELECT DB_NAME()</strong> primero. Debe retornar "GradosTitulos" antes de continuar con los esquemas.'},
+      sql:`USE GradosTitulos;
+GO
+-- Verificar conexión
+SELECT DB_NAME() AS BaseDatosActual;
+GO
+
+-- ============================================================
+-- 2. CREAR ESQUEMAS
+-- ============================================================
+CREATE SCHEMA Catalogo;   -- Tablas de parámetros y catálogos
+GO
+CREATE SCHEMA Academico;  -- Entidades académicas principales
+GO
+CREATE SCHEMA Tramite;    -- Proceso administrativo
+GO
+CREATE SCHEMA Evaluacion; -- Evaluaciones y sustentación
+GO
+CREATE SCHEMA Documento;  -- Resoluciones, diplomas y documentos
+GO
+
+-- Resultado esperado: 5 schemas creados exitosamente
+SELECT s.name AS Esquema, s.schema_id
+FROM sys.schemas
+WHERE name IN ('Catalogo','Academico','Tramite','Evaluacion','Documento');
+GO`
+    },
+    sub2:{
+      subtitulo:'Script 02 — Tablas de Catálogo y Estructura Académica',
+      descripcion:'Crea las primeras 9 tablas: TipoTramite, EstadoTramite, LineaInvestigacion (Catálogo) y Facultad, ProgramaEstudios, GradoTituloCatalogo, Persona, Docente, Matricula (Académico).',
+      tablas: [tablaFacultad, tablaPersona],
+      nota:{tipo:'info',icono:'ℹ️',texto:'Ejecuta el script en bloques separados por GO. El Query Editor del portal puede requerir ejecutar cada bloque GO por separado.'},
+      sql:`USE GradosTitulos;
+GO
+-- T01: TIPO_TRAMITE
+CREATE TABLE Catalogo.TipoTramite (
+    IdTipoTramite       TINYINT      NOT NULL,
+    Descripcion         VARCHAR(60)  NOT NULL,
+    RequiereTesis       BIT          NOT NULL DEFAULT 0,
+    RequiereSuficiencia BIT          NOT NULL DEFAULT 0,
+    RequiereBachiller   BIT          NOT NULL DEFAULT 0,
+    Activo              BIT          NOT NULL DEFAULT 1,
+    CONSTRAINT PK_TipoTramite PRIMARY KEY (IdTipoTramite),
+    CONSTRAINT UQ_TipoTramite_Descripcion UNIQUE (Descripcion)
+);
+GO
+INSERT INTO Catalogo.TipoTramite VALUES
+(1,'BACHILLER',0,0,0,1),(2,'TITULO_TESIS_INDIVIDUAL',1,0,1,1),
+(3,'TITULO_TESIS_GRUPAL',1,0,1,1),(4,'TITULO_SUFICIENCIA_PROF',0,1,1,1);
+GO
+
+-- T02: ESTADO_TRAMITE
+CREATE TABLE Catalogo.EstadoTramite (
+    IdEstadoTramite TINYINT     NOT NULL,
+    Descripcion     VARCHAR(40) NOT NULL,
+    EsTerminal      BIT         NOT NULL DEFAULT 0,
+    CONSTRAINT PK_EstadoTramite PRIMARY KEY (IdEstadoTramite)
+);
+GO
+INSERT INTO Catalogo.EstadoTramite VALUES
+(1,'INICIADO',0),(2,'EN_VERIFICACION',0),(3,'EN_PROCESO',0),(4,'OBSERVADO',0),
+(5,'APROBADO',1),(6,'IMPROCEDENTE',1),(7,'ARCHIVADO',1),(8,'SUSPENDIDO',0);
+GO
+
+-- T04: FACULTAD
+CREATE TABLE Academico.Facultad (
+    IdFacultad     TINYINT      NOT NULL IDENTITY(1,1),
+    NombreFacultad VARCHAR(100) NOT NULL,
+    NombreDecano   VARCHAR(150) NULL,
+    Activo         BIT          NOT NULL DEFAULT 1,
+    CONSTRAINT PK_Facultad PRIMARY KEY (IdFacultad),
+    CONSTRAINT UQ_Facultad_Nombre UNIQUE (NombreFacultad)
+);
+GO
+INSERT INTO Academico.Facultad (NombreFacultad) VALUES
+('Ciencias Administrativas y Contables'),('Derecho y Ciencias Políticas'),
+('Ingeniería'),('Ciencias de la Salud'),('Educación y Ciencias Humanas'),('Medicina Humana');
+GO
+
+-- T07: PERSONA
+CREATE TABLE Academico.Persona (
+    IdPersona       INT          NOT NULL IDENTITY(1,1),
+    DNI             CHAR(8)      NOT NULL,
+    Nombres         VARCHAR(80)  NOT NULL,
+    ApellidoPaterno VARCHAR(60)  NOT NULL,
+    ApellidoMaterno VARCHAR(60)  NULL,
+    Correo          VARCHAR(120) NULL,
+    Telefono        VARCHAR(15)  NULL,
+    TipoPersona     VARCHAR(15)  NOT NULL,
+    FechaRegistro   DATETIME2    NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_Persona PRIMARY KEY (IdPersona),
+    CONSTRAINT UQ_Persona_DNI UNIQUE (DNI),
+    CONSTRAINT CHK_Persona_Tipo CHECK (TipoPersona IN ('ESTUDIANTE','DOCENTE'))
+);
+GO`
+    },
+    sub3:{
+      subtitulo:'Script 03 — Trámite, Evaluación y Objetos del Sistema',
+      descripcion:'Crea las tablas del proceso (Tramite, Pago, TrabajoInvestigacion, Sustentacion, Resolucion, Diploma) más las 3 vistas, 2 funciones y 2 stored procedures.',
+      tablas: [tablaTramite, tablaSustentacion, tablaVistaCond, tablaVistaEstado],
+      nota:{tipo:'info',icono:'ℹ️',texto:'Si el Query Editor del portal corta scripts largos, usa <strong>SQL Server Management Studio (SSMS)</strong> conectado a srv-gradostitulos-upla.database.windows.net para ejecutar bloques completos sin límite.'},
+      sql:`USE GradosTitulos;
+GO
+-- T11: TRAMITE
+CREATE TABLE Tramite.Tramite (
+    IdTramite       INT      NOT NULL IDENTITY(1,1),
+    IdMatricula     INT      NOT NULL,
+    IdTipoTramite   TINYINT  NOT NULL,
+    IdEstadoTramite TINYINT  NOT NULL DEFAULT 1,
+    IdCoordinacion  TINYINT  NOT NULL,
+    FechaInicio     DATE     NOT NULL DEFAULT CAST(SYSDATETIME() AS DATE),
+    FechaUltMod     DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+    Observaciones   VARCHAR(500) NULL,
+    CONSTRAINT PK_Tramite PRIMARY KEY (IdTramite)
+);
+GO
+
+-- T22: SUSTENTACION
+CREATE TABLE Evaluacion.Sustentacion (
+    IdSustentacion  INT          NOT NULL IDENTITY(1,1),
+    IdTrabajo       INT          NOT NULL,
+    NroIntento      TINYINT      NOT NULL DEFAULT 1,
+    FechaHora       DATETIME2    NOT NULL,
+    Modalidad       VARCHAR(14)  NOT NULL DEFAULT 'PRESENCIAL',
+    NotaExposicion  DECIMAL(4,2) NULL,
+    NotaDefensa     DECIMAL(4,2) NULL,
+    Condicion       VARCHAR(12)  NULL,
+    AprobacionTipo  VARCHAR(12)  NULL,
+    NroActa         VARCHAR(40)  NULL,
+    CONSTRAINT PK_Sustentacion PRIMARY KEY (IdSustentacion),
+    CONSTRAINT CHK_Sust_Intento CHECK (NroIntento BETWEEN 1 AND 2),
+    CONSTRAINT UQ_Sust_Trabajo_Intento UNIQUE (IdTrabajo, NroIntento)
+);
+GO
+
+-- VISTA V01: Condicion Egresado
+CREATE OR ALTER VIEW Academico.V_CondicionEgresado AS
+SELECT m.IdMatricula, m.IdEstudiante, p.DNI,
+    p.Nombres+' '+p.ApellidoPaterno+' '+ISNULL(p.ApellidoMaterno,'') AS NombreCompleto,
+    m.IdPrograma, pr.NombrePrograma, m.CreditosAprobados,
+    CASE WHEN m.AsignaturasAprobadas=1 AND m.PracticasCompletadas=1
+     AND m.IdiomaAprobado=1 AND m.ProyeccionSocial=1 AND m.TieneDeuda=0
+     THEN CAST(1 AS BIT) ELSE CAST(0 AS BIT) END AS EsEgresado
+FROM Academico.Matricula m
+JOIN Academico.Persona p ON p.IdPersona=m.IdEstudiante
+JOIN Academico.ProgramaEstudios pr ON pr.IdPrograma=m.IdPrograma;
+GO
+
+-- FUNCION F01
+CREATE OR ALTER FUNCTION Academico.F_CicloMinimoPlan (@NumSemestres TINYINT)
+RETURNS TINYINT AS
+BEGIN
+    RETURN CASE @NumSemestres WHEN 10 THEN 9 WHEN 12 THEN 11 WHEN 14 THEN 13 ELSE NULL END;
+END;
+GO
+
+-- SP01: Registrar Tramite
+CREATE OR ALTER PROCEDURE Tramite.SP_RegistrarTramite
+    @IdMatricula INT, @IdTipoTramite TINYINT, @IdCoordinacion TINYINT, @IdTramite INT OUTPUT
+AS BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        IF NOT EXISTS (SELECT 1 FROM Academico.Matricula WHERE IdMatricula=@IdMatricula)
+            THROW 50001,'La matrícula especificada no existe.',1;
+        INSERT INTO Tramite.Tramite(IdMatricula,IdTipoTramite,IdEstadoTramite,IdCoordinacion)
+        VALUES(@IdMatricula,@IdTipoTramite,1,@IdCoordinacion);
+        SET @IdTramite=SCOPE_IDENTITY();
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH IF @@TRANCOUNT>0 ROLLBACK TRANSACTION; THROW; END CATCH;
+END;
+GO
+
+-- Verificación final
+SELECT s.name AS Esquema, t.name AS Tabla, COUNT(c.column_id) AS NroColumnas
+FROM sys.tables t JOIN sys.schemas s ON s.schema_id=t.schema_id
+JOIN sys.columns c ON c.object_id=t.object_id
+WHERE s.name IN ('Catalogo','Academico','Tramite','Evaluacion','Documento')
+GROUP BY s.name,t.name ORDER BY s.name,t.name;
+GO`
+    }
+  }
+];
+
+/* ═══════════════════════════════════════════════════════
+   ESTADO & NAVEGACIÓN
+═══════════════════════════════════════════════════════ */
+let pasoActivo=0, subActiva={};
+
+function switchPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='manual') renderPasos();
+}
+
+function renderPasos(){renderPasoNav();renderPasoCard(pasoActivo);}
+
+function renderPasoNav(){
+  document.getElementById('pasoNav').innerHTML=secciones.map((s,i)=>
+    `<button class="paso-pill ${i===pasoActivo?'active':''}" onclick="selectPaso(${i})">${s.num}</button>`
+  ).join('');
+}
+function selectPaso(i){pasoActivo=i;renderPasoNav();renderPasoCard(i);window.scrollTo({top:220,behavior:'smooth'});}
+function getSub(i){return subActiva[i]||'sub1';}
+
+function buildSubContent(d, pi, key){
+  const codeId=`code_${pi}_${key}`;
+  const alertaHtml=d.nota?`<div class="alert-box ${d.nota.tipo}"><span class="alert-icon">${d.nota.icono}</span><p class="alert-text">${d.nota.texto}</p></div>`:'';
+  const mockupHtml=d.mockup?`<div style="margin:20px 0">${d.mockup()}</div>`:'';
+  const tablasHtml=d.tablas?d.tablas.map(fn=>fn()).join(''):'';
+  const stepsHtml=d.pasos?`<div class="steps-list">${d.pasos.map((p,idx)=>`
+    <div class="step-item">
+      <div class="step-num">${idx+1}</div>
+      <div class="step-body"><p class="step-action">${p.accion}</p><p class="step-detail">${p.detalle}</p></div>
+    </div>`).join('')}</div>`:'';
+  const codeHtml=d.sql?`<div class="code-wrap"><div class="code-header"><span class="code-lang">T-SQL · Azure SQL Database</span><button class="btn-copy" onclick="copiarCodigo('${codeId}')">Copiar script</button></div><div class="code-body"><pre id="${codeId}">${escHtml(d.sql)}</pre></div></div>`:'';
+  return `${alertaHtml}${mockupHtml}${stepsHtml}${tablasHtml}${codeHtml}`;
+}
+
+function renderPasoCard(i){
+  const s=secciones[i], sub=getSub(i);
+  document.getElementById('pasoContainer').innerHTML=`
+    <div class="paso-card">
+      <div class="paso-card-header">
+        <p class="paso-num">${s.num} · ${s.categoria}</p>
+        <h3 class="paso-title">${s.titulo}</h3>
+      </div>
+      <div class="sub-tabs">
+        <button class="sub-tab ${sub==='sub1'?'active':''}" onclick="switchSub(${i},'sub1',this)">${s.sub1.subtitulo}</button>
+        <button class="sub-tab ${sub==='sub2'?'active lila':''}" onclick="switchSub(${i},'sub2',this)">${s.sub2.subtitulo}</button>
+        <button class="sub-tab ${sub==='sub3'?'active menta':''}" onclick="switchSub(${i},'sub3',this)">${s.sub3.subtitulo}</button>
+      </div>
+      ${['sub1','sub2','sub3'].map(k=>`
+        <div class="sub-panel ${sub===k?'active':''}" id="sub_${i}_${k}">
+          <h4 class="sub-title">${s[k].subtitulo}</h4>
+          <div class="enunciado"><p class="enunciado-label">Descripción</p><p>${s[k].descripcion}</p></div>
+          ${buildSubContent(s[k],i,k)}
+        </div>`).join('')}
+    </div>`;
+}
+
+function switchSub(pi,key,btn){
+  subActiva[pi]=key;
+  const card=document.getElementById('pasoContainer').querySelector('.paso-card');
+  card.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active','lila','menta'));
+  if(key==='sub1') btn.classList.add('active');
+  if(key==='sub2') btn.classList.add('active','lila');
+  if(key==='sub3') btn.classList.add('active','menta');
+  card.querySelectorAll('.sub-panel').forEach(sp=>sp.classList.remove('active'));
+  document.getElementById(`sub_${pi}_${key}`).classList.add('active');
+}
+
+function escHtml(str){return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function copiarCodigo(id){
+  const el=document.getElementById(id);if(!el)return;
+  const ta=document.createElement('textarea');ta.value=el.innerText;
+  document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);
+  showToast('✅ Script copiado al portapapeles');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+function openModal(){renderModal();document.getElementById('modalOverlay').classList.add('open');}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');}
+function handleModalClick(e){if(e.target===document.getElementById('modalOverlay'))closeModal();}
+function renderModal(){
+  document.getElementById('modalBody').innerHTML=secciones.map((s,i)=>`
+    <div style="margin-bottom:48px;padding-bottom:40px;border-bottom:2px solid var(--border)">
+      <p style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--menta-d);margin-bottom:6px">${s.num} · ${s.categoria}</p>
+      <h3 style="font-family:var(--font-d);font-size:24px;color:var(--text);margin-bottom:16px">${s.titulo}</h3>
+      <p style="font-size:13.5px;color:var(--text-s);margin-bottom:24px">${s.intro}</p>
+      ${['sub1','sub2','sub3'].map(k=>`
+        <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
+          <p style="font-size:15px;font-weight:600;color:var(--azul);margin-bottom:10px;padding-left:12px;border-left:3px solid var(--azul-m)">${s[k].subtitulo}</p>
+          <div class="enunciado" style="margin-bottom:14px"><p class="enunciado-label">Descripción</p><p>${s[k].descripcion}</p></div>
+          ${buildSubContent(s[k],i,k)}
+        </div>`).join('')}
+    </div>`).join('');
+}
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('scrolled',scrollY>20);
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+</script>
+</body>
+</html>

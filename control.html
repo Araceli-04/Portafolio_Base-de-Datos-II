@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Seguridad & Control de Acceso — GradosTitulos UPLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --rosa:#f06292;--rosa-l:#fce4ec;--lila:#ce93d8;--lila-l:#ede7f6;--morado:#9c27b0;
+      --menta:#4db6ac;--menta-l:#e0f2f1;--menta-d:#00897b;
+      --azul:#1565c0;--azul-l:#e3f2fd;--azul-m:#42a5f5;
+      --text:#2d2d2d;--text-s:#6b6b6b;--bg:#fdfbfe;--white:#ffffff;--border:#f0e6f8;
+      --shadow:0 2px 16px rgba(206,147,216,.13);--shadow-h:0 8px 32px rgba(240,98,146,.18);
+      --rad:14px;--rad-sm:8px;--rad-pill:99px;
+      --font-d:'Instrument Serif',Georgia,serif;--font-b:'DM Sans',system-ui,sans-serif;
+
+      /* ── PALETA PASTEL PARA EVIDENCIAS ── */
+      --ev-bg1:#fdf6fb;      /* rosa pálido casi blanco */
+      --ev-bg2:#f3eeff;      /* lavanda muy suave */
+      --ev-accent:#d4a5e8;   /* lila pastel */
+      --ev-accent2:#f7b8ce;  /* rosa polvos */
+      --ev-accent3:#a8d8d0;  /* menta pastel */
+      --ev-text:#5a4570;     /* morado suave */
+      --ev-text-s:#9b87ab;   /* morado aún más suave */
+      --ev-border:#e8d5f5;   /* borde lavanda */
+      --ev-frame:#faf5ff;    /* fondo del frame */
+      --ev-dot1:#f7c5d8;     /* punto decorativo rosa */
+      --ev-dot2:#c9b8f0;     /* punto decorativo lila */
+      --ev-dot3:#b2ddd8;     /* punto decorativo menta */
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-b);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;padding-top:64px}
+
+    /* ── NAV ── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,251,254,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:background .3s,box-shadow .3s}
+    .nav.scrolled{background:rgba(253,251,254,.98);box-shadow:0 2px 20px rgba(206,147,216,.15)}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo-img{height:36px;width:auto;object-fit:contain}
+    .nav-title{font-family:var(--font-d);font-size:16px;color:var(--text);letter-spacing:.01em}
+    .nav-tabs{display:flex;gap:4px;flex:1}
+    .nav-tab{font-size:13px;color:var(--text-s);padding:6px 14px;border-radius:var(--rad-pill);transition:background .18s,color .18s;font-weight:400;cursor:pointer;border:none;background:none;font-family:var(--font-b)}
+    .nav-tab:hover,.nav-tab.active{background:var(--rosa-l);color:var(--rosa);font-weight:500}
+    .btn-back{display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-size:13px;font-weight:500;padding:7px 16px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);text-decoration:none;transition:background .18s,border-color .18s,color .18s;margin-left:auto}
+    .btn-back:hover{background:var(--rosa-l);border-color:var(--rosa);color:var(--rosa)}
+
+    /* ── PANELS ── */
+    .panel{display:none}.panel.active{display:block}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--white);color:var(--morado);border:1.5px solid var(--lila);border-radius:var(--rad-pill);padding:10px 24px;font-size:14px;font-weight:500;box-shadow:var(--shadow-h);z-index:999;opacity:0;transition:transform .3s,opacity .3s;pointer-events:none}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+    /* ── HERO ── */
+    .hero{position:relative;height:280px;background:linear-gradient(135deg,#e3f2fd 0%,#bbdefb 25%,#ede7f6 60%,#e8eaf6 100%);overflow:hidden;display:flex;align-items:flex-end;padding:0 48px 36px}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 10% 60%,rgba(21,101,192,.15) 0%,transparent 60%),radial-gradient(ellipse 45% 60% at 70% 30%,rgba(206,147,216,.16) 0%,transparent 60%);animation:holo 8s ease-in-out infinite alternate}
+    @keyframes holo{0%{opacity:.8;transform:scale(1)}100%{opacity:1;transform:scale(1.04)}}
+    .deco-c{position:absolute;border-radius:50%;opacity:.18;animation:floatC 7s ease-in-out infinite}
+    .deco-c.a{width:200px;height:200px;background:var(--azul-m);top:-50px;right:16%}
+    .deco-c.b{width:130px;height:130px;background:var(--lila);top:40px;right:7%;animation-delay:1.5s}
+    .deco-c.c{width:80px;height:80px;background:var(--menta);bottom:10px;right:28%;animation-delay:3s}
+    @keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+    .hero-text{position:relative;z-index:2}
+    .hero-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--azul);margin-bottom:10px;font-weight:500;opacity:.8}
+    .hero-title{font-family:var(--font-d);font-size:clamp(36px,6vw,68px);font-weight:400;color:#0d2b5e;line-height:.95}
+    .hero-title em{font-style:italic;color:var(--azul-m)}
+
+    /* ── LAYOUT ── */
+    .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sec-header{padding:48px 0 32px}
+    .sec-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--menta-d);font-weight:600;margin-bottom:8px}
+    .sec-title{font-family:var(--font-d);font-size:34px;color:var(--text);line-height:1.1}
+    .sec-desc{font-size:14px;color:var(--text-s);margin-top:6px}
+
+    /* ── OVERVIEW ── */
+    .overview-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:48px}
+    .ov-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+    .ov-card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px)}
+    .ov-card.span2{grid-column:span 2}
+    .ov-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-s);margin-bottom:10px}
+    .ov-stat-num{font-family:var(--font-d);font-size:56px;line-height:1;color:var(--azul-m);display:block}
+    .ov-stat-label{font-size:12px;color:var(--text-s);margin-top:4px}
+    .ov-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+    .chip{font-size:11px;font-weight:500;padding:3px 11px;border-radius:var(--rad-pill);background:var(--azul-l);color:var(--azul);border:1px solid #90caf9}
+    .chip.lila{background:var(--lila-l);color:var(--morado);border-color:#dbbfed}
+    .chip.menta{background:var(--menta-l);color:var(--menta-d);border-color:#b2dfdb}
+    .ov-intro{font-size:14px;color:var(--text-s);line-height:1.7}
+    .ov-intro strong{color:var(--text)}
+
+    /* ── PASO NAV ── */
+    .paso-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+    .paso-pill{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:7px 18px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);transition:all .18s}
+    .paso-pill:hover{border-color:var(--azul-m);color:var(--azul)}
+    .paso-pill.active{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);color:#fff;border-color:transparent;box-shadow:0 4px 14px rgba(21,101,192,.25)}
+
+    /* ── PASO CARD ── */
+    .paso-card{background:var(--white);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:32px}
+    .paso-card-header{padding:28px 32px 22px;border-bottom:1px solid var(--border)}
+    .paso-num{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--menta-d);margin-bottom:6px}
+    .paso-title{font-family:var(--font-d);font-size:24px;color:var(--text);line-height:1.2}
+
+    /* ── SUB TABS ── */
+    .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto}
+    .sub-tab{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:12px 22px;cursor:pointer;border:none;background:none;color:var(--text-s);border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap}
+    .sub-tab:hover{color:var(--azul-m)}
+    .sub-tab.active{color:var(--azul);border-bottom-color:var(--azul-m)}
+    .sub-tab.active.lila{color:var(--morado);border-bottom-color:var(--lila)}
+    .sub-tab.active.menta{color:var(--menta-d);border-bottom-color:var(--menta)}
+    .sub-panel{display:none;padding:28px 32px 36px}
+    .sub-panel.active{display:block}
+    .sub-title{font-family:var(--font-d);font-size:19px;color:var(--text);margin-bottom:14px}
+
+    /* ── ENUNCIADO ── */
+    .enunciado{background:linear-gradient(135deg,var(--azul-l) 0%,var(--lila-l) 100%);border:1px solid #90caf9;border-radius:var(--rad);padding:18px 20px;margin-bottom:20px}
+    .enunciado-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--azul);margin-bottom:6px}
+    .enunciado p{font-size:13.5px;color:var(--text);line-height:1.7}
+
+    /* ── INFO GRID ── */
+    .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+    .info-card{border-radius:var(--rad);padding:18px 20px}
+    .info-card.just{background:var(--menta-l);border:1px solid #b2dfdb}
+    .info-card.prac{background:var(--lila-l);border:1px solid #dbbfed}
+    .info-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .info-card.just .info-label{color:var(--menta-d)}
+    .info-card.prac .info-label{color:var(--morado)}
+    .info-card p{font-size:13px;color:var(--text);line-height:1.65}
+
+    /* ══════════════════════════════════════
+       IMAGEN DE ACTIVIDAD — PALETA PASTEL
+    ══════════════════════════════════════ */
+    .activity-img-wrap{
+      margin:0 0 24px;
+      background:linear-gradient(145deg, var(--ev-bg1) 0%, var(--ev-bg2) 100%);
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 4px 20px rgba(180,140,210,.15), 0 1px 4px rgba(180,140,210,.08);
+      border:1.5px solid var(--ev-border);
+      position:relative;
+      overflow:hidden;
+    }
+    /* burbujas decorativas suaves en las esquinas */
+    .activity-img-wrap::before{
+      content:'';position:absolute;
+      width:180px;height:180px;border-radius:50%;
+      background:radial-gradient(circle, rgba(212,165,232,.22) 0%, transparent 70%);
+      top:-60px;right:-40px;
+      pointer-events:none;
+    }
+    .activity-img-wrap::after{
+      content:'';position:absolute;
+      width:120px;height:120px;border-radius:50%;
+      background:radial-gradient(circle, rgba(168,216,208,.20) 0%, transparent 70%);
+      bottom:-30px;left:-20px;
+      pointer-events:none;
+    }
+    .activity-img-header{
+      display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative;z-index:1;
+    }
+    .activity-img-badge{
+      display:flex;align-items:center;justify-content:center;
+      width:38px;height:38px;border-radius:12px;
+      background:linear-gradient(135deg, var(--ev-accent2) 0%, var(--ev-accent) 100%);
+      border:2px solid rgba(255,255,255,.7);
+      box-shadow:0 2px 8px rgba(180,130,210,.18);
+      font-size:13px;font-weight:700;
+      color:var(--ev-text);
+      font-family:var(--font-b);flex-shrink:0;letter-spacing:.02em;
+    }
+    .activity-img-meta{flex:1}
+    .activity-img-title{
+      font-size:11px;font-weight:700;
+      color:var(--ev-text);
+      letter-spacing:.10em;text-transform:uppercase;line-height:1.2;
+    }
+    .activity-img-sub{font-size:12px;color:var(--ev-text-s);margin-top:3px;font-weight:400}
+
+    /* frame de la imagen — aspecto de visor suave */
+    .activity-img-frame{
+      position:relative;border-radius:12px;overflow:hidden;
+      background:var(--ev-frame);
+      box-shadow:0 2px 12px rgba(180,140,210,.12), inset 0 0 0 1.5px var(--ev-border);
+    }
+    /* barra de "ventana" con tres puntos pastel */
+    .activity-img-frame::before{
+      content:'';display:block;height:26px;
+      background:linear-gradient(90deg, var(--ev-bg2) 0%, var(--ev-bg1) 100%);
+      border-bottom:1px solid var(--ev-border);
+      position:relative;
+    }
+    /* los tres puntitos decorativos sobre la barra */
+    .activity-img-frame .frame-dots{
+      position:absolute;top:7px;left:14px;
+      display:flex;gap:6px;z-index:2;
+    }
+    .activity-img-frame .frame-dots span{
+      display:block;width:9px;height:9px;border-radius:50%;
+    }
+    .activity-img-frame .frame-dots span:nth-child(1){background:var(--ev-dot1)}
+    .activity-img-frame .frame-dots span:nth-child(2){background:var(--ev-dot2)}
+    .activity-img-frame .frame-dots span:nth-child(3){background:var(--ev-dot3)}
+
+    .activity-img-frame img{
+      display:block;width:100%;height:auto;
+      max-height:420px;object-fit:contain;
+      background:var(--ev-frame);
+    }
+    /* placeholder cuando falla la imagen */
+    .activity-img-placeholder{
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      height:180px;gap:8px;
+      color:var(--ev-text-s);font-size:13px;font-family:var(--font-b);
+    }
+    .activity-img-placeholder span{font-size:28px}
+
+    .activity-img-footer{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-top:12px;position:relative;z-index:1;
+    }
+    .activity-img-filename{
+      font-family:'Courier New',monospace;font-size:11px;
+      color:var(--ev-text-s);letter-spacing:.04em;
+    }
+    .activity-img-tag{
+      font-size:10px;font-weight:600;letter-spacing:.10em;text-transform:uppercase;
+      padding:3px 11px;border-radius:var(--rad-pill);
+      background:linear-gradient(135deg, rgba(212,165,232,.25) 0%, rgba(168,216,208,.20) 100%);
+      color:var(--ev-text);
+      border:1px solid var(--ev-border);
+    }
+
+    /* ── CODE ── */
+    .code-wrap{background:#1e1b2e;border-radius:var(--rad);overflow:hidden;margin-bottom:20px;box-shadow:0 4px 24px rgba(21,50,80,.18)}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#11233a;border-bottom:1px solid rgba(255,255,255,.06)}
+    .code-lang{font-size:11px;font-weight:600;color:var(--azul-m);letter-spacing:.08em;text-transform:uppercase}
+    .btn-copy{font-family:var(--font-b);font-size:11.5px;font-weight:500;padding:5px 14px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid rgba(66,165,245,.4);background:rgba(66,165,245,.12);color:var(--azul-m);transition:background .18s,border-color .18s}
+    .btn-copy:hover{background:rgba(66,165,245,.25);border-color:var(--azul-m)}
+    .code-body{padding:20px;overflow-x:auto;max-height:380px}
+    .code-body pre{font-family:'Courier New',Courier,monospace;font-size:12.5px;line-height:1.7;color:#cfe2ff;white-space:pre}
+
+    /* ── BUTTONS ── */
+    .btn-primary{font-family:var(--font-b);font-size:13.5px;font-weight:500;padding:10px 24px;border-radius:var(--rad-pill);border:none;cursor:pointer;background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);color:#fff;transition:opacity .18s,transform .15s}
+    .btn-primary:hover{opacity:.9;transform:translateY(-1px)}
+    .actions-bar{display:flex;gap:10px;padding:0 0 32px;flex-wrap:wrap}
+
+    /* ── MODAL ── */
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(13,43,94,.5);backdrop-filter:blur(4px);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:var(--white);border-radius:20px;width:100%;max-width:960px;margin:20px auto;box-shadow:0 24px 80px rgba(13,43,94,.28);overflow:hidden}
+    .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 28px;border-bottom:1px solid var(--border);gap:12px;background:linear-gradient(135deg,var(--azul-l),var(--lila-l))}
+    .modal-title{font-family:var(--font-d);font-size:22px;color:var(--text)}
+    .btn-close{width:34px;height:34px;border-radius:50%;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .18s}
+    .btn-close:hover{background:var(--azul-l);color:var(--azul)}
+    .modal-body{padding:28px 32px 40px}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px){.overview-grid{grid-template-columns:1fr 1fr}.info-grid{grid-template-columns:1fr}.nav-tabs{display:none}}
+    @media(max-width:560px){.overview-grid{grid-template-columns:1fr}.ov-card.span2{grid-column:span 1}.hero{padding:0 24px 28px}.sub-panel{padding:20px 18px 28px}}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <img src="img/LogoUpla.png" alt="UPLA" class="logo-img"
+           onerror="this.style.display='none'"/>
+      <span class="nav-title">Base de Datos</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" onclick="switchPanel('inicio',this)">Inicio</button>
+      <button class="nav-tab" onclick="switchPanel('manual',this)">Actividades</button>
+      <button class="nav-tab" onclick="openModal()">Vista completa</button>
+    </div>
+    <a class="btn-back" href="index.html">← Volver al portafolio</a>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     PANEL: INICIO
+══════════════════════════════════════════ -->
+<div class="panel active" id="panel-inicio">
+  <div class="hero">
+    <div style="position:absolute;inset:0;pointer-events:none">
+      <div class="deco-c a"></div><div class="deco-c b"></div><div class="deco-c c"></div>
+    </div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Universidad Peruana Los Andes · Ingeniería de Sistemas</p>
+      <h1 class="hero-title">Seguridad &amp;<br/><em>Control de Acceso</em></h1>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">SQL Server — GradosTitulos UPLA</p>
+      <h2 class="sec-title">Manual de Seguridad Avanzada</h2>
+      <p class="sec-desc">Guía completa sobre autenticación, roles, permisos, cifrado y auditoría aplicados a la base de datos GradosTitulos.</p>
+    </div>
+    <div class="overview-grid">
+      <div class="ov-card span2">
+        <p class="ov-label">Descripción general</p>
+        <p class="ov-intro">Este manual cubre la <strong>seguridad avanzada en SQL Server</strong> aplicada a la base de datos <strong>GradosTitulos</strong>. Se abordan desde estrategias de autenticación mixta y configuración de cuentas de servicio, hasta el control granular con GRANT/DENY/REVOKE, cifrado con TDE y Always Encrypted, y auditoría de eventos críticos mediante SQL Server Audit.</p>
+        <div class="ov-chips" style="margin-top:16px">
+          <span class="chip">Autenticación</span>
+          <span class="chip lila">Roles &amp; Permisos</span>
+          <span class="chip menta">GRANT / DENY / REVOKE</span>
+          <span class="chip">TDE</span>
+          <span class="chip lila">Always Encrypted</span>
+          <span class="chip menta">Auditoría SQL</span>
+        </div>
+      </div>
+      <div class="ov-card">
+        <p class="ov-label">Temas del manual</p>
+        <span class="ov-stat-num">5</span>
+        <span class="ov-stat-label">Temas principales</span>
+      </div>
+      <div class="ov-card" style="background:linear-gradient(135deg,var(--menta-l),#e0f7fa);border-color:#b2dfdb">
+        <p class="ov-label" style="color:var(--menta-d)">Actividades</p>
+        <span class="ov-stat-num" style="color:var(--menta-d)">15</span>
+        <span class="ov-stat-label">Proyectos y ejercicios propuestos</span>
+      </div>
+    </div>
+    <div class="actions-bar">
+      <button class="btn-primary" onclick="switchPanel('manual',document.querySelectorAll('.nav-tab')[1])">Ver Actividades →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PANEL: ACTIVIDADES
+══════════════════════════════════════════ -->
+<div class="panel" id="panel-manual">
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Guía paso a paso</p>
+      <h2 class="sec-title">Actividades de Seguridad en SQL Server</h2>
+      <p class="sec-desc">Selecciona el tema que deseas revisar.</p>
+    </div>
+    <div class="paso-nav" id="pasoNav"></div>
+    <div id="pasoContainer"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAL: Vista completa
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <h3 class="modal-title">Documento completo — Seguridad &amp; Control de Acceso SQL Server</h3>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   HELPER: genera el bloque de imagen para cada actividad
+   n        = número de actividad (1-15)
+   titulo   = texto descriptivo corto
+   tema     = etiqueta del tema
+════════════════════════════════════════════════════════ */
+function imgActividad(n, titulo, tema){
+  const filename = `actividad${n}.png`;
+  const numLabel = n < 10 ? '0'+n : String(n);
+  return `
+  <div class="activity-img-wrap">
+    <div class="activity-img-header">
+      <div class="activity-img-badge">${numLabel}</div>
+      <div class="activity-img-meta">
+        <div class="activity-img-title">Evidencia de la actividad</div>
+        <div class="activity-img-sub">${titulo}</div>
+      </div>
+    </div>
+    <div class="activity-img-frame">
+      <div class="frame-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <img src="SQL/${filename}"
+           alt="Actividad ${n} — ${titulo}"
+           loading="lazy"
+           onerror="this.parentElement.innerHTML='<div class=\\'activity-img-placeholder\\'><span>🖼️</span><span>SQL/${filename}</span></div>'"/>
+    </div>
+    <div class="activity-img-footer">
+      <span class="activity-img-filename">SQL/${filename}</span>
+      <span class="activity-img-tag">${tema}</span>
+    </div>
+  </div>`;
+}
+
+/* ════════════════════════════════════════════════════════
+   DATOS — 5 TEMAS × 3 EJERCICIOS = 15 ACTIVIDADES
+════════════════════════════════════════════════════════ */
+const temas = [
+  /* ── TEMA 1 ── */
+  {
+    num:'Tema 01', titulo:'Autenticación SQL y Windows', categoria:'Autenticación & Acceso',
+    intro:'Diferencias entre autenticación Windows y SQL Server. Modo mixto, políticas de contraseñas y estrategias de acceso para usuarios internos y externos en la base de datos GradosTitulos.',
+    subs:[
+      {
+        tab:'Acceso mixto — personal y consultores',
+        enunciado:'La Universidad requiere que los trabajadores internos accedan mediante autenticación Windows, mientras que los consultores externos utilicen autenticación SQL Server. Diseñe e implemente una estrategia de autenticación para la base de datos GradosTitulos que permita administrar ambos tipos de acceso.',
+        justificacion:'El Modo Mixto (valor 2 en el registro) es indispensable cuando coexisten usuarios integrados en el dominio de Directorio Activo y agentes externos sin cuentas corporativas. Al mapear cuentas de Windows se delega la validación de credenciales al sistema operativo, reduciendo la exposición de contraseñas sobre la red. Para los consultores, CHECK_POLICY obliga a SQL Server a aplicar las reglas de complejidad del sistema operativo local.',
+        practicas:'Se implementó la separación de responsabilidades a nivel de logins del servidor y usuarios de base de datos. Se definieron contraseñas robustas alfanuméricas con caracteres especiales y se forzó la expiración periódica de credenciales para mitigar ataques de fuerza bruta.',
+        imgN:1, imgTitulo:'Logins mixtos creados en SSMS', imgTema:'Autenticación',
+        sql:`-- Habilitar Modo Mixto (en registro de Windows)
+-- HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\MSSQLServer\\MSSQLServer
+-- LoginMode = 2  (Mixed Mode)
+
+USE GradosTitulos;
+GO
+
+-- Login para trabajador interno (autenticación Windows)
+CREATE LOGIN [UPLA\\jlopez] FROM WINDOWS;
+CREATE USER jlopez FOR LOGIN [UPLA\\jlopez];
+GO
+
+-- Login para consultor externo (autenticación SQL Server)
+CREATE LOGIN consultor_ext
+  WITH PASSWORD = 'C0nsult@UPLA2026!',
+       CHECK_POLICY     = ON,
+       CHECK_EXPIRATION = ON,
+       DEFAULT_DATABASE = GradosTitulos;
+CREATE USER consultor_ext FOR LOGIN consultor_ext;
+GO
+
+-- Verificar logins creados
+SELECT name, type_desc, is_policy_checked, is_expiration_checked
+FROM sys.sql_logins
+WHERE name LIKE '%consultor%';
+GO`
+      },
+      {
+        tab:'Acceso diferenciado — Jurado de Tesis',
+        enunciado:'Los miembros del jurado necesitan acceder únicamente a información de tesis y sustentaciones. Configure accesos diferenciados utilizando autenticación Windows y SQL.',
+        justificacion:'Centralizar los privilegios en un Rol de Base de Datos previene la dispersión de permisos individuales. Independientemente del origen de la autenticación, los tokens de seguridad de ambos usuarios heredan exactamente los mismos límites operacionales dentro del motor relacional.',
+        practicas:'Principio de menor privilegio. El jurado no posee visibilidad ni facultades de modificación sobre el esquema administrativo o de catálogo general, encapsulando su acción exclusivamente en el área de evaluación y tesis.',
+        imgN:2, imgTitulo:'Rol jurado_tesis y miembros asignados', imgTema:'Roles',
+        sql:`USE GradosTitulos;
+GO
+
+-- Rol de jurado de tesis
+CREATE ROLE rol_jurado_tesis;
+GO
+
+-- Permisos solo sobre evaluación y tesis
+GRANT SELECT ON SCHEMA::Evaluacion TO rol_jurado_tesis;
+GRANT SELECT ON SCHEMA::Tramite    TO rol_jurado_tesis;
+GO
+
+-- Asignar miembros (Windows + SQL)
+CREATE LOGIN [UPLA\\mgarcia] FROM WINDOWS;
+CREATE USER mgarcia FOR LOGIN [UPLA\\mgarcia];
+ALTER ROLE rol_jurado_tesis ADD MEMBER mgarcia;
+
+CREATE LOGIN jurado_sql
+  WITH PASSWORD = 'Jur@d0UPLA!2026', CHECK_POLICY=ON;
+CREATE USER jurado_sql FOR LOGIN jurado_sql;
+ALTER ROLE rol_jurado_tesis ADD MEMBER jurado_sql;
+GO`
+      },
+      {
+        tab:'Políticas estrictas para cuentas SQL Server',
+        enunciado:'La Oficina de Tecnologías de Información requiere aplicar políticas estrictas para las cuentas SQL Server que administran los trámites de grados y títulos.',
+        justificacion:'Al activar CHECK_POLICY = ON, SQL Server aprovecha las API de NetValidatePasswordPolicy de Windows para exigir longitud mínima, complejidad e historial de contraseñas, asegurando que las cuentas SQL cumplan las mismas normativas que las cuentas de dominio.',
+        practicas:'Evitar el uso de cuentas genéricas de administración como "sa". Cada módulo crítico institucional debe contar con su propio login nominado sujeto a auditoría de bloqueos automáticos.',
+        imgN:3, imgTitulo:'Verificación de políticas activas — sys.sql_logins', imgTema:'Políticas',
+        sql:`USE master;
+GO
+
+-- Login con políticas estrictas para trámites
+CREATE LOGIN admin_tramites
+  WITH PASSWORD = 'Tr@m1t3sUPLA#2026!',
+       CHECK_POLICY     = ON,
+       CHECK_EXPIRATION = ON,
+       MUST_CHANGE      = OFF;
+GO
+
+-- Login para módulo de documentos
+CREATE LOGIN admin_documentos
+  WITH PASSWORD = 'D0cum3nt0s@UPLA!26',
+       CHECK_POLICY     = ON,
+       CHECK_EXPIRATION = ON;
+GO
+
+-- Verificar estado de políticas
+SELECT name, is_disabled, is_policy_checked, is_expiration_checked
+FROM sys.sql_logins
+WHERE name IN ('admin_tramites','admin_documentos');
+GO`
+      }
+    ]
+  },
+
+  /* ── TEMA 2 ── */
+  {
+    num:'Tema 02', titulo:'Cuentas de Servicio y Configuración del Servidor', categoria:'Cuentas de Servicio',
+    intro:'Configuración segura de cuentas de servicio de SQL Server y SQL Server Agent, monitoreo con DMVs y configuración de protocolos de red seguros para la instancia que aloja GradosTitulos.',
+    subs:[
+      {
+        tab:'Configuración segura de servicios SQL Server',
+        enunciado:'La base de datos GradosTitulos será utilizada en producción. Configure cuentas de servicio específicas para SQL Server y SQL Server Agent.',
+        justificacion:'Ejecutar el motor y el agente bajo cuentas de servicio virtuales independientes (como NT SERVICE\\MSSQLSERVER) garantiza el aislamiento de procesos de Windows. Si un atacante compromete el agente de SQL mediante un trabajo malicioso, no obtendrá privilegios directos sobre el sistema operativo.',
+        practicas:'Nunca utilizar cuentas de alta jerarquía como "Administrator", "LocalSystem" o "NetworkService" para levantar servicios de bases de datos expuestas a producción.',
+        imgN:4, imgTitulo:'sys.dm_server_services — cuentas configuradas', imgTema:'Servicios',
+        sql:`-- Verificar cuentas de servicio activas
+SELECT servicename, service_account, status_desc, process_id
+FROM sys.dm_server_services;
+GO
+
+-- Telemetría de E/S por archivo de GradosTitulos
+SELECT DB_NAME(vfs.database_id) AS BaseDatos,
+       mf.physical_name AS Archivo,
+       vfs.io_stall_read_ms,
+       vfs.io_stall_write_ms,
+       vfs.num_of_reads,
+       vfs.num_of_writes
+FROM sys.dm_io_virtual_file_stats(NULL,NULL) vfs
+JOIN sys.master_files mf ON mf.database_id = vfs.database_id
+                        AND mf.file_id      = vfs.file_id
+WHERE DB_NAME(vfs.database_id) = 'GradosTitulos';
+GO`
+      },
+      {
+        tab:'Monitoreo de servicios críticos del servidor',
+        enunciado:'Implemente consultas administrativas que permitan verificar el estado de las instancias SQL Server relacionadas con GradosTitulos.',
+        justificacion:'El uso de Vistas de Administración Dinámica (DMVs) permite diagnosticar cuellos de botella de hardware y bloqueos en caliente antes de que afecten la disponibilidad del servicio académico.',
+        practicas:'Establecer baselines de rendimiento mediante consultas estructuradas de telemetría de E/S de discos, previniendo la degradación del servicio en épocas de alta concurrencia de sustentaciones.',
+        imgN:5, imgTitulo:'Sesiones activas monitoreadas — dm_exec_sessions', imgTema:'Monitoreo',
+        sql:`-- Sesiones activas sobre GradosTitulos
+SELECT s.session_id, s.login_name, s.host_name,
+       s.program_name, s.status, s.cpu_time,
+       s.total_elapsed_time / 1000 AS segundos_activo
+FROM sys.dm_exec_sessions s
+WHERE DB_NAME(s.database_id) = 'GradosTitulos'
+  AND s.is_user_process = 1;
+GO
+
+-- Verificar si las conexiones usan cifrado
+SELECT session_id, net_transport, encrypt_option, auth_scheme
+FROM sys.dm_exec_connections
+WHERE session_id IN (
+  SELECT session_id FROM sys.dm_exec_sessions
+  WHERE DB_NAME(database_id) = 'GradosTitulos'
+);
+GO`
+      },
+      {
+        tab:'Configuración de protocolos de red seguros',
+        enunciado:'Configure la instancia SQL Server para permitir únicamente conexiones seguras a la base de datos GradosTitulos.',
+        justificacion:'La configuración de red forzada requiere la activación de ForceEncryption = Yes en los protocolos de red corporativos y la instalación de un certificado digital TLS válido. Esto garantiza la protección de los datos en tránsito frente a ataques de intercepción (Man-in-the-Middle).',
+        practicas:'Deshabilitar protocolos obsoletos e inseguros como Named Pipes y Shared Memory para conexiones remotas, restringiendo el tráfico exclusivamente a TCP/IP con cifrado estricto de paquetes.',
+        imgN:6, imgTitulo:'Force Encryption habilitado — Configuration Manager', imgTema:'Red / TLS',
+        sql:`-- Verificar estado del cifrado TLS en conexiones activas
+SELECT c.session_id,
+       c.encrypt_option   AS cifrado,
+       c.net_transport    AS protocolo,
+       s.login_name,
+       s.host_name
+FROM sys.dm_exec_connections c
+JOIN sys.dm_exec_sessions    s ON s.session_id = c.session_id
+WHERE c.encrypt_option = 'TRUE';
+GO
+
+-- Forzar cifrado en SQL Server Configuration Manager:
+-- SQL Server Network Configuration
+-- → Protocols for MSSQLSERVER
+-- → Properties → Certificate (instalar cert. TLS)
+-- → Force Encryption = Yes`
+      }
+    ]
+  },
+
+  /* ── TEMA 3 ── */
+  {
+    num:'Tema 03', titulo:'Roles Fijos y Personalizados', categoria:'Roles de Base de Datos',
+    intro:'Diseño e implementación de roles de base de datos personalizados para segmentar el acceso a los 5 esquemas del sistema GradosTitulos: Catalogo, Academico, Tramite, Evaluacion y Documento.',
+    subs:[
+      {
+        tab:'Roles para el proceso de grados y títulos',
+        enunciado:'Diseñe roles personalizados para gestionar el acceso a los esquemas: Catalogo, Academico, Tramite, Evaluacion y Documento.',
+        justificacion:'La segmentación por esquemas permite aislar la estructura lógica de la base de datos. El uso de roles específicos evita otorgar el rol de propiedad general (db_owner), limitando el control estrictamente al dominio de datos que corresponde a cada división administrativa.',
+        practicas:'Agrupación lógica de permisos. No se asignan permisos directos a tablas individuales; el esquema actúa como frontera natural de seguridad, simplificando futuros despliegues y auditorías.',
+        imgN:7, imgTitulo:'Roles por esquema creados en GradosTitulos', imgTema:'Roles',
+        sql:`USE GradosTitulos;
+GO
+
+CREATE ROLE rol_catalogo;
+CREATE ROLE rol_academico;
+CREATE ROLE rol_tramite;
+CREATE ROLE rol_evaluacion;
+CREATE ROLE rol_documento;
+GO
+
+GRANT SELECT, INSERT, UPDATE ON SCHEMA::Catalogo   TO rol_catalogo;
+GRANT SELECT, INSERT, UPDATE ON SCHEMA::Academico  TO rol_academico;
+GRANT SELECT, INSERT, UPDATE ON SCHEMA::Tramite    TO rol_tramite;
+GRANT SELECT, INSERT, UPDATE ON SCHEMA::Evaluacion TO rol_evaluacion;
+GRANT SELECT, INSERT, UPDATE ON SCHEMA::Documento  TO rol_documento;
+GO
+
+SELECT name AS Rol, type_desc
+FROM sys.database_principals
+WHERE type = 'R' AND is_fixed_role = 0
+  AND name LIKE 'rol_%';
+GO`
+      },
+      {
+        tab:'Roles para evaluadores de tesis',
+        enunciado:'Los evaluadores deben consultar tesis y registrar observaciones sin modificar información académica.',
+        justificacion:'La instrucción DENY tiene precedencia absoluta en SQL Server. Aunque el usuario pertenezca a otros roles con permisos extendidos de edición, la presencia de un DENY explícito bloquea de inmediato cualquier operación destructiva sobre los datos de los tesistas.',
+        practicas:'Defensa en profundidad. Se garantiza la consulta transparente para la revisión científica, protegiendo bajo candado técnico los registros oficiales de matrícula e historial de notas.',
+        imgN:8, imgTitulo:'DENY aplicado al esquema Académico — rol_evaluador_tesis', imgTema:'DENY',
+        sql:`USE GradosTitulos;
+GO
+
+CREATE ROLE rol_evaluador_tesis;
+GO
+
+GRANT SELECT         ON SCHEMA::Evaluacion TO rol_evaluador_tesis;
+GRANT SELECT         ON SCHEMA::Tramite    TO rol_evaluador_tesis;
+GRANT INSERT, UPDATE ON Evaluacion.Sustentacion TO rol_evaluador_tesis;
+
+DENY INSERT, UPDATE, DELETE ON SCHEMA::Academico TO rol_evaluador_tesis;
+DENY INSERT, UPDATE, DELETE ON SCHEMA::Catalogo  TO rol_evaluador_tesis;
+GO
+
+CREATE LOGIN evaluador01 WITH PASSWORD='Ev@lu@d0r!2026', CHECK_POLICY=ON;
+CREATE USER evaluador01 FOR LOGIN evaluador01;
+ALTER ROLE rol_evaluador_tesis ADD MEMBER evaluador01;
+GO`
+      },
+      {
+        tab:'Roles jerárquicos — Operador / Supervisor / Admin',
+        enunciado:'Configure roles que representen los niveles: Operador, Supervisor, Administrador para el sistema de grados y títulos.',
+        justificacion:'SQL Server permite anidar roles de base de datos. Al añadir un rol como miembro de otro, se crea una estructura de herencia acumulativa, optimizando la administración de privilegios y reduciendo la redundancia de código.',
+        practicas:'Mantenibilidad escalable. Al actualizar un permiso en el rol base (Nivel_Operador), las capas jerárquicas superiores asimilan la mejora automáticamente sin requerir intervención manual en múltiples perfiles.',
+        imgN:9, imgTitulo:'Jerarquía de roles — Operador, Supervisor, Administrador', imgTema:'Jerarquía',
+        sql:`USE GradosTitulos;
+GO
+
+CREATE ROLE Nivel_Operador;
+CREATE ROLE Nivel_Supervisor;
+CREATE ROLE Nivel_Administrador;
+GO
+
+GRANT SELECT ON SCHEMA::Academico  TO Nivel_Operador;
+GRANT SELECT ON SCHEMA::Tramite    TO Nivel_Operador;
+GRANT SELECT ON SCHEMA::Catalogo   TO Nivel_Operador;
+GO
+
+ALTER ROLE Nivel_Operador ADD MEMBER Nivel_Supervisor;
+GRANT INSERT, UPDATE ON SCHEMA::Tramite    TO Nivel_Supervisor;
+GRANT INSERT, UPDATE ON SCHEMA::Academico  TO Nivel_Supervisor;
+GO
+
+ALTER ROLE Nivel_Supervisor ADD MEMBER Nivel_Administrador;
+GRANT INSERT, UPDATE, DELETE ON SCHEMA::Documento TO Nivel_Administrador;
+GRANT CONTROL               ON SCHEMA::Evaluacion TO Nivel_Administrador;
+GO`
+      }
+    ]
+  },
+
+  /* ── TEMA 4 ── */
+  {
+    num:'Tema 04', titulo:'Control de Acceso: GRANT, DENY y REVOKE', categoria:'Control de Permisos',
+    intro:'Control granular de permisos mediante GRANT, DENY y REVOKE sobre tablas, esquemas y objetos específicos de GradosTitulos. Gestión de accesos temporales y eliminación segura de privilegios residuales.',
+    subs:[
+      {
+        tab:'Permisos para operadores del sistema',
+        enunciado:'Los operadores pueden consultar datos de estudiantes, pero no modificarlos.',
+        justificacion:'El establecimiento de políticas restrictivas explícitas (DENY) neutraliza riesgos de inyección SQL o elevación accidental de accesos si un operador es incorporado a un grupo de Windows temporal de mayor rango.',
+        practicas:'Inmutabilidad de datos base. Se restringe la edición de información académica exclusiva a procesos validados por el sistema central de registros de la Universidad.',
+        imgN:10, imgTitulo:'GRANT SELECT + DENY escritura sobre op_consulta', imgTema:'GRANT / DENY',
+        sql:`USE GradosTitulos;
+GO
+
+CREATE LOGIN op_consulta WITH PASSWORD='Op3r@d0r!2026', CHECK_POLICY=ON;
+CREATE USER op_consulta FOR LOGIN op_consulta;
+GO
+
+GRANT SELECT ON SCHEMA::Academico  TO op_consulta;
+GRANT SELECT ON SCHEMA::Tramite    TO op_consulta;
+GRANT SELECT ON SCHEMA::Catalogo   TO op_consulta;
+GO
+
+DENY INSERT ON SCHEMA::Academico TO op_consulta;
+DENY UPDATE ON SCHEMA::Academico TO op_consulta;
+DENY DELETE ON SCHEMA::Academico TO op_consulta;
+GO
+
+SELECT * FROM sys.database_permissions
+WHERE grantee_principal_id = USER_ID('op_consulta');
+GO`
+      },
+      {
+        tab:'Restricción de acceso a documentos oficiales',
+        enunciado:'Solo la Oficina de Grados y Títulos puede modificar documentos oficiales (resoluciones y diplomas).',
+        justificacion:'Aplicar un DENY al rol public asegura un blindaje hermético. Todo usuario o proceso que intente alterar diplomas o resoluciones será bloqueado de forma nativa por el subsistema de seguridad del motor, a menos que cuente con privilegios de SysAdmin.',
+        practicas:'Aislamiento institucional de documentos con valor legal, impidiendo fraudes de falsificación de certificados de egreso académico.',
+        imgN:11, imgTitulo:'DENY al rol public — protección esquema Documento', imgTema:'DENY public',
+        sql:`USE GradosTitulos;
+GO
+
+DENY INSERT, UPDATE, DELETE ON SCHEMA::Documento TO public;
+GO
+
+CREATE ROLE rol_oficina_grados;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SCHEMA::Documento TO rol_oficina_grados;
+GO
+
+CREATE LOGIN jefe_grados WITH PASSWORD='J3f3Gr@dos!26', CHECK_POLICY=ON;
+CREATE USER jefe_grados FOR LOGIN jefe_grados;
+ALTER ROLE rol_oficina_grados ADD MEMBER jefe_grados;
+GO
+
+SELECT pr.name AS Principal, pe.permission_name, pe.state_desc
+FROM sys.database_permissions pe
+JOIN sys.database_principals pr ON pr.principal_id = pe.grantee_principal_id
+WHERE pr.name = 'public' AND pe.class_desc = 'SCHEMA';
+GO`
+      },
+      {
+        tab:'Acceso temporal para auditor externo',
+        enunciado:'Un auditor externo requiere acceso temporal durante una semana. Al finalizar, se debe revocar completamente.',
+        justificacion:'REVOKE elimina el permiso otorgado previamente, limpiando las listas de control de acceso internas de SQL Server. Deshabilitar el Login con DISABLE invalida los tokens de conexión futuros sin necesidad de borrar los objetos físicos del usuario.',
+        practicas:'Eliminación oportuna de accesos residuales, uno de los vectores preferidos por los atacantes informáticos (cuentas durmientes o huérfanas).',
+        imgN:12, imgTitulo:'Login auditor_ext deshabilitado tras auditoría — REVOKE completo', imgTema:'REVOKE',
+        sql:`USE GradosTitulos;
+GO
+
+CREATE LOGIN auditor_ext WITH PASSWORD='@ud1t0rTemp!26', CHECK_POLICY=ON;
+CREATE USER auditor_ext FOR LOGIN auditor_ext;
+GO
+
+GRANT SELECT ON SCHEMA::Academico  TO auditor_ext;
+GRANT SELECT ON SCHEMA::Tramite    TO auditor_ext;
+GRANT SELECT ON SCHEMA::Evaluacion TO auditor_ext;
+GRANT SELECT ON SCHEMA::Documento  TO auditor_ext;
+GO
+
+-- ── DESPUÉS DE LA SEMANA: REVOCAR ──
+REVOKE SELECT ON SCHEMA::Academico  FROM auditor_ext;
+REVOKE SELECT ON SCHEMA::Tramite    FROM auditor_ext;
+REVOKE SELECT ON SCHEMA::Evaluacion FROM auditor_ext;
+REVOKE SELECT ON SCHEMA::Documento  FROM auditor_ext;
+GO
+
+ALTER LOGIN auditor_ext DISABLE;
+GO
+
+SELECT name, is_disabled FROM sys.sql_logins WHERE name = 'auditor_ext';
+GO`
+      }
+    ]
+  },
+
+  /* ── TEMA 5 ── */
+  {
+    num:'Tema 05', titulo:'Cifrado y Protección de Datos', categoria:'TDE & Always Encrypted',
+    intro:'Implementación de Transparent Data Encryption (TDE) para proteger los archivos físicos de GradosTitulos, cifrado de columnas sensibles con Always Encrypted y enmascaramiento dinámico con Dynamic Data Masking.',
+    subs:[
+      {
+        tab:'TDE para GradosTitulos',
+        enunciado:'Proteja los archivos físicos de la base de datos GradosTitulos mediante Transparent Data Encryption.',
+        justificacion:'TDE cifra las páginas de datos en el nivel físico de almacenamiento (archivos MDF, LDF) y sus respectivos respaldos (Backups) utilizando el algoritmo AES-256. El proceso de descifrado es invisible para las aplicaciones autorizadas que realizan consultas sobre el motor.',
+        practicas:'Es mandatorio realizar un backup de la llave maestra y del certificado del servidor en un almacenamiento físico desconectado de la red para garantizar la restauración ante desastres catastróficos de hardware.',
+        imgN:13, imgTitulo:'TDE activado — encryption_state: ENCRYPTED AES_256', imgTema:'TDE',
+        sql:`USE master;
+GO
+
+CREATE MASTER KEY ENCRYPTION BY PASSWORD = 'M@st3rK3y!UPLA2026';
+GO
+
+CREATE CERTIFICATE cert_TDE_GradosTitulos
+  WITH SUBJECT = 'Certificado TDE para GradosTitulos UPLA',
+       EXPIRY_DATE = '2030-12-31';
+GO
+
+USE GradosTitulos;
+GO
+CREATE DATABASE ENCRYPTION KEY
+  WITH ALGORITHM = AES_256
+  ENCRYPTION BY SERVER CERTIFICATE cert_TDE_GradosTitulos;
+GO
+
+ALTER DATABASE GradosTitulos SET ENCRYPTION ON;
+GO
+
+SELECT db.name, dek.encryption_state_desc, dek.percent_complete
+FROM sys.dm_database_encryption_keys dek
+JOIN sys.databases db ON db.database_id = dek.database_id;
+GO
+
+BACKUP CERTIFICATE cert_TDE_GradosTitulos
+  TO FILE = 'C:\\BackupSeguro\\cert_TDE.cer'
+  WITH PRIVATE KEY (
+    FILE     = 'C:\\BackupSeguro\\cert_TDE_PK.pvk',
+    ENCRYPTION BY PASSWORD = 'B@ckupK3y!2026'
+  );
+GO`
+      },
+      {
+        tab:'Always Encrypted — datos personales del tesista',
+        enunciado:'Implemente Always Encrypted para proteger: DNI, Correo electrónico y Teléfono de los estudiantes.',
+        justificacion:'Always Encrypted garantiza que los datos sensibles se mantengan cifrados en tránsito y en reposo directamente desde el cliente. El DBA de la BD no tiene la clave maestra del cliente, lo que le impide visualizar en texto plano el contenido confidencial de los alumnos.',
+        practicas:'Se aplica cifrado determinista para el DNI (permite búsquedas exactas) y cifrado aleatorio (Randomized) para correos y teléfonos, impidiendo patrones predecibles mediante criptoanálisis básico.',
+        imgN:14, imgTitulo:'Columnas cifradas con Always Encrypted — Wizard SSMS', imgTema:'Always Encrypted',
+        sql:`-- Always Encrypted se configura desde SSMS:
+-- Clic derecho en columna → Encrypt Column
+
+CREATE TABLE Academico.Persona_Cifrada (
+    IdPersona       INT            NOT NULL IDENTITY(1,1),
+    DNI             VARBINARY(256) NOT NULL
+        ENCRYPTED WITH (
+          COLUMN_ENCRYPTION_KEY = CEK_Persona,
+          ENCRYPTION_TYPE = DETERMINISTIC,
+          ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'
+        ),
+    Nombres         VARCHAR(80)  NOT NULL,
+    ApellidoPaterno VARCHAR(60)  NOT NULL,
+    Correo          VARBINARY(256) NULL
+        ENCRYPTED WITH (
+          COLUMN_ENCRYPTION_KEY = CEK_Persona,
+          ENCRYPTION_TYPE = RANDOMIZED,
+          ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'
+        ),
+    Telefono        VARBINARY(256) NULL
+        ENCRYPTED WITH (
+          COLUMN_ENCRYPTION_KEY = CEK_Persona,
+          ENCRYPTION_TYPE = RANDOMIZED,
+          ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'
+        ),
+    CONSTRAINT PK_Persona_Cifrada PRIMARY KEY (IdPersona)
+);
+GO`
+      },
+      {
+        tab:'Dynamic Data Masking — asesores y jurados',
+        enunciado:'Proteja la información personal de asesores y jurados de tesis mediante Dynamic Data Masking.',
+        justificacion:'El enmascaramiento dinámico (DDM) actúa sobre el flujo de salida de resultados SQL. El dato sigue legible para transacciones internas y backups cifrados por TDE, pero se oculta automáticamente con máscaras definidas para prevenir ingeniería social en pantallas operacionales.',
+        practicas:'Minimización del alcance de la información sensible corporativa cumpliendo con las legislaciones locales de protección de datos personales (Ley N° 29733).',
+        imgN:15, imgTitulo:'Dynamic Data Masking aplicado — sys.masked_columns', imgTema:'DDM',
+        sql:`USE GradosTitulos;
+GO
+
+ALTER TABLE Academico.Docente
+  ALTER COLUMN DNI
+    ADD MASKED WITH (FUNCTION = 'partial(0,"XXXXXX",2)');
+GO
+
+ALTER TABLE Academico.Docente
+  ALTER COLUMN Correo
+    ADD MASKED WITH (FUNCTION = 'email()');
+GO
+
+ALTER TABLE Academico.Docente
+  ALTER COLUMN Telefono
+    ADD MASKED WITH (FUNCTION = 'partial(3,"****",2)');
+GO
+
+CREATE USER visualizador WITH PASSWORD = 'V1su@l!2026';
+GRANT SELECT ON Academico.Docente TO visualizador;
+GO
+
+GRANT UNMASK TO jefe_grados;
+GO
+
+SELECT TABLE_NAME, COLUMN_NAME, masking_function
+FROM sys.masked_columns
+WHERE is_masked = 1;
+GO`
+      }
+    ]
+  }
+];
+
+/* ════════════════════════════════════════════════════════
+   ESTADO DE NAVEGACIÓN
+════════════════════════════════════════════════════════ */
+let temaActivo = 0;
+let subActiva  = {};
+
+function switchPanel(id, btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  window.scrollTo(0,0);
+  if(id==='manual') renderManual();
+}
+
+/* ════════════════════════════════════════════════════════
+   RENDER ACTIVIDADES
+════════════════════════════════════════════════════════ */
+function renderManual(){ renderPasoNav(); renderTemaCard(temaActivo); }
+
+function renderPasoNav(){
+  document.getElementById('pasoNav').innerHTML = temas.map((t,i)=>
+    `<button class="paso-pill ${i===temaActivo?'active':''}" onclick="selTema(${i})">${t.num}</button>`
+  ).join('');
+}
+
+function selTema(i){
+  temaActivo=i; renderPasoNav(); renderTemaCard(i);
+  window.scrollTo({top:220,behavior:'smooth'});
+}
+
+function getSub(i){ return subActiva[i]||0; }
+
+function renderTemaCard(i){
+  const t = temas[i];
+  const sub = getSub(i);
+  const tabColors = ['active','active lila','active menta'];
+
+  document.getElementById('pasoContainer').innerHTML = `
+    <div class="paso-card">
+      <div class="paso-card-header">
+        <p class="paso-num">${t.num} · ${t.categoria}</p>
+        <h3 class="paso-title">${t.titulo}</h3>
+        <p style="font-size:13px;color:var(--text-s);margin-top:8px">${t.intro}</p>
+      </div>
+      <div class="sub-tabs">
+        ${t.subs.map((s,k)=>`
+          <button class="sub-tab ${sub===k?tabColors[k]:''}" onclick="selSub(${i},${k},this)">
+            ${['Actividad '+(i*3+1),'Actividad '+(i*3+2),'Actividad '+(i*3+3)][k]}: ${s.tab}
+          </button>`).join('')}
+      </div>
+      ${t.subs.map((s,k)=>`
+        <div class="sub-panel ${sub===k?'active':''}" id="sp_${i}_${k}">
+          <h4 class="sub-title">${s.tab}</h4>
+          <div class="enunciado">
+            <p class="enunciado-label">Enunciado</p>
+            <p>${s.enunciado}</p>
+          </div>
+          <div class="info-grid">
+            <div class="info-card just">
+              <p class="info-label">Justificación técnica</p>
+              <p>${s.justificacion}</p>
+            </div>
+            <div class="info-card prac">
+              <p class="info-label">Buenas prácticas</p>
+              <p>${s.practicas}</p>
+            </div>
+          </div>
+          ${imgActividad(s.imgN, s.imgTitulo, s.imgTema)}
+          <div class="code-wrap">
+            <div class="code-header">
+              <span class="code-lang">T-SQL · SQL Server</span>
+              <button class="btn-copy" onclick="copiar('code_${i}_${k}')">Copiar script</button>
+            </div>
+            <div class="code-body"><pre id="code_${i}_${k}">${escHtml(s.sql)}</pre></div>
+          </div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function selSub(ti, ki, btn){
+  subActiva[ti] = ki;
+  const card = document.getElementById('pasoContainer').querySelector('.paso-card');
+  card.querySelectorAll('.sub-tab').forEach(t=>t.className='sub-tab');
+  const colors = ['active','active lila','active menta'];
+  btn.className = 'sub-tab ' + colors[ki];
+  card.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(`sp_${ti}_${ki}`).classList.add('active');
+}
+
+/* ════════════════════════════════════════════════════════
+   MODAL COMPLETO
+════════════════════════════════════════════════════════ */
+function openModal(){
+  renderModal();
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+function handleModalClick(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+
+function renderModal(){
+  document.getElementById('modalBody').innerHTML = temas.map((t,i)=>`
+    <div style="margin-bottom:48px;padding-bottom:40px;border-bottom:2px solid var(--border)">
+      <p style="font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--menta-d);margin-bottom:6px">${t.num} · ${t.categoria}</p>
+      <h3 style="font-family:var(--font-d);font-size:24px;color:var(--text);margin-bottom:10px">${t.titulo}</h3>
+      <p style="font-size:13px;color:var(--text-s);margin-bottom:24px">${t.intro}</p>
+      ${t.subs.map((s,k)=>`
+        <div style="margin-bottom:28px;padding-bottom:24px;border-bottom:1px solid var(--border)">
+          <p style="font-size:14px;font-weight:600;color:var(--azul);margin-bottom:10px;padding-left:12px;border-left:3px solid var(--azul-m)">Actividad ${i*3+k+1}: ${s.tab}</p>
+          <div class="enunciado"><p class="enunciado-label">Enunciado</p><p>${s.enunciado}</p></div>
+          <div class="info-grid">
+            <div class="info-card just"><p class="info-label">Justificación técnica</p><p>${s.justificacion}</p></div>
+            <div class="info-card prac"><p class="info-label">Buenas prácticas</p><p>${s.practicas}</p></div>
+          </div>
+          ${imgActividad(s.imgN, s.imgTitulo, s.imgTema)}
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+/* ════════════════════════════════════════════════════════
+   UTILIDADES
+════════════════════════════════════════════════════════ */
+function escHtml(str){ return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function copiar(id){
+  const el=document.getElementById(id); if(!el) return;
+  const ta=document.createElement('textarea');
+  ta.value=el.innerText;
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  showToast('✅ Script copiado al portapapeles');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('scrolled', scrollY>20);
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>

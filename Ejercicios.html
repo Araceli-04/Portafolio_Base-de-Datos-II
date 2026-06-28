@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Ejercicios SQL — GradosTitulos UPLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --rosa:#f06292;--rosa-l:#fce4ec;--lila:#ce93d8;--lila-l:#ede7f6;--morado:#9c27b0;
+      --menta:#4db6ac;--menta-l:#e0f2f1;--menta-d:#00897b;
+      --azul:#1565c0;--azul-l:#e3f2fd;--azul-m:#42a5f5;
+      --text:#2d2d2d;--text-s:#6b6b6b;--bg:#fdfbfe;--white:#ffffff;--border:#f0e6f8;
+      --shadow:0 2px 16px rgba(206,147,216,.13);--shadow-h:0 8px 32px rgba(240,98,146,.18);
+      --rad:14px;--rad-sm:8px;--rad-pill:99px;
+      --font-d:'Instrument Serif',Georgia,serif;
+      --font-b:'DM Sans',system-ui,sans-serif;
+    }
+    html{scroll-behavior:smooth}
+    body{font-family:var(--font-b);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;padding-top:64px}
+
+    /* ── NAV ── */
+    .nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,251,254,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:background .3s,box-shadow .3s}
+    .nav.scrolled{background:rgba(253,251,254,.98);box-shadow:0 2px 20px rgba(206,147,216,.15)}
+    .nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:20px}
+    .nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+    .logo-img{height:36px;width:auto;object-fit:contain}
+    .nav-title{font-family:var(--font-d);font-size:16px;color:var(--text);letter-spacing:.01em}
+    .nav-tabs{display:flex;gap:4px;flex:1}
+    .nav-tab{font-size:13px;color:var(--text-s);padding:6px 14px;border-radius:var(--rad-pill);transition:background .18s,color .18s;font-weight:400;cursor:pointer;border:none;background:none;font-family:var(--font-b)}
+    .nav-tab:hover,.nav-tab.active{background:var(--rosa-l);color:var(--rosa);font-weight:500}
+    .btn-back{display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-size:13px;font-weight:500;padding:7px 16px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);text-decoration:none;transition:background .18s,border-color .18s,color .18s;margin-left:auto}
+    .btn-back:hover{background:var(--rosa-l);border-color:var(--rosa);color:var(--rosa)}
+
+    /* ── TOAST ── */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--white);color:var(--morado);border:1.5px solid var(--lila);border-radius:var(--rad-pill);padding:10px 24px;font-size:14px;font-weight:500;box-shadow:var(--shadow-h);z-index:999;opacity:0;transition:transform .3s,opacity .3s;pointer-events:none}
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+    /* ── HERO ── */
+    .hero{position:relative;height:280px;background:linear-gradient(135deg,#fce4ec 0%,#ede7f6 40%,#e8eaf6 70%,#fce4ec 100%);overflow:hidden;display:flex;align-items:flex-end;padding:0 48px 36px}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 10% 60%,rgba(240,98,146,.12) 0%,transparent 60%),radial-gradient(ellipse 45% 60% at 70% 30%,rgba(206,147,216,.14) 0%,transparent 60%);animation:holo 8s ease-in-out infinite alternate}
+    @keyframes holo{0%{opacity:.8;transform:scale(1)}100%{opacity:1;transform:scale(1.04)}}
+    .deco-c{position:absolute;border-radius:50%;opacity:.18;animation:floatC 7s ease-in-out infinite}
+    .deco-c.a{width:200px;height:200px;background:var(--rosa);top:-50px;right:16%}
+    .deco-c.b{width:130px;height:130px;background:var(--lila);top:40px;right:7%;animation-delay:1.5s}
+    .deco-c.c{width:80px;height:80px;background:var(--menta);bottom:10px;right:28%;animation-delay:3s}
+    @keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+    .hero-text{position:relative;z-index:2}
+    .hero-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--morado);margin-bottom:10px;font-weight:500;opacity:.8}
+    .hero-title{font-family:var(--font-d);font-size:clamp(38px,6.5vw,68px);font-weight:400;color:#2d1a3e;line-height:.95}
+    .hero-title em{font-style:italic;color:var(--rosa)}
+
+    /* ── WRAP & SECCIÓN ── */
+    .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+    .sec-header{padding:44px 0 28px}
+    .sec-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--menta-d);font-weight:600;margin-bottom:8px}
+    .sec-title{font-family:var(--font-d);font-size:32px;color:var(--text);line-height:1.1}
+    .sec-desc{font-size:14px;color:var(--text-s);margin-top:6px}
+
+    /* ── CHIPS ── */
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+    .chip{font-size:11px;font-weight:500;padding:3px 11px;border-radius:var(--rad-pill)}
+    .chip.rosa{background:var(--rosa-l);color:#ad1457;border:1px solid #f48fb1}
+    .chip.lila{background:var(--lila-l);color:var(--morado);border:1px solid #dbbfed}
+    .chip.menta{background:var(--menta-l);color:var(--menta-d);border:1px solid #b2dfdb}
+    .chip.gold{background:#fff8e1;color:#7b5e00;border:1px solid #f9a825}
+
+    /* ── EJERCICIO PILLS NAV ── */
+    .ejerc-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+    .ejerc-pill{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:7px 18px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text-s);transition:all .18s;box-shadow:0 1px 4px rgba(206,147,216,.08)}
+    .ejerc-pill:hover{border-color:var(--rosa);color:var(--rosa);background:var(--rosa-l)}
+    .ejerc-pill.active{background:linear-gradient(135deg,#ad1457 0%,var(--morado) 100%);color:#fff;border-color:transparent;box-shadow:0 4px 16px rgba(173,20,87,.28)}
+
+    /* ── CARD EJERCICIO ── */
+    .ejerc-card{background:var(--white);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:40px}
+    .ejerc-card-header{padding:28px 32px 22px;background:linear-gradient(135deg,var(--rosa-l) 0%,var(--lila-l) 100%);border-bottom:1px solid var(--border)}
+    .ejerc-num{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--rosa);margin-bottom:4px}
+    .ejerc-cat{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--morado);margin-left:8px}
+    .ejerc-title{font-family:var(--font-d);font-size:23px;color:var(--text);line-height:1.2;margin-top:6px}
+
+    /* ── SUB-TABS ── */
+    .sub-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);overflow-x:auto;background:var(--white)}
+    .sub-tab{font-family:var(--font-b);font-size:12.5px;font-weight:500;padding:12px 22px;cursor:pointer;border:none;background:none;color:var(--text-s);border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap;margin-bottom:-1px}
+    .sub-tab:hover{color:var(--rosa)}
+    .sub-tab.active{color:var(--rosa);border-bottom-color:var(--rosa)}
+    .sub-tab.active.lila{color:var(--morado);border-bottom-color:var(--lila)}
+    .sub-tab.active.menta{color:var(--menta-d);border-bottom-color:var(--menta)}
+    .sub-panel{display:none;padding:28px 32px 36px}
+    .sub-panel.active{display:block}
+    .sub-title{font-family:var(--font-d);font-size:19px;color:var(--text);margin-bottom:14px}
+
+    /* ── ENUNCIADO ── */
+    .enunciado{background:linear-gradient(135deg,var(--rosa-l) 0%,var(--lila-l) 100%);border:1px solid #f48fb1;border-radius:var(--rad);padding:18px 22px;margin-bottom:20px}
+    .enunciado-label{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ad1457;margin-bottom:6px}
+    .enunciado p{font-size:13.5px;color:var(--text);line-height:1.7}
+
+    /* ── ALERTS ── */
+    .alert-box{display:flex;gap:12px;align-items:flex-start;border-radius:var(--rad);padding:14px 18px;margin-bottom:20px}
+    .alert-box.warn{background:#fff8e1;border:1px solid #ffe082}
+    .alert-box.info{background:var(--menta-l);border:1px solid #b2dfdb}
+    .alert-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+    .alert-text{font-size:13px;color:var(--text);line-height:1.6}
+    .alert-text strong{color:#ad1457}
+
+    /* ── TABLAS SQL — paleta femenina ── */
+    .sql-table-wrap{margin:20px 0;border-radius:var(--rad);overflow:hidden;border:1.5px solid var(--border);box-shadow:var(--shadow)}
+    .sql-table-header{padding:10px 16px;display:flex;align-items:center;gap:10px}
+    .sql-table-header.rosa-grad{background:linear-gradient(90deg,#ad1457 0%,var(--morado) 100%)}
+    .sql-table-header.teal-grad{background:linear-gradient(90deg,var(--menta-d) 0%,var(--menta) 100%)}
+    .sql-table-header span{font-size:11px;font-weight:600;color:#fff;letter-spacing:.06em;text-transform:uppercase;opacity:.85}
+    .sql-table-header .tbl-name{font-size:13.5px;font-weight:700;color:#fff;opacity:1}
+    .sql-table-header .tbl-rows{margin-left:auto;font-size:11px;color:rgba(255,255,255,.7)}
+    table.sqltbl{width:100%;border-collapse:collapse;font-family:'Courier New',Courier,monospace;font-size:12px}
+    table.sqltbl thead tr{background:linear-gradient(90deg,var(--rosa-l),var(--lila-l))}
+    table.sqltbl thead th{padding:9px 13px;text-align:left;font-size:11px;font-weight:700;color:#ad1457;letter-spacing:.05em;text-transform:uppercase;border-bottom:2px solid #f48fb1}
+    table.sqltbl thead th.teal-h{color:var(--menta-d);border-bottom-color:var(--menta)}
+    table.sqltbl tbody tr{border-bottom:1px solid #fce4ec;transition:background .15s}
+    table.sqltbl tbody tr:nth-child(even){background:#fdf4fb}
+    table.sqltbl tbody tr:hover{background:var(--rosa-l)}
+    table.sqltbl tbody td{padding:8px 13px;color:var(--text);font-size:12px}
+    table.sqltbl tbody td.pk{font-weight:700;color:#ad1457}
+    table.sqltbl tbody td.fk{color:var(--morado);font-weight:600}
+    table.sqltbl tbody td.bit{color:var(--menta-d);font-weight:700}
+    table.sqltbl tbody td.num{color:#e65100;font-weight:600}
+    table.sqltbl tbody td.str{color:#2e7d32}
+    .col-badge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:3px;margin-left:4px;font-family:var(--font-b);font-weight:700;vertical-align:middle}
+    .col-badge.pk{background:var(--rosa-l);color:#ad1457;border:1px solid #f48fb1}
+    .col-badge.fk{background:var(--lila-l);color:var(--morado);border:1px solid #dbbfed}
+
+    /* ── CÓDIGO — fondo blanco con sintaxis coloreada ── */
+    .code-wrap{background:#ffffff;border:1.5px solid var(--border);border-radius:var(--rad);overflow:hidden;margin-bottom:20px;box-shadow:0 2px 12px rgba(206,147,216,.10)}
+    .code-header{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;background:linear-gradient(90deg,var(--rosa-l),var(--lila-l));border-bottom:1.5px solid var(--border)}
+    .code-lang{font-size:11px;font-weight:700;color:#ad1457;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+    .code-lang::before{content:'';width:8px;height:8px;border-radius:50%;background:#ad1457;display:inline-block}
+    .btn-copy{font-family:var(--font-b);font-size:11.5px;font-weight:600;padding:5px 16px;border-radius:var(--rad-pill);cursor:pointer;border:1.5px solid #f48fb1;background:var(--white);color:#ad1457;transition:background .18s,color .18s}
+    .btn-copy:hover{background:#ad1457;color:#fff}
+    .code-body{padding:22px 24px;overflow-x:auto;max-height:430px}
+    .code-body pre{font-family:'Courier New',Courier,monospace;font-size:12.5px;line-height:1.78;white-space:pre;color:var(--text)}
+    /* Colores de sintaxis */
+    .kw{color:#b0003a;font-weight:700}
+    .fn{color:#6a0080;font-weight:600}
+    .sq{color:#2e7d32}
+    .nc{color:#e65100}
+    .cm{color:#9e9e9e;font-style:italic}
+    .ty{color:#880e4f}
+    .go{color:#c2185b;font-weight:700}
+
+    @media(max-width:768px){.nav-tabs{display:none}}
+    @media(max-width:560px){.hero{padding:0 24px 28px}.sub-panel{padding:20px 18px 26px}.ejerc-card-header{padding:20px 18px 16px}}
+  </style>
+</head>
+<body>
+
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#">
+      <img src="img/LogoUpla.png" alt="UPLA" class="logo-img"/>
+      <span class="nav-title">Base de Datos</span>
+    </a>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" onclick="selectEjerc(0,this)">Ejercicio 1</button>
+      <button class="nav-tab" onclick="selectEjerc(1,this)">Ejercicio 2</button>
+      <button class="nav-tab" onclick="selectEjerc(2,this)">Ejercicio 3</button>
+    </div>
+    <a class="btn-back" href="index.html">← Volver al portafolio</a>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- HERO -->
+<div class="hero">
+  <div style="position:absolute;inset:0;pointer-events:none">
+    <div class="deco-c a"></div>
+    <div class="deco-c b"></div>
+    <div class="deco-c c"></div>
+  </div>
+  <div class="hero-text">
+    <p class="hero-eyebrow">Universidad Peruana Los Andes · Ingeniería de Sistemas</p>
+    <h1 class="hero-title">Ejercicios Prácticos<br/><em>T-SQL en Azure</em></h1>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="wrap">
+  <div class="sec-header">
+    <p class="sec-eyebrow">GradosTitulos — Azure SQL Database</p>
+    <h2 class="sec-title">Parte 3 · Esquemas, Tablas, Vistas, Funciones y SPs</h2>
+    <p class="sec-desc">Tres ejercicios progresivos para construir la estructura completa del sistema en Azure SQL. Ejecuta cada script en el Query Editor del portal.</p>
+    <div class="chips">
+      <span class="chip rosa">5 Esquemas</span>
+      <span class="chip lila">25 Tablas</span>
+      <span class="chip menta">3 Vistas</span>
+      <span class="chip gold">2 Funciones · 2 SPs</span>
+    </div>
+  </div>
+
+  <div class="ejerc-nav" id="ejercNav">
+    <button class="ejerc-pill active" onclick="selectEjerc(0,this)">Ejercicio 1 — Esquemas</button>
+    <button class="ejerc-pill" onclick="selectEjerc(1,this)">Ejercicio 2 — Tablas</button>
+    <button class="ejerc-pill" onclick="selectEjerc(2,this)">Ejercicio 3 — Vistas, Funciones y SPs</button>
+  </div>
+
+  <div id="ejercContainer"></div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   TABLAS SQL (paleta femenina rosa-lila)
+═══════════════════════════════════════ */
+function tablaTipoTramite(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Catalogo.TipoTramite</span><span class="tbl-rows">4 filas</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdTipoTramite<span class="col-badge pk">PK</span></th><th>Descripcion</th><th>RequiereTesis</th><th>RequiereSuficiencia</th><th>RequiereBachiller</th><th>Activo</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="str">BACHILLER</td><td class="bit">0</td><td class="bit">0</td><td class="bit">0</td><td class="bit">1</td></tr>
+    <tr><td class="pk">2</td><td class="str">TITULO_TESIS_INDIVIDUAL</td><td class="bit">1</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td></tr>
+    <tr><td class="pk">3</td><td class="str">TITULO_TESIS_GRUPAL</td><td class="bit">1</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td></tr>
+    <tr><td class="pk">4</td><td class="str">TITULO_SUFICIENCIA_PROF</td><td class="bit">0</td><td class="bit">1</td><td class="bit">1</td><td class="bit">1</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaEstadoTramite(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Catalogo.EstadoTramite</span><span class="tbl-rows">8 filas</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdEstadoTramite<span class="col-badge pk">PK</span></th><th>Descripcion</th><th>EsTerminal</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="str">INICIADO</td><td class="bit">0</td></tr>
+    <tr><td class="pk">2</td><td class="str">EN_VERIFICACION</td><td class="bit">0</td></tr>
+    <tr><td class="pk">3</td><td class="str">EN_PROCESO</td><td class="bit">0</td></tr>
+    <tr><td class="pk">4</td><td class="str">OBSERVADO</td><td class="bit">0</td></tr>
+    <tr><td class="pk">5</td><td class="str">APROBADO</td><td class="bit">1</td></tr>
+    <tr><td class="pk">6</td><td class="str">IMPROCEDENTE</td><td class="bit">1</td></tr>
+    <tr><td class="pk">7</td><td class="str">ARCHIVADO</td><td class="bit">1</td></tr>
+    <tr><td class="pk">8</td><td class="str">SUSPENDIDO</td><td class="bit">0</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaFacultad(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Academico.Facultad</span><span class="tbl-rows">6 filas</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdFacultad<span class="col-badge pk">PK</span></th><th>NombreFacultad</th><th>NombreDecano</th><th>Activo</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="str">Ciencias Administrativas y Contables</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    <tr><td class="pk">2</td><td class="str">Derecho y Ciencias Políticas</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    <tr><td class="pk">3</td><td class="str">Ingeniería</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    <tr><td class="pk">4</td><td class="str">Ciencias de la Salud</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    <tr><td class="pk">5</td><td class="str">Educación y Ciencias Humanas</td><td class="str">NULL</td><td class="bit">1</td></tr>
+    <tr><td class="pk">6</td><td class="str">Medicina Humana</td><td class="str">NULL</td><td class="bit">1</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaPersona(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Academico.Persona</span><span class="tbl-rows">3 filas ejemplo</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdPersona<span class="col-badge pk">PK</span></th><th>DNI</th><th>Nombres</th><th>ApellidoPaterno</th><th>ApellidoMaterno</th><th>TipoPersona</th><th>FechaRegistro</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="num">72345678</td><td class="str">Carlos</td><td class="str">Quispe</td><td class="str">Rojas</td><td class="str">ESTUDIANTE</td><td>2026-06-02</td></tr>
+    <tr><td class="pk">2</td><td class="num">45678901</td><td class="str">María</td><td class="str">Fernández</td><td class="str">Bejarano</td><td class="str">DOCENTE</td><td>2026-06-02</td></tr>
+    <tr><td class="pk">3</td><td class="num">65432109</td><td class="str">Luis</td><td class="str">Huanca</td><td class="str">Torres</td><td class="str">ESTUDIANTE</td><td>2026-06-02</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaTramite(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Tramite.Tramite</span><span class="tbl-rows">3 filas ejemplo</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdTramite<span class="col-badge pk">PK</span></th><th>IdMatricula<span class="col-badge fk">FK</span></th><th>IdTipoTramite<span class="col-badge fk">FK</span></th><th>IdEstadoTramite<span class="col-badge fk">FK</span></th><th>FechaInicio</th><th>Observaciones</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="fk">1</td><td class="fk">1</td><td class="fk">3</td><td>2026-03-15</td><td class="str">NULL</td></tr>
+    <tr><td class="pk">2</td><td class="fk">2</td><td class="fk">2</td><td class="fk">2</td><td>2026-04-10</td><td class="str">Pendiente verificación</td></tr>
+    <tr><td class="pk">3</td><td class="fk">3</td><td class="fk">4</td><td class="fk">1</td><td>2026-06-01</td><td class="str">NULL</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaSustentacion(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header rosa-grad"><span>SELECT * FROM</span><span class="tbl-name">Evaluacion.Sustentacion</span><span class="tbl-rows">2 filas ejemplo</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th>IdSustentacion<span class="col-badge pk">PK</span></th><th>IdTrabajo<span class="col-badge fk">FK</span></th><th>NroIntento</th><th>FechaHora</th><th>Modalidad</th><th>NotaExposicion</th><th>NotaDefensa</th><th>Condicion</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="fk">1</td><td class="num">1</td><td>2026-05-20 09:00</td><td class="str">PRESENCIAL</td><td class="num">15.00</td><td class="num">16.00</td><td class="bit">APROBADO</td></tr>
+    <tr><td class="pk">2</td><td class="fk">2</td><td class="num">1</td><td>2026-06-10 10:30</td><td class="str">PRESENCIAL</td><td class="num">11.00</td><td class="num">12.00</td><td class="pk">DESAPROBADO</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaVistaCondicion(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header teal-grad"><span>SELECT * FROM</span><span class="tbl-name">Academico.V_CondicionEgresado</span><span class="tbl-rows">Vista calculada</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th class="teal-h">IdMatricula</th><th class="teal-h">DNI</th><th class="teal-h">NombreCompleto</th><th class="teal-h">NombrePrograma</th><th class="teal-h">CreditosAprobados</th><th class="teal-h">EsEgresado</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="num">72345678</td><td class="str">Carlos Quispe Rojas</td><td class="str">Ingeniería de Sistemas</td><td class="num">220</td><td class="bit">1 ✅</td></tr>
+    <tr><td class="pk">2</td><td class="num">65432109</td><td class="str">Luis Huanca Torres</td><td class="str">Administración</td><td class="num">185</td><td class="pk">0 ❌</td></tr>
+  </tbody></table>
+</div>`;}
+
+function tablaVistaEstado(){return `<div class="sql-table-wrap">
+  <div class="sql-table-header teal-grad"><span>SELECT * FROM</span><span class="tbl-name">Tramite.V_EstadoTrabajo</span><span class="tbl-rows">Vista calculada</span></div>
+  <table class="sqltbl"><thead><tr>
+    <th class="teal-h">IdTrabajo</th><th class="teal-h">IdTramite</th><th class="teal-h">TipoTrabajo</th><th class="teal-h">Titulo</th><th class="teal-h">ModalidadAutoria</th><th class="teal-h">EstadoActual</th>
+  </tr></thead><tbody>
+    <tr><td class="pk">1</td><td class="fk">2</td><td class="str">TESIS_CUANTITATIVA</td><td class="str">Impacto del e-learning en UPLA...</td><td class="str">INDIVIDUAL</td><td style="color:#2e7d32;font-weight:700">SUSTENTADO_APROBADO ✅</td></tr>
+    <tr><td class="pk">2</td><td class="fk">3</td><td class="str">SUFICIENCIA_PROFESIONAL</td><td class="str">Gestión BDD en PyMEs de Junín...</td><td class="str">INDIVIDUAL</td><td style="color:var(--morado);font-weight:700">EN_DESARROLLO 🔵</td></tr>
+  </tbody></table>
+</div>`;}
+
+/* ═══════════════════════════════════════
+   SINTAXIS COLOREADA (fondo blanco)
+═══════════════════════════════════════ */
+function colorSQL(raw){
+  let s = raw.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  // Comentarios primero
+  s = s.replace(/(--[^\n]*)/g,'<span class="cm">$1</span>');
+  // Strings
+  s = s.replace(/'([^']*)'/g,"<span class='sq'>'$1'</span>");
+  // Números
+  s = s.replace(/\b(\d+(\.\d+)?)\b/g,'<span class="nc">$1</span>');
+  // GO
+  s = s.replace(/\bGO\b/g,'<span class="go">GO</span>');
+  // Tipos de dato
+  ['TINYINT','SMALLINT','BIGINT','INT','VARCHAR','CHAR','NVARCHAR','BIT','DATE','DATETIME2','DECIMAL','FLOAT','MONEY'].forEach(t=>{
+    s=s.replace(new RegExp('\\b('+t+')\\b','g'),'<span class="ty">$1</span>');
+  });
+  // Funciones
+  ['SYSDATETIME','SCOPE_IDENTITY','DB_NAME','ISNULL','COUNT','SUM','CAST','CONVERT','@@TRANCOUNT'].forEach(f=>{
+    s=s.replace(new RegExp('\\b('+f+')\\b','g'),'<span class="fn">$1</span>');
+  });
+  // Multi-palabra keywords primero
+  ['CREATE OR ALTER','CREATE SCHEMA','CREATE TABLE','CREATE VIEW','CREATE PROCEDURE','CREATE FUNCTION',
+   'ORDER BY','GROUP BY','INSERT INTO','PRIMARY KEY','COMMIT TRANSACTION','ROLLBACK TRANSACTION',
+   'BEGIN TRANSACTION','BEGIN TRY','END TRY','BEGIN CATCH','END CATCH','SET NOCOUNT ON',
+   'NOT EXISTS','FOREIGN KEY','REFERENCES'].forEach(kw=>{
+    s=s.replace(new RegExp(kw,'g'),'<span class="kw">'+kw+'</span>');
+  });
+  // Keywords simples
+  ['USE','SELECT','FROM','WHERE','JOIN','ON','IN','AS','AND','OR','NOT','VALUES','RETURNS',
+   'IF','ELSE','THROW','RETURN','CASE','WHEN','THEN','SET','INTO','OUTPUT','DEFAULT',
+   'CONSTRAINT','UNIQUE','CHECK','IDENTITY','NULL','NOCOUNT','BETWEEN','DECLARE','EXEC'].forEach(kw=>{
+    s=s.replace(new RegExp('\\b('+kw+')\\b','g'),'<span class="kw">$1</span>');
+  });
+  return s;
+}
+
+/* ═══════════════════════════════════════
+   DATOS DE LOS 3 EJERCICIOS
+═══════════════════════════════════════ */
+const ejercicios = [
+  {
+    num:'Ejercicio 01', cat:'Verificación y Esquemas',
+    titulo:'Verificar Base de Datos y Crear los 5 Esquemas',
+    subs:[
+      {
+        key:'sub1', label:'Descripción', color:'',
+        subtitulo:'¿Qué vamos a hacer?',
+        desc:'Antes de crear cualquier objeto verificamos que estamos conectados a la base de datos correcta. Luego creamos los 5 esquemas que organizarán todo el sistema: <strong>Catalogo, Academico, Tramite, Evaluacion</strong> y <strong>Documento</strong>.',
+        nota:{tipo:'warn',icono:'⚠️',texto:'Ejecuta <strong>SELECT DB_NAME()</strong> primero. Debe retornar exactamente "GradosTitulos". Si retorna "master", cambia la BD en el selector del Query Editor antes de continuar.'},
+        tablas:[],
+        sql:`USE GradosTitulos;
+GO
+-- Verificar la base de datos activa
+SELECT DB_NAME() AS BaseDatosActual;
+GO
+
+-- ============================================================
+--  CREAR LOS 5 ESQUEMAS DEL SISTEMA GradosTitulos
+-- ============================================================
+
+CREATE SCHEMA Catalogo;
+GO
+-- Tablas de parámetros y valores de configuración
+
+CREATE SCHEMA Academico;
+GO
+-- Entidades académicas: Facultad, Programa, Persona, Matrícula
+
+CREATE SCHEMA Tramite;
+GO
+-- Proceso administrativo: Trámite, Pago, Coordinación
+
+CREATE SCHEMA Evaluacion;
+GO
+-- Evaluaciones, sustentaciones y jurados
+
+CREATE SCHEMA Documento;
+GO
+-- Resoluciones, diplomas y archivos digitales
+
+-- ============================================================
+--  VERIFICAR QUE LOS 5 ESQUEMAS EXISTEN
+-- ============================================================
+SELECT s.name AS Esquema, s.schema_id
+FROM sys.schemas
+WHERE name IN ('Catalogo','Academico','Tramite','Evaluacion','Documento')
+ORDER BY s.name;
+GO`
+      },
+      {
+        key:'sub2', label:'Resultado esperado', color:'lila',
+        subtitulo:'¿Qué debería mostrar el Query Editor?',
+        desc:'Al ejecutar la verificación final, el editor mostrará exactamente 5 filas con los esquemas creados y sus IDs asignados automáticamente por el sistema.',
+        nota:{tipo:'info',icono:'ℹ️',texto:'Si algún esquema ya existe de una ejecución anterior, SQL Server lanzará el error <strong>"There is already an object named..."</strong>. Puedes ignorarlo — significa que ya estaba creado.'},
+        tablas:[],
+        sql:`-- Resultado esperado al consultar sys.schemas:
+-- ┌─────────────┬───────────┐
+-- │ Esquema     │ schema_id │
+-- ├─────────────┼───────────┤
+-- │ Academico   │    5      │
+-- │ Catalogo    │    6      │
+-- │ Documento   │    7      │
+-- │ Evaluacion  │    8      │
+-- │ Tramite     │    9      │
+-- └─────────────┴───────────┘
+
+-- Consulta adicional: ver todos los objetos por esquema
+SELECT
+    s.name        AS Esquema,
+    t.name        AS Tabla,
+    t.create_date AS FechaCreacion
+FROM sys.tables  t
+JOIN sys.schemas s ON s.schema_id = t.schema_id
+WHERE s.name IN ('Catalogo','Academico','Tramite','Evaluacion','Documento')
+ORDER BY s.name, t.name;
+GO`
+      }
+    ]
+  },
+  {
+    num:'Ejercicio 02', cat:'Catálogos y Estructura Académica',
+    titulo:'Crear Tablas de Catálogo y Académicas',
+    subs:[
+      {
+        key:'sub1', label:'Tablas Catálogo', color:'',
+        subtitulo:'Script: TipoTramite y EstadoTramite',
+        desc:'Las primeras tablas son catálogos de valores fijos. <strong>TipoTramite</strong> define si un proceso requiere tesis, suficiencia o bachiller. <strong>EstadoTramite</strong> representa el ciclo de vida de cada trámite administrativo.',
+        nota:{tipo:'warn',icono:'⚠️',texto:'Ejecuta cada bloque <strong>GO</strong> por separado en el Query Editor del portal Azure. Para scripts largos sin límite usa <strong>SSMS</strong> conectado a srv-gradostitulos-upla.database.windows.net.'},
+        tablas:[tablaTipoTramite, tablaEstadoTramite],
+        sql:`USE GradosTitulos;
+GO
+
+-- T01: TIPO DE TRÁMITE
+CREATE TABLE Catalogo.TipoTramite (
+    IdTipoTramite       TINYINT     NOT NULL,
+    Descripcion         VARCHAR(60) NOT NULL,
+    RequiereTesis       BIT         NOT NULL DEFAULT 0,
+    RequiereSuficiencia BIT         NOT NULL DEFAULT 0,
+    RequiereBachiller   BIT         NOT NULL DEFAULT 0,
+    Activo              BIT         NOT NULL DEFAULT 1,
+    CONSTRAINT PK_TipoTramite PRIMARY KEY (IdTipoTramite),
+    CONSTRAINT UQ_TipoTramite_Descripcion UNIQUE (Descripcion)
+);
+GO
+
+INSERT INTO Catalogo.TipoTramite VALUES
+(1, 'BACHILLER',               0, 0, 0, 1),
+(2, 'TITULO_TESIS_INDIVIDUAL', 1, 0, 1, 1),
+(3, 'TITULO_TESIS_GRUPAL',     1, 0, 1, 1),
+(4, 'TITULO_SUFICIENCIA_PROF', 0, 1, 1, 1);
+GO
+
+-- T02: ESTADO DEL TRÁMITE
+CREATE TABLE Catalogo.EstadoTramite (
+    IdEstadoTramite TINYINT     NOT NULL,
+    Descripcion     VARCHAR(40) NOT NULL,
+    EsTerminal      BIT         NOT NULL DEFAULT 0,
+    CONSTRAINT PK_EstadoTramite PRIMARY KEY (IdEstadoTramite)
+);
+GO
+
+INSERT INTO Catalogo.EstadoTramite VALUES
+(1,'INICIADO',0),(2,'EN_VERIFICACION',0),(3,'EN_PROCESO',0),
+(4,'OBSERVADO',0),(5,'APROBADO',1),(6,'IMPROCEDENTE',1),
+(7,'ARCHIVADO',1),(8,'SUSPENDIDO',0);
+GO`
+      },
+      {
+        key:'sub2', label:'Tablas Académicas', color:'lila',
+        subtitulo:'Script: Facultad y Persona',
+        desc:'<strong>Academico.Facultad</strong> almacena las 6 facultades de la UPLA. <strong>Academico.Persona</strong> es la entidad central que unifica estudiantes y docentes, con un CHECK constraint en el tipo de persona.',
+        nota:{tipo:'info',icono:'ℹ️',texto:'La columna <strong>TipoPersona</strong> tiene un CHECK que solo acepta "ESTUDIANTE" o "DOCENTE". Insertar cualquier otro valor lanzará un error de constraint.'},
+        tablas:[tablaFacultad, tablaPersona],
+        sql:`USE GradosTitulos;
+GO
+
+-- T04: FACULTAD
+CREATE TABLE Academico.Facultad (
+    IdFacultad     TINYINT      NOT NULL IDENTITY(1,1),
+    NombreFacultad VARCHAR(100) NOT NULL,
+    NombreDecano   VARCHAR(150) NULL,
+    Activo         BIT          NOT NULL DEFAULT 1,
+    CONSTRAINT PK_Facultad PRIMARY KEY (IdFacultad),
+    CONSTRAINT UQ_Facultad_Nombre UNIQUE (NombreFacultad)
+);
+GO
+
+INSERT INTO Academico.Facultad (NombreFacultad) VALUES
+('Ciencias Administrativas y Contables'),
+('Derecho y Ciencias Políticas'),
+('Ingeniería'),
+('Ciencias de la Salud'),
+('Educación y Ciencias Humanas'),
+('Medicina Humana');
+GO
+
+-- T07: PERSONA (estudiantes y docentes)
+CREATE TABLE Academico.Persona (
+    IdPersona       INT          NOT NULL IDENTITY(1,1),
+    DNI             CHAR(8)      NOT NULL,
+    Nombres         VARCHAR(80)  NOT NULL,
+    ApellidoPaterno VARCHAR(60)  NOT NULL,
+    ApellidoMaterno VARCHAR(60)  NULL,
+    Correo          VARCHAR(120) NULL,
+    Telefono        VARCHAR(15)  NULL,
+    TipoPersona     VARCHAR(15)  NOT NULL,
+    FechaRegistro   DATETIME2    NOT NULL DEFAULT SYSDATETIME(),
+    CONSTRAINT PK_Persona PRIMARY KEY (IdPersona),
+    CONSTRAINT UQ_Persona_DNI UNIQUE (DNI),
+    CONSTRAINT CHK_Persona_Tipo CHECK (TipoPersona IN ('ESTUDIANTE','DOCENTE'))
+);
+GO
+
+INSERT INTO Academico.Persona (DNI, Nombres, ApellidoPaterno, ApellidoMaterno, TipoPersona) VALUES
+('72345678','Carlos','Quispe','Rojas','ESTUDIANTE'),
+('45678901','María','Fernández','Bejarano','DOCENTE'),
+('65432109','Luis','Huanca','Torres','ESTUDIANTE');
+GO`
+      },
+      {
+        key:'sub3', label:'Tablas de Proceso', color:'menta',
+        subtitulo:'Script: Tramite y Sustentacion',
+        desc:'<strong>Tramite.Tramite</strong> registra cada solicitud vinculada a una matrícula. <strong>Evaluacion.Sustentacion</strong> admite hasta 2 intentos por trabajo, con notas de exposición y defensa.',
+        nota:{tipo:'warn',icono:'⚠️',texto:'<strong>Tramite.Tramite</strong> depende de Catalogo.TipoTramite y Catalogo.EstadoTramite. Esas tablas deben existir antes de ejecutar este script.'},
+        tablas:[tablaTramite, tablaSustentacion],
+        sql:`USE GradosTitulos;
+GO
+
+-- T11: TRÁMITE (proceso principal)
+CREATE TABLE Tramite.Tramite (
+    IdTramite       INT          NOT NULL IDENTITY(1,1),
+    IdMatricula     INT          NOT NULL,
+    IdTipoTramite   TINYINT      NOT NULL,
+    IdEstadoTramite TINYINT      NOT NULL DEFAULT 1,
+    IdCoordinacion  TINYINT      NOT NULL,
+    FechaInicio     DATE         NOT NULL DEFAULT CAST(SYSDATETIME() AS DATE),
+    FechaUltMod     DATETIME2    NOT NULL DEFAULT SYSDATETIME(),
+    Observaciones   VARCHAR(500) NULL,
+    CONSTRAINT PK_Tramite PRIMARY KEY (IdTramite),
+    CONSTRAINT FK_Tramite_TipoTramite FOREIGN KEY (IdTipoTramite)
+        REFERENCES Catalogo.TipoTramite (IdTipoTramite),
+    CONSTRAINT FK_Tramite_EstadoTramite FOREIGN KEY (IdEstadoTramite)
+        REFERENCES Catalogo.EstadoTramite (IdEstadoTramite)
+);
+GO
+
+-- T22: SUSTENTACION
+CREATE TABLE Evaluacion.Sustentacion (
+    IdSustentacion  INT          NOT NULL IDENTITY(1,1),
+    IdTrabajo       INT          NOT NULL,
+    NroIntento      TINYINT      NOT NULL DEFAULT 1,
+    FechaHora       DATETIME2    NOT NULL,
+    Modalidad       VARCHAR(14)  NOT NULL DEFAULT 'PRESENCIAL',
+    NotaExposicion  DECIMAL(4,2) NULL,
+    NotaDefensa     DECIMAL(4,2) NULL,
+    Condicion       VARCHAR(12)  NULL,
+    AprobacionTipo  VARCHAR(12)  NULL,
+    NroActa         VARCHAR(40)  NULL,
+    CONSTRAINT PK_Sustentacion PRIMARY KEY (IdSustentacion),
+    CONSTRAINT CHK_Sust_Intento CHECK (NroIntento BETWEEN 1 AND 2),
+    CONSTRAINT UQ_Sust_Trabajo_Intento UNIQUE (IdTrabajo, NroIntento),
+    CONSTRAINT CHK_Sust_Modalidad CHECK (Modalidad IN ('PRESENCIAL','VIRTUAL'))
+);
+GO`
+      }
+    ]
+  },
+  {
+    num:'Ejercicio 03', cat:'Vistas, Funciones y Stored Procedures',
+    titulo:'Crear Vistas, Funciones y Procedimientos Almacenados',
+    subs:[
+      {
+        key:'sub1', label:'Vistas (Views)', color:'',
+        subtitulo:'Script: V_CondicionEgresado y V_EstadoTrabajo',
+        desc:'Las vistas encapsulan consultas complejas. <strong>V_CondicionEgresado</strong> calcula si un alumno cumple todos los requisitos de egreso. <strong>V_EstadoTrabajo</strong> muestra el estado actual de cada trabajo de investigación.',
+        nota:{tipo:'info',icono:'ℹ️',texto:'Se usa <strong>CREATE OR ALTER VIEW</strong> para que el script sea repetible: si la vista ya existe la actualiza, si no la crea. Disponible desde SQL Server 2016 / Azure SQL.'},
+        tablas:[tablaVistaCondicion, tablaVistaEstado],
+        sql:`USE GradosTitulos;
+GO
+
+-- VISTA V01: Condición de Egresado
+-- Calcula si el alumno cumple TODOS los requisitos de egreso
+CREATE OR ALTER VIEW Academico.V_CondicionEgresado AS
+SELECT
+    m.IdMatricula,
+    m.IdEstudiante,
+    p.DNI,
+    p.Nombres + ' ' + p.ApellidoPaterno
+        + ' ' + ISNULL(p.ApellidoMaterno,'') AS NombreCompleto,
+    m.IdPrograma,
+    pr.NombrePrograma,
+    m.CreditosAprobados,
+    CASE
+        WHEN m.AsignaturasAprobadas = 1
+         AND m.PracticasCompletadas = 1
+         AND m.IdiomaAprobado       = 1
+         AND m.ProyeccionSocial     = 1
+         AND m.TieneDeuda           = 0
+        THEN CAST(1 AS BIT)
+        ELSE CAST(0 AS BIT)
+    END AS EsEgresado
+FROM Academico.Matricula        m
+JOIN Academico.Persona          p  ON p.IdPersona   = m.IdEstudiante
+JOIN Academico.ProgramaEstudios pr ON pr.IdPrograma = m.IdPrograma;
+GO
+
+-- VISTA V02: Estado actual de cada Trabajo de Investigación
+CREATE OR ALTER VIEW Tramite.V_EstadoTrabajo AS
+SELECT
+    ti.IdTrabajo,
+    ti.IdTramite,
+    ti.TipoTrabajo,
+    ti.Titulo,
+    ti.ModalidadAutoria,
+    et.Descripcion AS EstadoActual
+FROM Tramite.TrabajoInvestigacion ti
+JOIN Tramite.Tramite              tr ON tr.IdTramite       = ti.IdTramite
+JOIN Catalogo.EstadoTramite       et ON et.IdEstadoTramite = tr.IdEstadoTramite;
+GO`
+      },
+      {
+        key:'sub2', label:'Funciones (Functions)', color:'lila',
+        subtitulo:'Script: F_CicloMinimoPlan',
+        desc:'La función escalar <strong>F_CicloMinimoPlan</strong> devuelve el ciclo mínimo desde el que un estudiante puede iniciar su trámite, según el número total de semestres del plan de estudios de su programa.',
+        nota:{tipo:'info',icono:'ℹ️',texto:'Esta función escalar puede usarse directamente en columnas de un SELECT, en condiciones WHERE o dentro de otros procedimientos almacenados sin necesidad de declarar variables intermedias.'},
+        tablas:[],
+        sql:`USE GradosTitulos;
+GO
+
+-- FUNCIÓN F01: Ciclo mínimo habilitado según el plan de estudios
+-- Parámetro : total de semestres del programa (10, 12 o 14)
+-- Retorna   : número del ciclo mínimo para iniciar trámite
+CREATE OR ALTER FUNCTION Academico.F_CicloMinimoPlan (
+    @NumSemestres TINYINT
+)
+RETURNS TINYINT
+AS
+BEGIN
+    RETURN CASE @NumSemestres
+        WHEN 10 THEN 9    -- Plan de 10 ciclos → desde ciclo 9
+        WHEN 12 THEN 11   -- Plan de 12 ciclos → desde ciclo 11
+        WHEN 14 THEN 13   -- Plan de 14 ciclos → desde ciclo 13
+        ELSE NULL         -- Plan no reconocido
+    END;
+END;
+GO
+
+-- EJEMPLO DE USO:
+SELECT
+    Academico.F_CicloMinimoPlan(10) AS CicloMin_10sem,   -- Resultado: 9
+    Academico.F_CicloMinimoPlan(12) AS CicloMin_12sem,   -- Resultado: 11
+    Academico.F_CicloMinimoPlan(14) AS CicloMin_14sem;   -- Resultado: 13
+GO`
+      },
+      {
+        key:'sub3', label:'Stored Procedures', color:'menta',
+        subtitulo:'Script: SP_RegistrarTramite',
+        desc:'El stored procedure <strong>SP_RegistrarTramite</strong> encapsula la lógica de negocio completa: valida que la matrícula exista, inserta el trámite dentro de una transacción y retorna el nuevo ID generado como parámetro OUTPUT.',
+        nota:{tipo:'warn',icono:'⚠️',texto:'El patrón <strong>BEGIN TRY / BEGIN CATCH</strong> con <strong>ROLLBACK TRANSACTION</strong> garantiza que si algo falla en el INSERT, la transacción se deshace completamente y el error sube hacia la aplicación con <strong>THROW</strong>.'},
+        tablas:[],
+        sql:`USE GradosTitulos;
+GO
+
+-- SP01: Registrar un nuevo Trámite con manejo de errores
+CREATE OR ALTER PROCEDURE Tramite.SP_RegistrarTramite
+    @IdMatricula    INT,
+    @IdTipoTramite  TINYINT,
+    @IdCoordinacion TINYINT,
+    @IdTramite      INT OUTPUT   -- Retorna el ID generado
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Validación: la matrícula debe existir
+        IF NOT EXISTS (
+            SELECT 1 FROM Academico.Matricula
+            WHERE IdMatricula = @IdMatricula
+        )
+            THROW 50001, 'La matrícula especificada no existe.', 1;
+
+        -- Inserción del trámite con estado inicial INICIADO (1)
+        INSERT INTO Tramite.Tramite (
+            IdMatricula, IdTipoTramite, IdEstadoTramite, IdCoordinacion
+        )
+        VALUES (
+            @IdMatricula, @IdTipoTramite, 1, @IdCoordinacion
+        );
+
+        -- Capturar el ID recién generado
+        SET @IdTramite = SCOPE_IDENTITY();
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        THROW; -- Re-lanza el error hacia la aplicación
+    END CATCH;
+END;
+GO
+
+-- EJEMPLO DE EJECUCIÓN:
+DECLARE @NuevoId INT;
+EXEC Tramite.SP_RegistrarTramite
+    @IdMatricula    = 1,
+    @IdTipoTramite  = 2,
+    @IdCoordinacion = 1,
+    @IdTramite      = @NuevoId OUTPUT;
+SELECT @NuevoId AS NuevoIdTramite;
+GO`
+      }
+    ]
+  }
+];
+
+/* ═══════════════════════════════════════
+   ESTADO Y RENDER
+═══════════════════════════════════════ */
+let ejercActivo = 0;
+const subActiva = {};
+
+function selectEjerc(i, btn){
+  ejercActivo = i;
+  document.querySelectorAll('.ejerc-pill').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ejerc-pill')[i]?.classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab')[i]?.classList.add('active');
+  renderCard(i);
+  window.scrollTo({top:260, behavior:'smooth'});
+}
+
+function renderCard(i){
+  const e = ejercicios[i];
+  const sub = subActiva[i] || e.subs[0].key;
+
+  const tabsHtml = e.subs.map(s=>{
+    const isActive = sub === s.key;
+    return `<button class="sub-tab ${isActive?'active '+s.color:''}" onclick="switchSub(${i},'${s.key}',this)">${s.label}</button>`;
+  }).join('');
+
+  const panelsHtml = e.subs.map(s=>{
+    const isActive = sub === s.key;
+    const alertHtml = s.nota
+      ? `<div class="alert-box ${s.nota.tipo}"><span class="alert-icon">${s.nota.icono}</span><p class="alert-text">${s.nota.texto}</p></div>` : '';
+    const tablasHtml = s.tablas.map(fn=>fn()).join('');
+    const codeId = 'code_'+i+'_'+s.key;
+    const codeHtml = s.sql
+      ? `<div class="code-wrap"><div class="code-header"><span class="code-lang">T-SQL · Azure SQL Database</span><button class="btn-copy" onclick="copiar('${codeId}')">Copiar script</button></div><div class="code-body"><pre id="${codeId}">${colorSQL(s.sql)}</pre></div></div>` : '';
+    return `<div class="sub-panel ${isActive?'active':''}" id="sp_${i}_${s.key}">
+      <h4 class="sub-title">${s.subtitulo}</h4>
+      <div class="enunciado"><p class="enunciado-label">Descripción del ejercicio</p><p>${s.desc}</p></div>
+      ${alertHtml}${tablasHtml}${codeHtml}
+    </div>`;
+  }).join('');
+
+  document.getElementById('ejercContainer').innerHTML = `
+    <div class="ejerc-card">
+      <div class="ejerc-card-header">
+        <div><span class="ejerc-num">${e.num}</span><span class="ejerc-cat">· ${e.cat}</span></div>
+        <h3 class="ejerc-title">${e.titulo}</h3>
+      </div>
+      <div class="sub-tabs">${tabsHtml}</div>
+      ${panelsHtml}
+    </div>`;
+}
+
+function switchSub(pi, key, btn){
+  subActiva[pi] = key;
+  const card = document.getElementById('ejercContainer').querySelector('.ejerc-card');
+  const colorCls = ejercicios[pi].subs.find(s=>s.key===key)?.color || '';
+  card.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active','lila','menta'));
+  btn.classList.add('active');
+  if(colorCls) btn.classList.add(colorCls);
+  card.querySelectorAll('.sub-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('sp_'+pi+'_'+key)?.classList.add('active');
+}
+
+function copiar(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  const ta = document.createElement('textarea');
+  ta.value = el.innerText;
+  document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  showToast('✅ Script copiado al portapapeles');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+window.addEventListener('scroll',()=>{
+  document.getElementById('mainNav').classList.toggle('scrolled', scrollY>20);
+});
+
+renderCard(0);
+</script>
+</body>
+</html>

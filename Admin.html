@@ -1,0 +1,1798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Semana 10 — Administración Esencial de BDD</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rosa:    #f06292;
+      --rosa-l:  #fce4ec;
+      --lila:    #ce93d8;
+      --lila-l:  #ede7f6;
+      --morado:  #9c27b0;
+      --menta:   #4db6ac;
+      --menta-l: #e0f2f1;
+      --menta-d: #00897b;
+      --text:    #2d2d2d;
+      --text-s:  #6b6b6b;
+      --bg:      #fdfbfe;
+      --white:   #ffffff;
+      --border:  #f0e6f8;
+      --shadow:  0 2px 16px rgba(206,147,216,.13);
+      --shadow-h:0 8px 32px rgba(240,98,146,.18);
+      --rad:     14px;
+      --rad-sm:  8px;
+      --rad-pill:99px;
+      --font-d:  'Instrument Serif', Georgia, serif;
+      --font-b:  'DM Sans', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.65;
+      padding-top: 64px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(253,251,254,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: background .3s, box-shadow .3s;
+    }
+    .nav.scrolled {
+      background: rgba(253,251,254,.98);
+      box-shadow: 0 2px 20px rgba(206,147,216,.15);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      height: 64px; display: flex; align-items: center; gap: 20px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-img { height: 36px; width: auto; object-fit: contain; }
+    .nav-title {
+      font-family: var(--font-d); font-size: 16px; color: var(--text); letter-spacing: .01em;
+    }
+    .nav-tabs { display: flex; gap: 4px; flex: 1; }
+    .nav-tab {
+      font-size: 13px; color: var(--text-s); text-decoration: none;
+      padding: 6px 14px; border-radius: var(--rad-pill);
+      transition: background .18s, color .18s; font-weight: 400; cursor: pointer;
+      border: none; background: none; font-family: var(--font-b);
+    }
+    .nav-tab:hover, .nav-tab.active {
+      background: var(--rosa-l); color: var(--rosa); font-weight: 500;
+    }
+    .nav-tab.active-menta { background: var(--menta-l); color: var(--menta-d); }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-b); font-size: 13px; font-weight: 500;
+      padding: 7px 16px; border-radius: var(--rad-pill); cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text-s); text-decoration: none;
+      transition: background .18s, border-color .18s, color .18s;
+      margin-left: auto;
+    }
+    .btn-back:hover {
+      background: var(--rosa-l); border-color: var(--rosa); color: var(--rosa);
+    }
+
+    /* ── Panel system ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--white); color: var(--morado);
+      border: 1.5px solid var(--lila); border-radius: var(--rad-pill);
+      padding: 10px 24px; font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow-h); z-index: 999; opacity: 0;
+      transition: transform .3s, opacity .3s; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Hero strip ── */
+    .hero {
+      position: relative; height: 280px;
+      background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 25%, #ede7f6 60%, #e8eaf6 100%);
+      overflow: hidden; display: flex; align-items: flex-end; padding: 0 48px 36px;
+    }
+    .hero::before {
+      content: '';  position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 70% at 10% 60%, rgba(240,98,146,.18) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 60% at 70% 30%, rgba(206,147,216,.16) 0%, transparent 60%),
+        radial-gradient(ellipse 35% 45% at 90% 80%, rgba(77,182,172,.10) 0%, transparent 55%);
+      animation: holo 8s ease-in-out infinite alternate;
+    }
+    @keyframes holo { 0%{opacity:.8;transform:scale(1)} 100%{opacity:1;transform:scale(1.04)} }
+    .hero-deco { position: absolute; inset: 0; pointer-events: none; }
+    .deco-c {
+      position: absolute; border-radius: 50%; opacity: .18;
+      animation: floatC 7s ease-in-out infinite;
+    }
+    .deco-c.a { width:200px;height:200px; background:var(--rosa); top:-50px; right:16%; }
+    .deco-c.b { width:130px;height:130px; background:var(--lila); top:40px;  right:7%;  animation-delay:1.5s; }
+    .deco-c.c { width:80px; height:80px;  background:var(--menta);bottom:10px;right:28%; animation-delay:3s; }
+    @keyframes floatC { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-14px)} }
+    .hero-text { position: relative; z-index: 2; }
+    .hero-eyebrow {
+      font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+      color: var(--morado); margin-bottom: 10px; font-weight: 500; opacity: .75;
+    }
+    .hero-title {
+      font-family: var(--font-d);
+      font-size: clamp(44px, 7vw, 76px);
+      font-weight: 400; color: #2d1b4e; line-height: .95; margin: 0;
+    }
+    .hero-title em { font-style: italic; color: var(--rosa); }
+
+    /* ── Container ── */
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Section header ── */
+    .sec-header {
+      padding: 48px 0 32px;
+    }
+    .sec-eyebrow {
+      font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+      color: var(--menta-d); font-weight: 600; margin-bottom: 8px;
+    }
+    .sec-title {
+      font-family: var(--font-d); font-size: 34px; color: var(--text); line-height: 1.1;
+    }
+    .sec-desc { font-size: 14px; color: var(--text-s); margin-top: 6px; }
+
+    /* ── Overview bento ── */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+      grid-template-rows: auto auto;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+    .ov-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--rad); padding: 24px;
+      box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s;
+    }
+    .ov-card:hover { box-shadow: var(--shadow-h); transform: translateY(-2px); }
+    .ov-card.span2 { grid-column: span 2; }
+    .ov-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--text-s); margin-bottom: 10px;
+    }
+    .ov-stat-num {
+      font-family: var(--font-d); font-size: 56px; line-height: 1;
+      color: var(--rosa); display: block;
+    }
+    .ov-stat-label { font-size: 12px; color: var(--text-s); margin-top: 4px; }
+    .ov-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+    .chip {
+      font-size: 11px; font-weight: 500; padding: 3px 11px;
+      border-radius: var(--rad-pill); background: var(--rosa-l); color: var(--rosa);
+      border: 1px solid #f8c8d8;
+    }
+    .chip.lila { background: var(--lila-l); color: var(--morado); border-color: #dbbfed; }
+    .chip.menta { background: var(--menta-l); color: var(--menta-d); border-color: #b2dfdb; }
+    .ov-intro { font-size: 14px; color: var(--text-s); line-height: 1.7; }
+    .ov-intro strong { color: var(--text); }
+
+    /* ── Proyecto selector ── */
+    .proj-nav {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px;
+    }
+    .proj-pill {
+      font-family: var(--font-b); font-size: 12.5px; font-weight: 500;
+      padding: 7px 18px; border-radius: var(--rad-pill); cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--white); color: var(--text-s);
+      transition: all .18s;
+    }
+    .proj-pill:hover { border-color: var(--lila); color: var(--morado); }
+    .proj-pill.active {
+      background: linear-gradient(135deg, var(--rosa) 0%, var(--lila) 100%);
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(240,98,146,.25);
+    }
+
+    /* ── Proyecto card ── */
+    .proj-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden;
+      box-shadow: var(--shadow); margin-bottom: 32px;
+    }
+    .proj-card-header {
+      padding: 28px 32px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    }
+    .proj-num {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--menta-d); margin-bottom: 6px;
+    }
+    .proj-title {
+      font-family: var(--font-d); font-size: 24px; color: var(--text); line-height: 1.2;
+    }
+    .proj-cat {
+      font-size: 11.5px; font-weight: 500; padding: 4px 14px;
+      border-radius: var(--rad-pill); background: var(--lila-l); color: var(--morado);
+      border: 1px solid var(--lila); white-space: nowrap; margin-top: 4px; display: inline-block;
+    }
+
+    /* ── Sub-misión tabs dentro del card ── */
+    .sub-tabs {
+      display: flex; gap: 0; border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+    }
+    .sub-tab {
+      font-family: var(--font-b); font-size: 12.5px; font-weight: 500;
+      padding: 12px 22px; cursor: pointer; border: none; background: none;
+      color: var(--text-s); border-bottom: 2px solid transparent;
+      transition: color .18s, border-color .18s; white-space: nowrap;
+    }
+    .sub-tab:hover { color: var(--rosa); }
+    .sub-tab.active { color: var(--rosa); border-bottom-color: var(--rosa); }
+    .sub-tab.active.lila { color: var(--morado); border-bottom-color: var(--lila); }
+    .sub-tab.active.menta { color: var(--menta-d); border-bottom-color: var(--menta); }
+
+    /* ── Sub-misión content ── */
+    .sub-panel { display: none; padding: 28px 32px 32px; }
+    .sub-panel.active { display: block; }
+    .sub-title {
+      font-family: var(--font-d); font-size: 19px; color: var(--text); margin-bottom: 14px;
+    }
+
+    /* ── Enunciado box ── */
+    .enunciado {
+      background: linear-gradient(135deg, var(--rosa-l) 0%, var(--lila-l) 100%);
+      border: 1px solid #dbbfed; border-radius: var(--rad);
+      padding: 18px 20px; margin-bottom: 20px;
+    }
+    .enunciado-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--morado); margin-bottom: 6px;
+    }
+    .enunciado p { font-size: 13.5px; color: var(--text); line-height: 1.7; }
+
+    /* ── Code block ── */
+    .code-wrap {
+      background: #1e1b2e; border-radius: var(--rad); overflow: hidden;
+      margin-bottom: 20px; box-shadow: 0 4px 24px rgba(29,11,46,.18);
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: #2a2540;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .code-lang {
+      font-size: 11px; font-weight: 600; color: var(--lila); letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .btn-copy {
+      font-family: var(--font-b); font-size: 11.5px; font-weight: 500;
+      padding: 5px 14px; border-radius: var(--rad-pill); cursor: pointer;
+      border: 1.5px solid rgba(206,147,216,.4);
+      background: rgba(206,147,216,.12); color: var(--lila);
+      transition: background .18s, border-color .18s;
+    }
+    .btn-copy:hover { background: rgba(206,147,216,.25); border-color: var(--lila); }
+    .code-body {
+      padding: 20px; overflow-x: auto; max-height: 380px;
+    }
+    .code-body pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12.5px; line-height: 1.7;
+      color: #e2d9f3; white-space: pre;
+    }
+
+    /* ── Info grid (justificación + buenas prácticas) ── */
+    .info-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .info-card {
+      border-radius: var(--rad); padding: 18px 20px;
+    }
+    .info-card.just {
+      background: var(--menta-l); border: 1px solid #b2dfdb;
+    }
+    .info-card.prac {
+      background: var(--lila-l); border: 1px solid #dbbfed;
+    }
+    .info-label {
+      font-size: 10px; font-weight: 600; letter-spacing: .12em;
+      text-transform: uppercase; margin-bottom: 8px;
+    }
+    .info-card.just .info-label { color: var(--menta-d); }
+    .info-card.prac .info-label { color: var(--morado); }
+    .info-card p, .info-card ul {
+      font-size: 13px; color: var(--text); line-height: 1.65;
+    }
+    .info-card ul { padding-left: 16px; }
+    .info-card li { margin-bottom: 4px; }
+
+    /* ── Vista completa / lectura continua ── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(29,11,46,.55); backdrop-filter: blur(4px);
+      z-index: 200; align-items: flex-start; justify-content: center;
+      padding: 20px; overflow-y: auto;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white); border-radius: 20px; width: 100%; max-width: 900px;
+      margin: 20px auto; box-shadow: 0 24px 80px rgba(29,11,46,.3); overflow: hidden;
+    }
+    .modal-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 20px 28px; border-bottom: 1px solid var(--border); gap: 12px;
+      background: linear-gradient(135deg, var(--rosa-l), var(--lila-l));
+    }
+    .modal-title { font-family: var(--font-d); font-size: 22px; color: var(--text); }
+    .btn-close {
+      width: 34px; height: 34px; border-radius: 50%;
+      border: 1.5px solid var(--border); background: var(--white);
+      color: var(--text-s); cursor: pointer; font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .18s;
+    }
+    .btn-close:hover { background: var(--rosa-l); color: var(--rosa); }
+    .modal-body { padding: 28px 32px 40px; }
+
+    /* doc continuo */
+    .full-proyecto { margin-bottom: 56px; padding-bottom: 40px; border-bottom: 2px solid var(--border); }
+    .full-proyecto:last-child { border-bottom: none; }
+    .full-proj-eyebrow {
+      font-size: 10px; font-weight: 600; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--menta-d); margin-bottom: 6px;
+    }
+    .full-proj-title {
+      font-family: var(--font-d); font-size: 26px; color: var(--text); margin-bottom: 20px;
+    }
+    .full-sub { margin-bottom: 32px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+    .full-sub:last-child { border-bottom: none; }
+    .full-sub-title {
+      font-size: 15px; font-weight: 600; color: var(--morado); margin-bottom: 12px;
+      padding-left: 12px; border-left: 3px solid var(--rosa);
+    }
+
+    /* ── Botones acción ── */
+    .btn-primary {
+      font-family: var(--font-b); font-size: 13.5px; font-weight: 500;
+      padding: 10px 24px; border-radius: var(--rad-pill); border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--rosa) 0%, var(--lila) 100%);
+      color: #fff; transition: opacity .18s, transform .15s;
+    }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-menta {
+      font-family: var(--font-b); font-size: 13.5px; font-weight: 500;
+      padding: 10px 24px; border-radius: var(--rad-pill); border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--menta), #80cbc4);
+      color: #fff; transition: opacity .18s, transform .15s;
+    }
+    .btn-menta:hover { opacity: .9; transform: translateY(-1px); }
+
+    .actions-bar {
+      display: flex; gap: 10px; padding: 0 0 32px; flex-wrap: wrap;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .ov-card.span2 { grid-column: span 2; }
+      .info-grid { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+    }
+    @media (max-width: 560px) {
+      .overview-grid { grid-template-columns: 1fr; }
+      .ov-card.span2 { grid-column: span 1; }
+      .hero { padding: 0 24px 28px; }
+      .hero-title { font-size: 38px; }
+      .sub-panel { padding: 20px 18px 24px; }
+      .proj-card-header { padding: 20px 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <img src="img/LogoUpla.png" alt="UPLA" class="logo-img" />
+        <span class="nav-title">Base de Datos</span>
+      </div>
+      <div class="nav-tabs" id="navTabs">
+        <button class="nav-tab active" onclick="switchPanel('inicio', this)">Inicio</button>
+        <button class="nav-tab" onclick="switchPanel('proyectos', this)">Proyectos</button>
+        <button class="nav-tab" onclick="openModal()">Vista completa</button>
+      </div>
+      <a class="btn-back" href="index.html">← Volver al portafolio</a>
+    </div>
+  </nav>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ══════════════════ INICIO ══════════════════ -->
+  <div class="panel active" id="panel-inicio">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-deco">
+        <div class="deco-c a"></div>
+        <div class="deco-c b"></div>
+        <div class="deco-c c"></div>
+      </div>
+      <div class="hero-text">
+        <p class="hero-eyebrow">Universidad Peruana Los Andes · Ingeniería de Sistemas</p>
+        <h1 class="hero-title">Administración<br /><em>Esencial de BDD</em></h1>
+      </div>
+    </div>
+
+    <!-- Overview bento -->
+    <div class="wrap">
+      <div class="sec-header">
+        <p class="sec-eyebrow">Unidad III — Semana 10</p>
+        <h2 class="sec-title">Gestión y Administración del Servidor</h2>
+        <p class="sec-desc">10 proyectos con 3 ejercicios cada uno sobre la base de datos <strong>GradosTitulos</strong> en SQL Server 2022.</p>
+      </div>
+
+      <div class="overview-grid">
+
+        <div class="ov-card span2">
+          <p class="ov-label">Descripción general</p>
+          <p class="ov-intro">
+            Esta semana cubre los pilares de la <strong>administración de bases de datos</strong> en entornos
+            universitarios reales. Se aborda desde la creación y distribución física de archivos hasta la
+            recuperación ante desastres, pasando por seguridad, rendimiento, automatización y auditoría forense.
+            Cada proyecto incluye un enunciado principal y dos ejercicios propuestos con su script T-SQL,
+            justificación técnica y buenas prácticas.
+          </p>
+          <div class="ov-chips" style="margin-top:16px">
+            <span class="chip">Almacenamiento Físico</span>
+            <span class="chip lila">Seguridad & Roles</span>
+            <span class="chip menta">Backup & Restore</span>
+            <span class="chip">Rendimiento</span>
+            <span class="chip lila">Triggers de Auditoría</span>
+            <span class="chip menta">SQL Server Agent</span>
+          </div>
+        </div>
+
+        <div class="ov-card">
+          <p class="ov-label">Proyectos</p>
+          <span class="ov-stat-num">10</span>
+          <span class="ov-stat-label">Proyectos completos</span>
+        </div>
+
+        <div class="ov-card" style="background:linear-gradient(135deg,var(--menta-l),#e0f7fa);border-color:#b2dfdb">
+          <p class="ov-label" style="color:var(--menta-d)">Ejercicios</p>
+          <span class="ov-stat-num" style="color:var(--menta-d)">30</span>
+          <span class="ov-stat-label">Scripts T-SQL resueltos</span>
+        </div>
+
+      </div>
+
+      <!-- CTA -->
+      <div class="actions-bar">
+        <button class="btn-primary" onclick="switchPanel('proyectos', document.querySelectorAll('.nav-tab')[1])">
+          Explorar proyectos →
+        </button>
+        <button class="btn-menta" onclick="openModal()">
+          Ver documento completo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ PROYECTOS ══════════════════ -->
+  <div class="panel" id="panel-proyectos">
+    <div class="wrap">
+      <div class="sec-header">
+        <p class="sec-eyebrow">Semana 10 · GradosTitulos</p>
+        <h2 class="sec-title">Proyectos de Administración</h2>
+        <p class="sec-desc">Selecciona un proyecto y navega entre el enunciado principal y los ejercicios propuestos.</p>
+      </div>
+
+      <!-- Filtro de proyectos -->
+      <div class="proj-nav" id="projNav"></div>
+
+      <!-- Contenedor de proyecto activo -->
+      <div id="projContainer"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ MODAL LECTURA CONTINUA ══════════════════ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="handleModalClick(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <h3 class="modal-title">Documento completo — Semana 10</h3>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+  /* ══════════════════════════════════════════
+     DATOS — 10 proyectos con main/prop1/prop2
+  ══════════════════════════════════════════ */
+  const proyectos = [
+    {
+      num: 'Proyecto 01',
+      titulo: 'Creación y Distribución de Archivos Físicos',
+      categoria: 'Almacenamiento Físico',
+      main: {
+        subtitulo: 'Creación de la Estructura Base de Datos',
+        enunciado: 'Crea la base de datos GradosTitulos con un archivo primario, un archivo secundario de datos para optimizar las consultas de documentos históricos, y el log de transacciones en rutas físicas dedicadas dentro del servidor. Posteriormente, realiza la consulta de los archivos físicos asociados para validar la distribución.',
+        sql: `-- =================================================================
+-- PROYECTO 1: CREACIÓN DE BASE DE DATOS MULTI-ARCHIVO
+-- OBJETIVO: Distribuir almacenamiento físico en discos específicos
+-- =================================================================
+USE master;
+GO
+
+-- Eliminar si ya existe
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'GradosTitulos')
+BEGIN
+    ALTER DATABASE GradosTitulos SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+    DROP DATABASE GradosTitulos;
+END
+GO
+
+CREATE DATABASE GradosTitulos
+ON PRIMARY (
+    NAME     = GradosTitulos_Data,
+    FILENAME = 'D:\\BaseDatos2026\\GradosTitulos_data.mdf',
+    SIZE     = 20MB,  MAXSIZE = 20GB,  FILEGROWTH = 5MB
+),
+FILEGROUP HistoricoGroup (
+    NAME     = GradosTitulos_Hist,
+    FILENAME = 'D:\\BaseDatos2026\\GradosTitulos_hist.ndf',
+    SIZE     = 50MB,  MAXSIZE = 100GB, FILEGROWTH = 10MB
+)
+LOG ON (
+    NAME     = GradosTitulos_Log,
+    FILENAME = 'D:\\BaseDatos2026\\GradosTitulos_log.ldf',
+    SIZE     = 10MB,  MAXSIZE = 10GB,  FILEGROWTH = 2MB
+);
+GO
+
+-- Consulta de validación
+SELECT
+    df.name              AS LogicalName,
+    df.physical_name     AS PhysicalPath,
+    fg.name              AS FileGroupName,
+    df.size * 8 / 1024   AS SizeMB,
+    df.max_size          AS MaxSize
+FROM sys.database_files df
+LEFT JOIN sys.filegroups fg ON df.data_space_id = fg.data_space_id;
+GO`,
+        justificacion: 'La segmentación física en múltiples archivos (.mdf, .ndf, .ldf) y filegroups dedicados permite distribuir las operaciones de E/S en diferentes unidades físicas. Las consultas sobre documentos históricos en el filegroup "HistoricoGroup" no afectan el rendimiento transaccional del archivo primario, y el log opera en su propio bus de escritura secuencial.',
+        practicas: ['Colocar las rutas en discos físicos distintos en producción (C:\\ para Sistema, D:\\ para Datos, E:\\ para Históricos, F:\\ para Log).', 'Usar incrementos fijos en MB para FILEGROWTH en lugar de porcentajes, evitando la fragmentación excesiva.']
+      },
+      prop1: {
+        subtitulo: 'Filegroup Exclusivo para Índices (IdxGroup)',
+        enunciado: 'Modifica la estructura de la base de datos GradosTitulos agregando un nuevo grupo de archivos llamado IdxGroup con un archivo físico secundario (.ndf). Esto servirá para almacenar de forma aislada todos los índices no agrupados de la base de datos, optimizando la velocidad de las búsquedas.',
+        sql: `-- =================================================================
+-- PROYECTO 1 – PROPUESTO 1: FILEGROUP PARA ÍNDICES (IdxGroup)
+-- =================================================================
+USE master;
+GO
+
+ALTER DATABASE GradosTitulos ADD FILEGROUP IdxGroup;
+GO
+
+ALTER DATABASE GradosTitulos
+ADD FILE (
+    NAME = GradosTitulos_Idx,
+    FILENAME = 'D:\\BaseDatos2026\\GradosTitulos_idx.ndf',
+    SIZE = 15MB, MAXSIZE = 5GB, FILEGROWTH = 5MB
+) TO FILEGROUP IdxGroup;
+GO
+
+USE GradosTitulos;
+GO
+
+-- Crear índice dirigido al filegroup de índices
+CREATE NONCLUSTERED INDEX IX_Persona_DNI
+ON Academico.Persona (NroDocumento)
+ON IdxGroup;
+GO`,
+        justificacion: 'Los índices se consultan de forma paralela con las páginas de datos. Ubicarlos en filegroups separados sobre discos independientes permite que el motor lea en paralelo, reduciendo la latencia y eliminando la contención por lectura/escritura en el mismo archivo físico.',
+        practicas: ['Indicar explícitamente la cláusula ON [NombreFilegroup] al crear índices no agrupados para evitar que se alojen por defecto en PRIMARY.']
+      },
+      prop2: {
+        subtitulo: 'Control de Espacio por Filegroup en MB',
+        enunciado: 'Desarrolla una consulta que muestre el espacio total asignado, el espacio utilizado y el espacio libre (en megabytes) para cada grupo de archivos físicos de la base de datos GradosTitulos.',
+        sql: `-- =================================================================
+-- PROYECTO 1 – PROPUESTO 2: MONITOREO DE ESPACIO POR FILEGROUP
+-- =================================================================
+USE GradosTitulos;
+GO
+
+SELECT
+    fg.name                                                           AS [Filegroup],
+    df.name                                                           AS [Archivo Lógico],
+    df.physical_name                                                  AS [Ruta Física],
+    CAST(df.size * 8.0 / 1024 AS DECIMAL(10,2))                      AS [Total MB],
+    CAST(FILEPROPERTY(df.name,'SpaceUsed') * 8.0 / 1024 AS DECIMAL(10,2))
+                                                                      AS [Usado MB],
+    CAST((df.size - FILEPROPERTY(df.name,'SpaceUsed')) * 8.0 / 1024
+         AS DECIMAL(10,2))                                            AS [Libre MB],
+    CAST(((df.size - FILEPROPERTY(df.name,'SpaceUsed')) * 100.0)
+         / df.size AS DECIMAL(5,2))                                   AS [% Libre]
+FROM sys.database_files df
+LEFT JOIN sys.filegroups fg ON df.data_space_id = fg.data_space_id
+ORDER BY fg.name, df.name;
+GO`,
+        justificacion: 'FILEPROPERTY con "SpaceUsed" provee una medición instantánea del espacio con datos útiles vs el reservado, permitiendo decisiones preventivas de escalado antes de que ocurran fallos por falta de almacenamiento.',
+        practicas: ['Establecer alertas cuando el espacio libre de cualquier filegroup descienda por debajo del 15% del total asignado.']
+      }
+    },
+    {
+      num: 'Proyecto 02',
+      titulo: 'Ajuste de Configuración y Propiedades de la BD',
+      categoria: 'Configuración del Motor',
+      main: {
+        subtitulo: 'Colación de Idioma y Crecimiento Fijo',
+        enunciado: 'Consulta las propiedades de colación actuales de la base de datos. Modifica la colación de GradosTitulos para asegurar el soporte nativo de caracteres en español (tildes y la letra "Ñ"). Ajusta el crecimiento automático del archivo primario de datos de manera fija a 20 MB.',
+        sql: `-- =================================================================
+-- PROYECTO 2: COLACIÓN Y CONFIGURACIÓN DE DISCO
+-- =================================================================
+USE master;
+GO
+
+-- 1. Consultar colación actual
+SELECT name, collation_name
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO
+
+-- 2. Cambiar a colación en español (CI = Case Insensitive, AS = Accent Sensitive)
+ALTER DATABASE GradosTitulos SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
+ALTER DATABASE GradosTitulos COLLATE Modern_Spanish_CI_AS;
+GO
+ALTER DATABASE GradosTitulos SET MULTI_USER;
+GO
+
+-- 3. Crecimiento automático fijo a 20 MB
+ALTER DATABASE GradosTitulos
+MODIFY FILE (NAME = GradosTitulos_Data, FILEGROWTH = 20MB);
+GO`,
+        justificacion: 'La colación Modern_Spanish_CI_AS ignora mayúsculas/minúsculas pero respeta tildes y la Ñ. El incremento fijo de 20 MB previene la fragmentación de disco y la sobrecarga de CPU por cálculos de crecimiento dinámicos.',
+        practicas: ['Realizar el cambio de colación en horas de nulo tráfico, ya que requiere bloquear temporalmente la BD en modo SINGLE_USER.']
+      },
+      prop1: {
+        subtitulo: 'Elevación del Nivel de Compatibilidad',
+        enunciado: 'Verifica el nivel de compatibilidad actual de GradosTitulos y elévalo a la última versión disponible del motor para habilitar optimizaciones avanzadas como el Intelligent Query Processing.',
+        sql: `-- =================================================================
+-- PROYECTO 2 – PROPUESTO 1: ACTUALIZACIÓN DE COMPATIBILITY_LEVEL
+-- =================================================================
+USE master;
+GO
+
+-- Verificar nivel actual
+SELECT name, compatibility_level
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO
+
+-- Elevar a 160 (SQL Server 2022)
+ALTER DATABASE GradosTitulos SET COMPATIBILITY_LEVEL = 160;
+GO
+
+-- Verificar el cambio
+SELECT name, compatibility_level, collation_name
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO`,
+        justificacion: 'El nivel de compatibilidad 160 habilita características como Intelligent Query Processing (IQP), comentarios de planes de ejecución, ejecución en modo por lotes en almacenes de filas y compresión optimizada.',
+        practicas: ['Antes de elevar el nivel en bases productivas, ejecutar pruebas con Database Experimentation Assistant para detectar regresiones del plan de consultas.']
+      },
+      prop2: {
+        subtitulo: 'Activación de PAGE_VERIFY CHECKSUM',
+        enunciado: 'Configura la propiedad de verificación de páginas de GradosTitulos en modo CHECKSUM para que el motor detecte de inmediato cualquier corrupción de datos a nivel físico causada por fallas en el disco o el sistema operativo.',
+        sql: `-- =================================================================
+-- PROYECTO 2 – PROPUESTO 2: PAGE_VERIFY CHECKSUM
+-- =================================================================
+USE master;
+GO
+
+-- Estado actual
+SELECT name, page_verify_option_desc
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO
+
+-- Activar CHECKSUM
+ALTER DATABASE GradosTitulos
+SET PAGE_VERIFY CHECKSUM WITH ROLLBACK IMMEDIATE;
+GO
+
+-- Confirmar activación
+SELECT name, page_verify_option_desc
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO`,
+        justificacion: 'CHECKSUM calcula un valor criptográfico de 8 KB por página al guardarse. Al releerla, si el valor no coincide, SQL Server reporta Error 824 indicando corrupción física antes de que se propague lógicamente.',
+        practicas: ['Toda base de datos transaccional de producción debe operar con PAGE_VERIFY en CHECKSUM. Las opciones TORN_PAGE_DETECTION y NONE están obsoletas.']
+      }
+    },
+    {
+      num: 'Proyecto 03',
+      titulo: 'Modelo de Recuperación y Respaldo',
+      categoria: 'Backup & Restore',
+      main: {
+        subtitulo: 'Ciclo de Modelos de Recuperación y Backup Completo',
+        enunciado: 'Cambia secuencialmente el modelo de recuperación a SIMPLE y luego a BULK_LOGGED, explicando el impacto de cada uno. Finalmente, cambia a FULL y ejecuta un respaldo completo (BACKUP DATABASE) hacia un directorio seguro de almacenamiento.',
+        sql: `-- =================================================================
+-- PROYECTO 3: MODELOS DE RECUPERACIÓN Y BACKUP COMPLETO
+-- =================================================================
+USE master;
+GO
+
+-- 1. SIMPLE: trunca el log automáticamente en cada checkpoint
+ALTER DATABASE GradosTitulos SET RECOVERY SIMPLE;
+GO
+
+-- 2. BULK_LOGGED: registra mínimamente operaciones masivas
+ALTER DATABASE GradosTitulos SET RECOVERY BULK_LOGGED;
+GO
+
+-- 3. FULL: máxima seguridad; habilita backups del Log
+ALTER DATABASE GradosTitulos SET RECOVERY FULL;
+GO
+
+-- 4. Backup completo con compresión
+BACKUP DATABASE GradosTitulos
+TO DISK = 'D:\\BaseDatos2026\\GradosTitulos_Full.bak'
+WITH
+    FORMAT,
+    MEDIANAME = 'GradosTitulos_Backups_Med',
+    NAME      = 'Copia Completa de Seguridad GradosTitulos',
+    STATS     = 10,
+    COMPRESSION;
+GO`,
+        justificacion: 'El modelo FULL registra todo el flujo transaccional en el log, posibilitando la restauración a un instante preciso en el tiempo. Esencial para bases de datos gubernamentales o financieras.',
+        practicas: ['Habilitar COMPRESSION en todos los servidores Enterprise/Standard reduce hasta un 80% el espacio de almacenamiento y el ancho de banda de red.']
+      },
+      prop1: {
+        subtitulo: 'Respaldo Diferencial',
+        enunciado: 'Con el objetivo de optimizar el espacio de almacenamiento y acelerar la ventana de mantenimiento diario, ejecuta un respaldo de tipo diferencial (DIFFERENTIAL) de GradosTitulos.',
+        sql: `-- =================================================================
+-- PROYECTO 3 – PROPUESTO 1: BACKUP DIFERENCIAL
+-- =================================================================
+USE master;
+GO
+
+BACKUP DATABASE GradosTitulos
+TO DISK = 'D:\\BaseDatos2026\\GradosTitulos_Diff.bak'
+WITH
+    DIFFERENTIAL,
+    FORMAT,
+    MEDIANAME = 'GradosTitulos_Diff_Med',
+    NAME      = 'Copia Diferencial Diaria GradosTitulos',
+    STATS     = 10,
+    COMPRESSION;
+GO`,
+        justificacion: 'El respaldo diferencial captura únicamente los bloques que cambiaron desde el último backup completo, reduciendo el volumen del archivo y el tiempo de la ventana de mantenimiento.',
+        practicas: ['Establecer una rutina: Backup Completo los domingos + Backup Diferencial de lunes a sábado.']
+      },
+      prop2: {
+        subtitulo: 'Respaldo del Log de Transacciones',
+        enunciado: 'Dado que la base de datos opera en modelo FULL, realiza un respaldo exclusivo del log de transacciones de GradosTitulos para liberar espacio reutilizable en el .ldf y asegurar la recuperación hasta un minuto exacto antes de un fallo.',
+        sql: `-- =================================================================
+-- PROYECTO 3 – PROPUESTO 2: BACKUP DEL LOG
+-- =================================================================
+USE master;
+GO
+
+BACKUP LOG GradosTitulos
+TO DISK = 'D:\\BaseDatos2026\\GradosTitulos_LogBackup.trn'
+WITH
+    FORMAT,
+    NAME  = 'Copia de Log GradosTitulos - Recuperación Puntual',
+    STATS = 10,
+    COMPRESSION;
+GO
+
+-- Validar espacio del log
+USE GradosTitulos;
+GO
+SELECT name, size * 8 / 1024 AS SizeMB, max_size
+FROM sys.database_files
+WHERE type_desc = 'LOG';
+GO`,
+        justificacion: 'En modelo FULL, el .ldf crece indefinidamente hasta que se ejecuta BACKUP LOG. Este comando copia las transacciones confirmadas y trunca la sección inactiva del log para que el motor la reutilice.',
+        practicas: ['En entornos altamente transaccionales, programar BACKUP LOG cada 15 minutos para garantizar pérdidas de información cercanas a cero.']
+      }
+    },
+    {
+      num: 'Proyecto 04',
+      titulo: 'Implementación de Roles y Usuarios de Seguridad',
+      categoria: 'Seguridad & Roles',
+      main: {
+        subtitulo: 'Logins, Usuarios y Roles de Sistema',
+        enunciado: 'Crea un esquema de seguridad basado en roles integrados. Configura el login OperadorTramite asignándolo al rol db_datawriter y el usuario AuditorSunedu vinculándolo al rol db_datareader.',
+        sql: `-- =================================================================
+-- PROYECTO 4: SEGURIDAD BASADA EN ROLES INTEGRADOS
+-- =================================================================
+USE master;
+GO
+
+CREATE LOGIN OperadorTramite
+    WITH PASSWORD = 'Strong_Password123#', DEFAULT_DATABASE = GradosTitulos;
+GO
+CREATE LOGIN AuditorSunedu
+    WITH PASSWORD = 'Secure_Password456$', DEFAULT_DATABASE = GradosTitulos;
+GO
+
+USE GradosTitulos;
+GO
+
+CREATE USER OperadorTramite FOR LOGIN OperadorTramite;
+GO
+CREATE USER AuditorSunedu   FOR LOGIN AuditorSunedu;
+GO
+
+-- OperadorTramite: escritura
+ALTER ROLE db_datawriter ADD MEMBER OperadorTramite;
+GO
+-- AuditorSunedu: solo lectura
+ALTER ROLE db_datareader ADD MEMBER AuditorSunedu;
+GO`,
+        justificacion: 'Los logins mapeados a usuarios desacoplan la autenticación física de la autorización lógica. Los roles integrados db_datawriter y db_datareader simplifican la delegación sin sobrepasar permisos sensitivos.',
+        practicas: ['Usar contraseñas complejas y deshabilitar cuentas que no estén en uso. Nunca mapear cuentas administrativas al rol sysadmin de manera deliberada.']
+      },
+      prop1: {
+        subtitulo: 'Rol Personalizado RolSecretariaAcademica',
+        enunciado: 'Crea un rol personalizado llamado RolSecretariaAcademica con permisos de lectura en los esquemas Academico y Tramite, más permisos de inserción exclusivamente en la tabla Tramite.Tramite.',
+        sql: `-- =================================================================
+-- PROYECTO 4 – PROPUESTO 1: ROL PERSONALIZADO
+-- =================================================================
+USE GradosTitulos;
+GO
+
+CREATE ROLE RolSecretariaAcademica;
+GO
+
+GRANT SELECT ON SCHEMA::Academico TO RolSecretariaAcademica;
+GRANT SELECT ON SCHEMA::Tramite   TO RolSecretariaAcademica;
+GO
+
+GRANT INSERT ON OBJECT::Tramite.Tramite TO RolSecretariaAcademica;
+GO`,
+        justificacion: 'Los roles personalizados facilitan el mantenimiento de la seguridad a largo plazo. Se delegan permisos sobre el rol y los usuarios se añaden como miembros, reduciendo errores humanos.',
+        practicas: ['Usar el prefijo "Rol" o "R_" para distinguir visualmente los roles personalizados de los del sistema de Microsoft.']
+      },
+      prop2: {
+        subtitulo: 'Denegación Explícita con DENY',
+        enunciado: 'Aplica una restricción estricta bloqueando explícitamente al usuario OperadorTramite cualquier lectura de la tabla Tramite.Pago, prevaleciendo sobre cualquier otro rol asignado.',
+        sql: `-- =================================================================
+-- PROYECTO 4 – PROPUESTO 2: DENY EN TABLA FINANCIERA
+-- =================================================================
+USE GradosTitulos;
+GO
+
+DENY SELECT ON OBJECT::Tramite.Pago TO OperadorTramite;
+GO
+
+-- Verificar la restricción
+SELECT
+    pr.name               AS PrincipalName,
+    pe.permission_name    AS Permission,
+    pe.state_desc         AS PermissionState,
+    OBJECT_NAME(pe.major_id) AS ObjectName
+FROM sys.database_permissions pe
+JOIN sys.database_principals pr
+    ON pe.grantee_principal_id = pr.principal_id
+WHERE pr.name = 'OperadorTramite';
+GO`,
+        justificacion: 'DENY tiene prioridad absoluta sobre cualquier GRANT. Aunque el usuario pertenezca a db_datareader, la presencia de DENY bloqueará su acceso de manera irrefutable.',
+        practicas: ['Usar DENY con precisión para segregar datos financieros y personales. Documentar cada DENY en el registro de cambios de seguridad.']
+      }
+    },
+    {
+      num: 'Proyecto 05',
+      titulo: 'Configuración Granular de Permisos',
+      categoria: 'Privilegios Mínimos',
+      main: {
+        subtitulo: 'Permisos Granulares sobre Vistas y Revocación',
+        enunciado: 'Aplica el principio de mínimo privilegio. Concede al usuario CoordinadorFacultad acceso de solo lectura a la vista Evaluacion.V_NotaFinalSustentacion. Revoca al usuario AsistenteTramite el permiso UPDATE sobre la tabla Tramite.Pago.',
+        sql: `-- =================================================================
+-- PROYECTO 5: MÍNIMO PRIVILEGIO Y GRANULARIDAD
+-- =================================================================
+USE master;
+GO
+
+CREATE LOGIN CoordinadorFacultad WITH PASSWORD = 'CoordPassword_789!';
+CREATE LOGIN AsistenteTramite    WITH PASSWORD = 'AsistPassword_101!';
+GO
+
+USE GradosTitulos;
+GO
+CREATE USER CoordinadorFacultad FOR LOGIN CoordinadorFacultad;
+CREATE USER AsistenteTramite    FOR LOGIN AsistenteTramite;
+GO
+
+-- Acceso de solo lectura a la vista analítica
+GRANT SELECT ON OBJECT::Evaluacion.V_NotaFinalSustentacion TO CoordinadorFacultad;
+GO
+
+-- Revocar permiso de actualización sobre pagos
+REVOKE UPDATE ON OBJECT::Tramite.Pago FROM AsistenteTramite;
+GO`,
+        justificacion: 'Conceder permisos sobre vistas encapsula filas y columnas confidenciales. REVOKE deshace un GRANT previo sin el efecto permanente de DENY, manteniendo flexibilidad futura.',
+        practicas: ['Diseñar vistas de reportería orientadas a departamentos antes de conceder acceso directo a tablas relacionales crudas.']
+      },
+      prop1: {
+        subtitulo: 'Permisos Granulares a Nivel de Columnas',
+        enunciado: 'Concede al usuario PracticanteSistemas acceso de lectura únicamente a las columnas IdPersona, Nombres, ApellidoPaterno y Correo de la tabla Academico.Persona, protegiendo datos sensibles como el NroDocumento.',
+        sql: `-- =================================================================
+-- PROYECTO 5 – PROPUESTO 1: PERMISOS A NIVEL DE COLUMNA
+-- =================================================================
+USE GradosTitulos;
+GO
+
+IF NOT EXISTS (
+    SELECT * FROM sys.database_principals WHERE name = 'PracticanteSistemas'
+)
+    CREATE USER PracticanteSistemas WITHOUT LOGIN;
+GO
+
+GRANT SELECT (IdPersona, Nombres, ApellidoPaterno, Correo)
+ON OBJECT::Academico.Persona
+TO PracticanteSistemas;
+GO
+
+-- Prueba de impersonación
+EXECUTE AS USER = 'PracticanteSistemas';
+    -- Debe funcionar:
+    SELECT IdPersona, Nombres, ApellidoPaterno, Correo FROM Academico.Persona;
+    -- La siguiente línea lanzaría error de permisos:
+    -- SELECT NroDocumento, Telefono FROM Academico.Persona;
+REVERT;
+GO`,
+        justificacion: 'Los permisos de nivel de columna garantizan que el personal externo solo consulte datos elementales, mientras la información delicada queda blindada lógicamente.',
+        practicas: ['Aunque SQL Server soporta permisos por columna, se recomienda usar Vistas segregadas como alternativa de mayor mantenibilidad.']
+      },
+      prop2: {
+        subtitulo: 'Permiso EXECUTE sobre Procedimientos Almacenados',
+        enunciado: 'Concede al usuario OperadorTramite permiso exclusivo para ejecutar el procedimiento Tramite.SP_RegistrarTramite, sin darle accesos directos de escritura sobre las tablas involucradas.',
+        sql: `-- =================================================================
+-- PROYECTO 5 – PROPUESTO 2: PERMISO EXECUTE EN SP
+-- =================================================================
+USE GradosTitulos;
+GO
+
+-- Crear SP simulado si no existe
+IF OBJECT_ID('Tramite.SP_RegistrarTramite', 'P') IS NULL
+    EXEC('CREATE PROCEDURE Tramite.SP_RegistrarTramite AS PRINT ''OK'';');
+GO
+
+GRANT EXECUTE ON OBJECT::Tramite.SP_RegistrarTramite TO OperadorTramite;
+GO`,
+        justificacion: 'El Ownership Chaining permite que el motor valide únicamente el permiso EXECUTE del SP, sin exponer las tablas subyacentes, evitando la alteración no auditada de datos.',
+        practicas: ['Canalizar todos los flujos de negocio a través de SPs en lugar de conceder INSERT/UPDATE abiertos a las aplicaciones cliente.']
+      }
+    },
+    {
+      num: 'Proyecto 06',
+      titulo: 'Identificación de Procesos Lentos y Bloqueos',
+      categoria: 'Diagnóstico de Rendimiento',
+      main: {
+        subtitulo: 'Rastreo de Locks con DMVs en Tiempo Real',
+        enunciado: 'Durante periodos de carga masiva el servidor experimenta lentitud. Desarrolla una consulta avanzada con vistas de administración dinámica (DMVs) para rastrear bloqueos de recursos en tiempo real en la base de datos.',
+        sql: `-- =================================================================
+-- PROYECTO 6: DIAGNÓSTICO DE BLOQUEOS CON DMVS
+-- =================================================================
+USE master;
+GO
+
+SELECT
+    blocked_locks.request_session_id    AS SessionBloqueada,
+    blocked_exec.blocking_session_id    AS SessionBloqueadora,
+    blocked_exec.wait_time              AS TiempoEsperaMS,
+    blocked_exec.wait_type              AS TipoEspera,
+    blocked_sql.text                    AS CodigoBloqueado,
+    blocking_sql.text                   AS CodigoCausante
+FROM sys.dm_tran_locks AS blocked_locks
+INNER JOIN sys.dm_exec_requests AS blocked_exec
+    ON blocked_locks.request_session_id = blocked_exec.session_id
+CROSS APPLY sys.dm_exec_sql_text(blocked_exec.sql_handle) AS blocked_sql
+INNER JOIN sys.dm_exec_requests AS blocking_exec
+    ON blocked_exec.blocking_session_id = blocking_exec.session_id
+CROSS APPLY sys.dm_exec_sql_text(blocking_exec.sql_handle) AS blocking_sql
+WHERE blocked_locks.request_status = 'WAIT';
+GO`,
+        justificacion: 'Los DMVs permiten interceptar qué sesión bloquea y el comando que detiene la cola de procesamiento, identificando la causa raíz de la lentitud sin añadir overhead adicional al motor.',
+        practicas: ['Revisar los índices existentes y considerar el nivel de aislamiento READ COMMITTED SNAPSHOT si hay reportes concurrentes intensivos de lectura.']
+      },
+      prop1: {
+        subtitulo: 'Top 5 Consultas con Mayor Uso de CPU',
+        enunciado: 'Escribe una consulta T-SQL que analice los planes en caché del servidor y liste las 5 consultas que han consumido mayor tiempo de procesador en GradosTitulos.',
+        sql: `-- =================================================================
+-- PROYECTO 6 – PROPUESTO 1: TOP 5 CONSULTAS DE CPU
+-- =================================================================
+USE GradosTitulos;
+GO
+
+SELECT TOP 5
+    qs.execution_count                                         AS [Veces Ejecutado],
+    qs.total_worker_time / 1000                                AS [Total CPU (ms)],
+    qs.total_worker_time / qs.execution_count / 1000           AS [Promedio CPU (ms)],
+    qs.total_elapsed_time / qs.execution_count / 1000          AS [Tiempo Promedio (ms)],
+    SUBSTRING(st.text,
+        (qs.statement_start_offset / 2) + 1,
+        ((CASE qs.statement_end_offset
+            WHEN -1 THEN DATALENGTH(st.text)
+            ELSE qs.statement_end_offset
+          END - qs.statement_start_offset) / 2) + 1)          AS [Sentencia SQL]
+FROM sys.dm_exec_query_stats qs
+CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) st
+ORDER BY qs.total_worker_time DESC;
+GO`,
+        justificacion: 'sys.dm_exec_query_stats inspecciona la caché activa sin añadir latencia. La relación total_worker_time/execution_count identifica qué código castiga más al procesador.',
+        practicas: ['Limpiar la caché (DBCC FREEPROCCACHE) solo en servidores de desarrollo para reiniciar estadísticas durante pruebas de optimización.']
+      },
+      prop2: {
+        subtitulo: 'Índices No Utilizados en Disco',
+        enunciado: 'Implementa una consulta para verificar el uso real de los índices no agrupados en GradosTitulos e identificar cuáles no están siendo utilizados pero siguen consumiendo espacio en disco.',
+        sql: `-- =================================================================
+-- PROYECTO 6 – PROPUESTO 2: ÍNDICES INACTIVOS
+-- =================================================================
+USE GradosTitulos;
+GO
+
+SELECT
+    OBJECT_NAME(s.object_id)                              AS [Tabla],
+    i.name                                                AS [Índice],
+    s.user_seeks                                          AS [Seeks],
+    s.user_scans                                          AS [Scans],
+    s.user_lookups                                        AS [Lookups],
+    s.user_updates                                        AS [Updates],
+    CAST(SUM(a.total_pages) * 8.0 / 1024 AS DECIMAL(10,2)) AS [Tamaño MB]
+FROM sys.dm_db_index_usage_stats s
+INNER JOIN sys.indexes i
+    ON i.object_id = s.object_id AND i.index_id = s.index_id
+INNER JOIN sys.partitions p
+    ON p.object_id = s.object_id AND p.index_id = s.index_id
+INNER JOIN sys.allocation_units a ON a.container_id = p.partition_id
+WHERE s.database_id = DB_ID('GradosTitulos')
+  AND i.index_id > 1  -- excluir clustered
+GROUP BY s.object_id, i.name, i.index_id,
+         s.user_seeks, s.user_scans, s.user_lookups, s.user_updates
+HAVING s.user_seeks = 0 AND s.user_scans = 0 AND s.user_lookups = 0
+ORDER BY s.user_updates DESC;
+GO`,
+        justificacion: 'Un índice con 0 búsquedas es "inactivo". Eliminarlo optimiza la velocidad de escritura porque el motor deja de mantener su estructura en INSERT/UPDATE/DELETE.',
+        practicas: ['Monitorear el uso de índices durante un trimestre completo antes de tomar la decisión de eliminar uno, previniendo la degradación de procesos analíticos trimestrales.']
+      }
+    },
+    {
+      num: 'Proyecto 07',
+      titulo: 'Automatización de Respaldos y Limpieza Periódica',
+      categoria: 'SQL Server Agent',
+      main: {
+        subtitulo: 'Jobs en SQL Agent y Scripts de Limpieza de Auditoría',
+        enunciado: 'Diseña los scripts para automatizar mediante SQL Server Agent: un respaldo completo diario de la base de datos y una purga semanal de registros de auditoría con más de 15 días de antigüedad y estado resuelto.',
+        sql: `-- =================================================================
+-- PROYECTO 7: AUTOMATIZACIÓN CON SQL AGENT JOBS
+-- =================================================================
+USE msdb;
+GO
+
+-- JOB 1: Respaldo diario automático
+DECLARE @JobId UNIQUEIDENTIFIER;
+EXEC dbo.sp_add_job
+    @job_name   = N'UPLA_Respaldo_Diario_GradosTitulos',
+    @enabled    = 1,
+    @description= N'Copia de seguridad física completa de la BD todos los días.',
+    @job_id     = @JobId OUTPUT;
+
+EXEC dbo.sp_add_jobstep
+    @job_id       = @JobId,
+    @step_name    = N'Ejecutar Backup Completo',
+    @subsystem    = N'TSQL',
+    @command      = N'BACKUP DATABASE GradosTitulos
+TO DISK = ''D:\\BaseDatos2026\\Backup_Autodiario.bak''
+WITH FORMAT, COMPRESSION, STATS = 10;',
+    @database_name= N'master';
+
+EXEC dbo.sp_add_jobschedule
+    @job_id            = @JobId,
+    @name              = N'Horario_Noche_Backup',
+    @freq_type         = 4,   -- Diario
+    @freq_interval     = 1,
+    @active_start_time = 230000; -- 23:00:00
+
+EXEC dbo.sp_add_jobserver @job_id = @JobId, @server_name = N'(local)';
+GO
+
+-- JOB 2: Purga semanal de auditoría (>15 días, estado Resuelto)
+DECLARE @JobId2 UNIQUEIDENTIFIER;
+EXEC dbo.sp_add_job
+    @job_name    = N'UPLA_Purga_Auditoria_Semanal',
+    @enabled     = 1,
+    @description = N'Limpia registros viejos resueltos de auditoría.',
+    @job_id      = @JobId2 OUTPUT;
+
+EXEC dbo.sp_add_jobstep
+    @job_id        = @JobId2,
+    @step_name     = N'Eliminar Históricos Resueltos > 15 días',
+    @subsystem     = N'TSQL',
+    @command       = N'DELETE FROM Tramite.Tramite
+WHERE EstadoId = ''Resuelto''
+  AND FechaRegistro < DATEADD(DAY, -15, GETDATE());',
+    @database_name = N'GradosTitulos';
+
+EXEC dbo.sp_add_jobserver @job_id = @JobId2, @server_name = N'(local)';
+GO`,
+        justificacion: 'SQL Agent elimina la dependencia de operaciones manuales para tareas críticas. DATEADD(DAY,-15,GETDATE()) acota el crecimiento de la tabla de datos de forma predecible.',
+        practicas: ['Limitar las eliminaciones masivas en lotes de 1000 filas (DELETE TOP(1000)) para evitar el crecimiento excesivo del log y bloqueos de tablas.']
+      },
+      prop1: {
+        subtitulo: 'Alertas por Fallos en el SQL Agent',
+        enunciado: 'Configura un operador llamado DBA_Alertas en el Agente de SQL Server para que el servidor envíe correos automáticos si el job de respaldo diario falla.',
+        sql: `-- =================================================================
+-- PROYECTO 7 – PROPUESTO 1: OPERADOR DE ALERTAS POR EMAIL
+-- =================================================================
+USE msdb;
+GO
+
+IF NOT EXISTS (SELECT * FROM dbo.sysoperators WHERE name = N'DBA_Alertas')
+    EXEC dbo.sp_add_operator
+        @name          = N'DBA_Alertas',
+        @enabled       = 1,
+        @email_address = N'dba_grados@upla.edu.pe';
+GO
+
+DECLARE @JobId UNIQUEIDENTIFIER;
+SELECT @JobId = job_id FROM dbo.sysjobs
+WHERE name = N'UPLA_Respaldo_Diario_GradosTitulos';
+
+IF @JobId IS NOT NULL
+    EXEC dbo.sp_update_job
+        @job_id                    = @JobId,
+        @notify_level_email        = 2,  -- Solo en caso de fallo
+        @notify_email_operator_name= N'DBA_Alertas';
+GO`,
+        justificacion: 'La monitorización reactiva vía Database Mail reduce los tiempos de respuesta ante fallos críticos de hardware o software en la infraestructura universitaria.',
+        practicas: ['Configurar una cuenta SMTP independiente del servidor de producción y verificar el flujo de correos periódicamente simulando fallos controlados.']
+      },
+      prop2: {
+        subtitulo: 'Reconstrucción Automática de Índices Fragmentados',
+        enunciado: 'Desarrolla un script de mantenimiento para evaluar los índices de GradosTitulos y ejecutar ALTER INDEX REBUILD en los que superen el 30% de fragmentación física.',
+        sql: `-- =================================================================
+-- PROYECTO 7 – PROPUESTO 2: REBUILD AUTOMÁTICO DE ÍNDICES
+-- =================================================================
+USE GradosTitulos;
+GO
+
+DECLARE @TableName VARCHAR(255);
+DECLARE @IndexName VARCHAR(255);
+DECLARE @SQL       NVARCHAR(500);
+
+DECLARE IndexCursor CURSOR FOR
+SELECT
+    OBJECT_NAME(ips.object_id) AS TableName,
+    i.name                     AS IndexName
+FROM sys.dm_db_index_physical_stats(
+    DB_ID('GradosTitulos'), NULL, NULL, NULL, 'DETAILED') ips
+INNER JOIN sys.indexes i
+    ON i.object_id = ips.object_id AND i.index_id = ips.index_id
+WHERE ips.avg_fragmentation_in_percent > 30.0
+  AND i.index_id > 0;
+
+OPEN IndexCursor;
+FETCH NEXT FROM IndexCursor INTO @TableName, @IndexName;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @SQL = N'ALTER INDEX ' + QUOTENAME(@IndexName) +
+               N' ON ' + QUOTENAME(@TableName) +
+               N' REBUILD WITH (ONLINE = ON);';
+    BEGIN TRY
+        EXEC sp_executesql @SQL;
+        PRINT 'Rebuild OK: ' + @IndexName + ' en ' + @TableName;
+    END TRY
+    BEGIN CATCH
+        SET @SQL = N'ALTER INDEX ' + QUOTENAME(@IndexName) +
+                   N' ON ' + QUOTENAME(@TableName) + N' REBUILD;';
+        EXEC sp_executesql @SQL;
+        PRINT 'Rebuild Offline: ' + @IndexName;
+    END CATCH
+    FETCH NEXT FROM IndexCursor INTO @TableName, @IndexName;
+END
+
+CLOSE IndexCursor;
+DEALLOCATE IndexCursor;
+GO`,
+        justificacion: 'Fragmentación > 30% provoca costosos saltos físicos del cabezal de disco. Un REBUILD reorganiza la estructura de forma contigua, mejorando drásticamente las lecturas.',
+        practicas: ['Ejecutar REBUILD en horas de nula concurrencia y priorizar ONLINE = ON con licenciamiento Enterprise para no bloquear usuarios activos.']
+      }
+    },
+    {
+      num: 'Proyecto 08',
+      titulo: 'Reestructuración Física y Alteración de Esquemas',
+      categoria: 'DDL — ALTER TABLE',
+      main: {
+        subtitulo: 'Alteración de Columnas y Limpieza de Atributos',
+        enunciado: 'Agrega de forma segura la columna PrioridadAtencion (INT) a la tabla Tramite.Tramite. Posteriormente, elimina la columna redundante Observaciones de dicha tabla, verificando primero su existencia.',
+        sql: `-- =================================================================
+-- PROYECTO 8: MANTENIMIENTO DE ESQUEMAS DDL
+-- =================================================================
+USE GradosTitulos;
+GO
+
+-- 1. Agregar nueva columna (NULL para no romper filas existentes)
+ALTER TABLE Tramite.Tramite
+ADD PrioridadAtencion INT NULL;
+GO
+
+-- 2. Eliminar columna redundante con validación previa
+IF EXISTS (
+    SELECT * FROM sys.columns
+    WHERE object_id = OBJECT_ID('Tramite.Tramite') AND name = 'Observaciones'
+)
+BEGIN
+    ALTER TABLE Tramite.Tramite DROP COLUMN Observaciones;
+    PRINT 'Columna Observaciones eliminada exitosamente.';
+END
+ELSE
+    PRINT 'Aviso: la columna Observaciones no existía.';
+GO`,
+        justificacion: 'ALTER TABLE modifica el esquema en el diccionario de datos sin reconstruir la tabla, preservando la consistencia física de las filas existentes.',
+        practicas: ['Al agregar columnas NOT NULL en BDs maduras: primero agregarla como NULL, actualizar datos históricos con valores por defecto y luego cambiarla a NOT NULL.']
+      },
+      prop1: {
+        subtitulo: 'Restricción CHECK en la Tabla de Pagos',
+        enunciado: 'Modifica la tabla Tramite.Pago agregando una restricción CHECK para asegurar que ningún registro acepte un Monto menor o igual a cero.',
+        sql: `-- =================================================================
+-- PROYECTO 8 – PROPUESTO 1: CHECK CONSTRAINT EN PAGOS
+-- =================================================================
+USE GradosTitulos;
+GO
+
+ALTER TABLE Tramite.Pago
+ADD CONSTRAINT CK_Pago_Monto_Positivo
+CHECK (Monto > 0.00);
+GO
+
+-- Prueba: la siguiente inserción debería fallar por violación del CHECK:
+-- INSERT INTO Tramite.Pago (IdPago, IdTramite, Monto, FechaPago)
+-- VALUES (999, 1, -15.50, GETDATE());`,
+        justificacion: 'Las restricciones CHECK operan a nivel físico del motor, impidiendo datos ilícitos provenientes de errores en la capa de aplicación o consultas directas no autorizadas.',
+        practicas: ['Asignar nombres descriptivos a los constraints (CK_Tabla_Columna_Regla) para identificar inmediatamente la regla violada en los mensajes de error.']
+      },
+      prop2: {
+        subtitulo: 'Modificación del Tipo de Dato NroRecibo',
+        enunciado: 'Por ampliación de cobertura de texto, modifica la columna NroRecibo de la tabla Tramite.Pago de VARCHAR(30) a VARCHAR(60), manteniendo la propiedad NULL.',
+        sql: `-- =================================================================
+-- PROYECTO 8 – PROPUESTO 2: AMPLIAR CAPACIDAD DE COLUMNA
+-- =================================================================
+USE GradosTitulos;
+GO
+
+ALTER TABLE Tramite.Pago
+ALTER COLUMN NroRecibo VARCHAR(60) NULL;
+GO`,
+        justificacion: 'Ampliar la longitud de un VARCHAR ajusta únicamente los metadatos de longitud máxima en el sistema; no reubica datos físicamente en disco, siendo una operación instantánea y segura.',
+        practicas: ['Nunca reducir la longitud de una columna sin antes auditar que no existan valores que excedan el nuevo límite, evitando truncamiento accidental de datos.']
+      }
+    },
+    {
+      num: 'Proyecto 09',
+      titulo: 'Auditoría Forense mediante Triggers',
+      categoria: 'Triggers & Auditoría',
+      main: {
+        subtitulo: 'Tabla de Auditoría y Trigger AFTER DELETE',
+        enunciado: 'Por políticas de protección de datos personales, audita toda eliminación física en el padrón de personas. Diseña la tabla Academico.AuditoriaPersona e implementa un trigger AFTER DELETE en Academico.Persona que capture los datos eliminados, el usuario y el timestamp.',
+        sql: `-- =================================================================
+-- PROYECTO 9: AUDITORÍA FORENSE CON TRIGGERS
+-- =================================================================
+USE GradosTitulos;
+GO
+
+-- 1. Tabla de auditoría
+IF OBJECT_ID('Academico.AuditoriaPersona', 'U') IS NULL
+BEGIN
+    CREATE TABLE Academico.AuditoriaPersona (
+        IdAuditoria         INT IDENTITY(1,1) PRIMARY KEY,
+        IdPersona           INT          NOT NULL,
+        NombresBorrados     VARCHAR(100) NOT NULL,
+        ApellidosBorrados   VARCHAR(100) NOT NULL,
+        NroDocumentoBorrado VARCHAR(20)  NOT NULL,
+        UsuarioResponsable  NVARCHAR(100) NOT NULL DEFAULT SUSER_SNAME(),
+        FechaEliminacion    DATETIME      NOT NULL DEFAULT GETDATE(),
+        NombreHost          NVARCHAR(100) NOT NULL DEFAULT HOST_NAME()
+    );
+END
+GO
+
+-- 2. Trigger AFTER DELETE
+CREATE TRIGGER TR_AuditoriaPersona_Delete
+ON Academico.Persona
+AFTER DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO Academico.AuditoriaPersona
+        (IdPersona, NombresBorrados, ApellidosBorrados, NroDocumentoBorrado)
+    SELECT
+        d.IdPersona,
+        d.Nombres,
+        d.ApellidoPaterno + ' ' + d.ApellidoMaterno,
+        d.NroDocumento
+    FROM deleted d;
+END
+GO`,
+        justificacion: 'Los triggers garantizan la inmutabilidad de la auditoría. La tabla virtual "deleted" contiene el estado exacto de las filas antes de la eliminación, asegurando un registro forense preciso.',
+        practicas: ['Incluir SET NOCOUNT ON en todos los triggers para evitar el envío de mensajes adicionales de filas afectadas a las aplicaciones cliente.']
+      },
+      prop1: {
+        subtitulo: 'Trigger AFTER UPDATE en Tramite.Pago',
+        enunciado: 'Desarrolla el trigger TR_AuditoriaModificarPago en la tabla Tramite.Pago que se active tras cualquier modificación (AFTER UPDATE), guardando el monto anterior, el nuevo y el usuario responsable.',
+        sql: `-- =================================================================
+-- PROYECTO 9 – PROPUESTO 1: AUDITORÍA DE MODIFICACIÓN DE PAGOS
+-- =================================================================
+USE GradosTitulos;
+GO
+
+IF OBJECT_ID('Tramite.AuditoriaPagos', 'U') IS NULL
+BEGIN
+    CREATE TABLE Tramite.AuditoriaPagos (
+        IdAuditoria        INT IDENTITY(1,1) PRIMARY KEY,
+        IdPago             INT            NOT NULL,
+        MontoAnterior      DECIMAL(10,2)  NOT NULL,
+        MontoNuevo         DECIMAL(10,2)  NOT NULL,
+        UsuarioResponsable NVARCHAR(100)  NOT NULL DEFAULT SUSER_SNAME(),
+        FechaModificacion  DATETIME       NOT NULL DEFAULT GETDATE()
+    );
+END
+GO
+
+CREATE TRIGGER TR_AuditoriaModificarPago
+ON Tramite.Pago
+AFTER UPDATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF UPDATE(Monto)
+    BEGIN
+        INSERT INTO Tramite.AuditoriaPagos (IdPago, MontoAnterior, MontoNuevo)
+        SELECT i.IdPago, d.Monto, i.Monto
+        FROM inserted i
+        INNER JOIN deleted d ON i.IdPago = d.IdPago
+        WHERE i.Monto <> d.Monto;
+    END
+END
+GO`,
+        justificacion: 'IF UPDATE(Monto) optimiza el trigger: el bloque interno solo se ejecuta si el campo fue parte de la modificación, ignorando cambios en otros atributos de la tabla.',
+        practicas: ['Auditar campos de forma selectiva para no degradar el rendimiento del motor ante peticiones concurrentes de pago.']
+      },
+      prop2: {
+        subtitulo: 'Trigger INSTEAD OF — Restricción Horaria',
+        enunciado: 'Implementa un trigger INSTEAD OF en Academico.Docente para bloquear cualquier eliminación o modificación los fines de semana (sábados y domingos), cancelando la transacción automáticamente.',
+        sql: `-- =================================================================
+-- PROYECTO 9 – PROPUESTO 2: RESTRICCIÓN DE FIN DE SEMANA
+-- =================================================================
+USE GradosTitulos;
+GO
+
+CREATE TRIGGER TR_Docente_SeguridadHorario
+ON Academico.Docente
+INSTEAD OF UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @NombreDia VARCHAR(20) = DATENAME(WEEKDAY, GETDATE());
+
+    IF @NombreDia IN ('Saturday','Sunday','Sábado','Domingo')
+    BEGIN
+        RAISERROR('ACCESO DENEGADO: Modificaciones de personal académico prohibidas en fines de semana.', 16, 1);
+        ROLLBACK TRANSACTION;
+    END
+    ELSE
+    BEGIN
+        -- Permitir UPDATE
+        IF EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
+            UPDATE Academico.Docente
+            SET CodDocente = i.CodDocente, Activo = i.Activo
+            FROM Academico.Docente d
+            INNER JOIN inserted i ON d.IdDocente = i.IdDocente;
+
+        -- Permitir DELETE
+        IF NOT EXISTS (SELECT * FROM inserted) AND EXISTS (SELECT * FROM deleted)
+            DELETE FROM Academico.Docente
+            WHERE IdDocente IN (SELECT IdDocente FROM deleted);
+    END
+END
+GO`,
+        justificacion: 'Los triggers INSTEAD OF interceptan la petición antes de procesarse. ROLLBACK TRANSACTION cancela todo el lote operativo manteniendo el estado previo inmutable.',
+        practicas: ['Asignar severidad 16 al RAISERROR para generar un error ejecutable visible por los conectores de desarrollo, sin colapsar el servidor.']
+      }
+    },
+    {
+      num: 'Proyecto 10',
+      titulo: 'Recuperación y Restauración Completa',
+      categoria: 'Disaster Recovery',
+      main: {
+        subtitulo: 'Escenario de Desastre y Restauración Integral',
+        enunciado: 'Simula un escenario catastrófico de error humano mediante el borrado accidental de datos críticos. Ejecuta la restauración completa de GradosTitulos utilizando el respaldo .bak generado en el Proyecto 3. Finaliza validando la integridad de los datos con una consulta de verificación.',
+        sql: `-- =================================================================
+-- PROYECTO 10: DESASTRE Y RESTAURACIÓN INTEGRAL
+-- =================================================================
+USE master;
+GO
+
+-- 1. Simular desastre (cerrar accesos y eliminar BD)
+ALTER DATABASE GradosTitulos SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+GO
+DROP DATABASE GradosTitulos;
+GO
+
+-- 2. Restaurar desde el backup del Proyecto 3
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'D:\\BaseDatos2026\\GradosTitulos_Full.bak'
+WITH
+    REPLACE,   -- Reemplaza archivos físicos existentes
+    RECOVERY,  -- Habilita la BD para nuevas consultas
+    STATS = 10;
+GO
+
+-- 3. Verificación de consistencia
+USE GradosTitulos;
+GO
+SELECT
+    OBJECT_SCHEMA_NAME(object_id) AS [Esquema],
+    name                          AS [Tabla],
+    type_desc                     AS [Tipo]
+FROM sys.tables
+ORDER BY [Esquema], name;
+GO`,
+        justificacion: 'RESTORE DATABASE con RECOVERY reconstruye los esquemas en caliente e informa al motor que no recibirá archivos de bitácora adicionales, habilitando la BD en producción de inmediato.',
+        practicas: ['Verificar siempre que no haya usuarios conectados antes de una restauración física, usando SET SINGLE_USER WITH ROLLBACK IMMEDIATE.']
+      },
+      prop1: {
+        subtitulo: 'Restauración Parcial con Cross-Database Queries',
+        enunciado: 'Se borraron accidentalmente los datos de Catalogo.EstadoTramite. Usa consultas cruzadas entre bases de datos para recuperar la información desde una copia de respaldo montada temporalmente como GradosTitulos_Auxiliar.',
+        sql: `-- =================================================================
+-- PROYECTO 10 – PROPUESTO 1: CROSS-DATABASE RECOVERY
+-- =================================================================
+USE master;
+GO
+
+-- 1. Restaurar backup como BD auxiliar temporal
+RESTORE DATABASE GradosTitulos_Auxiliar
+FROM DISK = 'D:\\BaseDatos2026\\GradosTitulos_Full.bak'
+WITH
+    MOVE 'GradosTitulos_Data' TO 'D:\\BaseDatos2026\\GradosTitulos_Aux_data.mdf',
+    MOVE 'GradosTitulos_Log'  TO 'D:\\BaseDatos2026\\GradosTitulos_Aux_log.ldf',
+    REPLACE, RECOVERY;
+GO
+
+-- 2. Recuperar tabla desde la BD auxiliar
+USE GradosTitulos;
+GO
+
+SET IDENTITY_INSERT Catalogo.EstadoTramite ON;
+
+INSERT INTO Catalogo.EstadoTramite (IdEstadoTramite, Descripcion, Activo)
+SELECT src.IdEstadoTramite, src.Descripcion, src.Activo
+FROM GradosTitulos_Auxiliar.Catalogo.EstadoTramite AS src
+WHERE NOT EXISTS (
+    SELECT 1 FROM Catalogo.EstadoTramite AS dst
+    WHERE dst.IdEstadoTramite = src.IdEstadoTramite
+);
+
+SET IDENTITY_INSERT Catalogo.EstadoTramite OFF;
+GO
+
+-- 3. Desmontar BD auxiliar
+USE master;
+GO
+ALTER DATABASE GradosTitulos_Auxiliar SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+DROP DATABASE GradosTitulos_Auxiliar;
+GO`,
+        justificacion: 'Las Cross-Database Queries permiten recuperar una sola tabla usando la notación [BD].[Esquema].[Tabla] sin exportar utilidades pesadas como BCP o SSIS.',
+        practicas: ['Al montar BDs auxiliares con restauraciones temporales, siempre usar MOVE ... TO para evitar sobrescribir los archivos de producción en el servidor.']
+      },
+      prop2: {
+        subtitulo: 'Verificación de Integridad con DBCC CHECKDB',
+        enunciado: 'Tras completar la restauración de emergencia, ejecuta DBCC CHECKDB para realizar una auditoría completa de la integridad estructural y lógica de las páginas de datos e índices de GradosTitulos.',
+        sql: `-- =================================================================
+-- PROYECTO 10 – PROPUESTO 2: DBCC CHECKDB
+-- =================================================================
+USE master;
+GO
+
+DBCC CHECKDB ('GradosTitulos')
+WITH
+    NO_INFOMSGS,    -- Suprime mensajes informativos
+    ALL_ERRORMSGS;  -- Retorna todos los errores encontrados
+GO`,
+        justificacion: 'DBCC CHECKDB verifica el ordenamiento de páginas lógicas, la correlación de llaves, la alineación física de bytes y la integridad referencial completa de la base de datos.',
+        practicas: ['Ejecutar DBCC CHECKDB de forma automatizada (SQL Agent) al menos una vez por semana en producción para detectar corrupciones silenciosas antes del ciclo de backups.']
+      }
+    }
+  ];
+
+  /* ══════════════════════════════
+     Estado de la app
+  ══════════════════════════════ */
+  let proyectoActivo = 0;
+  let subActiva = {}; // { proyectoIndex: 'main'|'prop1'|'prop2' }
+
+  /* ══════════════════════════════
+     Navegación de paneles
+  ══════════════════════════════ */
+  function switchPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    window.scrollTo(0, 0);
+    if (id === 'proyectos') renderProyectos();
+  }
+
+  /* ══════════════════════════════
+     Render proyectos
+  ══════════════════════════════ */
+  function renderProyectos() {
+    renderProjNav();
+    renderProjCard(proyectoActivo);
+  }
+
+  function renderProjNav() {
+    const nav = document.getElementById('projNav');
+    nav.innerHTML = proyectos.map((p, i) =>
+      `<button class="proj-pill ${i === proyectoActivo ? 'active' : ''}"
+               onclick="selectProyecto(${i})">${p.num}</button>`
+    ).join('');
+  }
+
+  function selectProyecto(i) {
+    proyectoActivo = i;
+    renderProjNav();
+    renderProjCard(i);
+    window.scrollTo({ top: 220, behavior: 'smooth' });
+  }
+
+  function getSub(i) {
+    return subActiva[i] || 'main';
+  }
+
+  function renderProjCard(i) {
+    const p = proyectos[i];
+    const sub = getSub(i);
+    const container = document.getElementById('projContainer');
+
+    container.innerHTML = `
+      <div class="proj-card">
+        <div class="proj-card-header">
+          <div>
+            <p class="proj-num">${p.num} · ${p.categoria}</p>
+            <h3 class="proj-title">${p.titulo}</h3>
+          </div>
+        </div>
+
+        <div class="sub-tabs">
+          <button class="sub-tab ${sub==='main'?'active':''}"
+                  onclick="switchSub(${i},'main',this)">
+            Enunciado principal
+          </button>
+          <button class="sub-tab ${sub==='prop1'?'active lila':''}"
+                  onclick="switchSub(${i},'prop1',this)">
+            Ejercicio propuesto 1
+          </button>
+          <button class="sub-tab ${sub==='prop2'?'active menta':''}"
+                  onclick="switchSub(${i},'prop2',this)">
+            Ejercicio propuesto 2
+          </button>
+        </div>
+
+        ${renderSubPanel(p, i, 'main')}
+        ${renderSubPanel(p, i, 'prop1')}
+        ${renderSubPanel(p, i, 'prop2')}
+      </div>
+    `;
+  }
+
+  function renderSubPanel(p, pi, key) {
+    const d = p[key];
+    const isActive = getSub(pi) === key;
+    const codeId = `code_${pi}_${key}`;
+    const practs = Array.isArray(d.practicas)
+      ? `<ul>${d.practicas.map(pr => `<li>${pr}</li>`).join('')}</ul>`
+      : `<p>${d.practicas}</p>`;
+
+    return `
+      <div class="sub-panel ${isActive ? 'active' : ''}" id="sub_${pi}_${key}">
+        <h4 class="sub-title">${d.subtitulo}</h4>
+
+        <div class="enunciado">
+          <p class="enunciado-label">Enunciado</p>
+          <p>${d.enunciado}</p>
+        </div>
+
+        <div class="code-wrap">
+          <div class="code-header">
+            <span class="code-lang">T-SQL · SQL Server 2022</span>
+            <button class="btn-copy" onclick="copiarCodigo('${codeId}')">Copiar script</button>
+          </div>
+          <div class="code-body">
+            <pre id="${codeId}">${escHtml(d.sql)}</pre>
+          </div>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card just">
+            <p class="info-label">Justificación técnica</p>
+            <p>${d.justificacion}</p>
+          </div>
+          <div class="info-card prac">
+            <p class="info-label">Buenas prácticas</p>
+            ${practs}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function switchSub(pi, key, btn) {
+    subActiva[pi] = key;
+    // actualizar tabs
+    const card = document.getElementById('projContainer').querySelector('.proj-card');
+    card.querySelectorAll('.sub-tab').forEach(t => {
+      t.classList.remove('active','lila','menta');
+    });
+    if (key === 'main')  btn.classList.add('active');
+    if (key === 'prop1') btn.classList.add('active','lila');
+    if (key === 'prop2') btn.classList.add('active','menta');
+    // mostrar/ocultar panels
+    card.querySelectorAll('.sub-panel').forEach(sp => sp.classList.remove('active'));
+    const target = document.getElementById(`sub_${pi}_${key}`);
+    if (target) target.classList.add('active');
+  }
+
+  /* ══════════════════════════════
+     Copiar código
+  ══════════════════════════════ */
+  function escHtml(str) {
+    return str
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;');
+  }
+
+  function copiarCodigo(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const text = el.innerText;
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('✅ Script copiado al portapapeles');
+  }
+
+  /* ══════════════════════════════
+     Toast
+  ══════════════════════════════ */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* ══════════════════════════════
+     Modal lectura continua
+  ══════════════════════════════ */
+  function openModal() {
+    renderModal();
+    document.getElementById('modalOverlay').classList.add('open');
+  }
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+  }
+  function handleModalClick(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  function renderModal() {
+    const body = document.getElementById('modalBody');
+    body.innerHTML = proyectos.map((p, i) => `
+      <div class="full-proyecto">
+        <p class="full-proj-eyebrow">${p.num} · ${p.categoria}</p>
+        <h3 class="full-proj-title">${p.titulo}</h3>
+
+        ${['main','prop1','prop2'].map(key => {
+          const d = p[key];
+          const codeId = `fcode_${i}_${key}`;
+          const label = key === 'main'
+            ? 'Enunciado principal'
+            : key === 'prop1' ? 'Ejercicio propuesto 1' : 'Ejercicio propuesto 2';
+          const practs = Array.isArray(d.practicas)
+            ? `<ul>${d.practicas.map(pr => `<li>${pr}</li>`).join('')}</ul>`
+            : `<p>${d.practicas}</p>`;
+          return `
+            <div class="full-sub">
+              <p class="full-sub-title">${label}: ${d.subtitulo}</p>
+
+              <div class="enunciado" style="margin-bottom:16px">
+                <p class="enunciado-label">Enunciado</p>
+                <p>${d.enunciado}</p>
+              </div>
+
+              <div class="code-wrap" style="margin-bottom:16px">
+                <div class="code-header">
+                  <span class="code-lang">T-SQL</span>
+                  <button class="btn-copy" onclick="copiarCodigo('${codeId}')">Copiar</button>
+                </div>
+                <div class="code-body">
+                  <pre id="${codeId}">${escHtml(d.sql)}</pre>
+                </div>
+              </div>
+
+              <div class="info-grid">
+                <div class="info-card just">
+                  <p class="info-label">Justificación técnica</p>
+                  <p>${d.justificacion}</p>
+                </div>
+                <div class="info-card prac">
+                  <p class="info-label">Buenas prácticas</p>
+                  ${practs}
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `).join('');
+  }
+
+  /* ══════════════════════════════
+     Nav scroll
+  ══════════════════════════════ */
+  window.addEventListener('scroll', () => {
+    document.getElementById('mainNav').classList.toggle('scrolled', scrollY > 20);
+  });
+
+  /* ══════════════════════════════
+     Escape cierra modal
+  ══════════════════════════════ */
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  /* ══════════════════════════════
+     Init
+  ══════════════════════════════ */
+  document.addEventListener('DOMContentLoaded', () => {
+    // nada extra; panels se muestran por CSS
+  });
+  </script>
+</body>
+</html>

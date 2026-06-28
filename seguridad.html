@@ -1,0 +1,3616 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Respaldo y Recuperación — GradosTitulos UPLA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --rosa:    #f06292;
+      --rosa-l:  #fce4ec;
+      --lila:    #ce93d8;
+      --lila-l:  #ede7f6;
+      --morado:  #9c27b0;
+      --menta:   #4db6ac;
+      --menta-l: #e0f2f1;
+      --menta-d: #00897b;
+      --azul:    #1565c0;
+      --azul-l:  #e3f2fd;
+      --azul-m:  #42a5f5;
+      --naranja: #ef6c00;
+      --naranja-l:#fff3e0;
+      --verde:   #2e7d32;
+      --verde-l: #e8f5e9;
+      --text:    #2d2d2d;
+      --text-s:  #6b6b6b;
+      --bg:      #fdfbfe;
+      --white:   #ffffff;
+      --border:  #f0e6f8;
+      --shadow:  0 2px 16px rgba(206,147,216,.13);
+      --shadow-h:0 8px 32px rgba(240,98,146,.18);
+      --rad:     14px;
+      --rad-sm:  8px;
+      --rad-pill:99px;
+      --font-d:  'Instrument Serif', Georgia, serif;
+      --font-b:  'DM Sans', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-b);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.65;
+      padding-top: 64px;
+    }
+
+    /* ── Nav ── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(253,251,254,.88);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      transition: background .3s, box-shadow .3s;
+    }
+    .nav.scrolled { background: rgba(253,251,254,.98); box-shadow: 0 2px 20px rgba(206,147,216,.15); }
+    .nav-inner {
+      max-width: 1200px; margin: 0 auto; padding: 0 24px;
+      height: 64px; display: flex; align-items: center; gap: 16px;
+    }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+    .logo-img { height: 36px; width: auto; object-fit: contain; }
+    .logo-fallback {
+      height: 36px; width: 36px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--azul) 0%, var(--azul-m) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; color: #fff; letter-spacing: -.5px;
+    }
+    .nav-title { font-family: var(--font-d); font-size: 15px; color: var(--text); }
+    .nav-tabs { display: flex; gap: 3px; flex: 1; overflow-x: auto; }
+    .nav-tab {
+      font-size: 12px; color: var(--text-s); padding: 5px 11px;
+      border-radius: var(--rad-pill); transition: background .18s, color .18s;
+      font-weight: 400; cursor: pointer; border: none; background: none;
+      font-family: var(--font-b); white-space: nowrap;
+    }
+    .nav-tab:hover, .nav-tab.active { background: var(--azul-l); color: var(--azul); font-weight: 500; }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px; font-family: var(--font-b);
+      font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: var(--rad-pill);
+      border: 1.5px solid var(--border); background: var(--white); color: var(--text-s);
+      text-decoration: none; transition: all .18s; white-space: nowrap; margin-left: auto; cursor: pointer;
+    }
+    .btn-back:hover { background: var(--rosa-l); border-color: var(--rosa); color: var(--rosa); }
+
+    /* ── Panel system ── */
+    .panel { display: none; }
+    .panel.active { display: block; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--white); color: var(--morado);
+      border: 1.5px solid var(--lila); border-radius: var(--rad-pill);
+      padding: 10px 24px; font-size: 14px; font-weight: 500;
+      box-shadow: var(--shadow-h); z-index: 999; opacity: 0;
+      transition: transform .3s, opacity .3s; pointer-events: none;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; height: 300px;
+      background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 20%, #e8f5e9 50%, #ede7f6 80%, #fce4ec 100%);
+      overflow: hidden; display: flex; align-items: flex-end; padding: 0 48px 40px;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 55% 70% at 10% 60%, rgba(21,101,192,.12) 0%, transparent 60%),
+        radial-gradient(ellipse 45% 60% at 70% 30%, rgba(46,125,50,.10) 0%, transparent 60%),
+        radial-gradient(ellipse 35% 45% at 90% 80%, rgba(239,108,0,.08) 0%, transparent 55%);
+      animation: holo 8s ease-in-out infinite alternate;
+    }
+    @keyframes holo { 0%{opacity:.8;transform:scale(1)} 100%{opacity:1;transform:scale(1.03)} }
+    .deco-c { position: absolute; border-radius: 50%; opacity: .15; animation: floatC 7s ease-in-out infinite; }
+    .deco-c.a { width:180px;height:180px; background:var(--azul-m); top:-40px; right:18%; }
+    .deco-c.b { width:120px;height:120px; background:var(--menta); top:50px; right:8%; animation-delay:1.5s; }
+    .deco-c.c { width:70px;height:70px; background:var(--rosa); bottom:20px; right:30%; animation-delay:3s; }
+    .deco-c.d { width:90px;height:90px; background:var(--naranja); top:30px; left:40%; animation-delay:2s; }
+    @keyframes floatC { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+    .hero-text { position: relative; z-index: 2; }
+    .hero-eyebrow { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--azul); margin-bottom: 10px; font-weight: 500; opacity: .8; }
+    .hero-title { font-family: var(--font-d); font-size: clamp(36px, 6vw, 66px); font-weight: 400; color: #0d2b5e; line-height: .95; margin: 0; }
+    .hero-title em { font-style: italic; color: var(--verde); }
+    .hero-sub { font-size: 14px; color: var(--text-s); margin-top: 12px; max-width: 480px; }
+
+    /* ── Wrap ── */
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── Section header ── */
+    .sec-header { padding: 44px 0 28px; }
+    .sec-eyebrow { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--menta-d); font-weight: 600; margin-bottom: 8px; }
+    .sec-title { font-family: var(--font-d); font-size: 32px; color: var(--text); line-height: 1.1; }
+    .sec-desc { font-size: 14px; color: var(--text-s); margin-top: 6px; }
+
+    /* ── Overview bento ── */
+    .overview-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 14px; margin-bottom: 40px; }
+    .ov-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--rad); padding: 22px;
+      box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s;
+    }
+    .ov-card:hover { box-shadow: var(--shadow-h); transform: translateY(-2px); }
+    .ov-card.span2 { grid-column: span 2; }
+    .ov-label { font-size: 10px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--text-s); margin-bottom: 10px; }
+    .ov-stat-num { font-family: var(--font-d); font-size: 52px; line-height: 1; color: var(--azul-m); display: block; }
+    .ov-stat-label { font-size: 12px; color: var(--text-s); margin-top: 4px; }
+    .ov-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 12px; }
+    .chip { font-size: 10px; font-weight: 500; padding: 3px 10px; border-radius: var(--rad-pill); background: var(--azul-l); color: var(--azul); border: 1px solid #90caf9; }
+    .chip.lila { background: var(--lila-l); color: var(--morado); border-color: #dbbfed; }
+    .chip.menta { background: var(--menta-l); color: var(--menta-d); border-color: #b2dfdb; }
+    .chip.verde { background: var(--verde-l); color: var(--verde); border-color: #a5d6a7; }
+    .chip.naranja { background: var(--naranja-l); color: var(--naranja); border-color: #ffcc80; }
+    .ov-intro { font-size: 13.5px; color: var(--text-s); line-height: 1.7; }
+    .ov-intro strong { color: var(--text); }
+
+    /* ── Tema selector ── */
+    .tema-nav { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+    .tema-pill {
+      font-family: var(--font-b); font-size: 12px; font-weight: 500;
+      padding: 7px 16px; border-radius: var(--rad-pill); cursor: pointer;
+      border: 1.5px solid var(--border); background: var(--white); color: var(--text-s);
+      transition: all .18s;
+    }
+    .tema-pill:hover { border-color: var(--azul-m); color: var(--azul); }
+    .tema-pill.active {
+      color: #fff; border-color: transparent;
+      box-shadow: 0 4px 14px rgba(21,101,192,.25);
+    }
+    .tema-pill.t0.active { background: linear-gradient(135deg, #1565c0, #42a5f5); }
+    .tema-pill.t1.active { background: linear-gradient(135deg, #2e7d32, #66bb6a); }
+    .tema-pill.t2.active { background: linear-gradient(135deg, #6a1b9a, #ce93d8); }
+    .tema-pill.t3.active { background: linear-gradient(135deg, #e65100, #ffa726); }
+    .tema-pill.t4.active { background: linear-gradient(135deg, #00695c, #4db6ac); }
+    .tema-pill.t5.active { background: linear-gradient(135deg, #880e4f, #f06292); }
+
+    /* ── Tema card ── */
+    .tema-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 32px;
+    }
+    .tema-header {
+      padding: 26px 32px 20px; border-bottom: 1px solid var(--border);
+    }
+    .tema-num { font-size: 10px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; margin-bottom: 6px; }
+    .tema-title { font-family: var(--font-d); font-size: 22px; color: var(--text); line-height: 1.2; }
+    .tema-badge {
+      display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 12px;
+      border-radius: var(--rad-pill); margin-top: 8px;
+    }
+
+    /* Colores por tema */
+    .t0 .tema-num { color: var(--azul); }
+    .t0 .tema-badge { background: var(--azul-l); color: var(--azul); border: 1px solid #90caf9; }
+    .t1 .tema-num { color: var(--verde); }
+    .t1 .tema-badge { background: var(--verde-l); color: var(--verde); border: 1px solid #a5d6a7; }
+    .t2 .tema-num { color: var(--morado); }
+    .t2 .tema-badge { background: var(--lila-l); color: var(--morado); border: 1px solid #dbbfed; }
+    .t3 .tema-num { color: var(--naranja); }
+    .t3 .tema-badge { background: var(--naranja-l); color: var(--naranja); border: 1px solid #ffcc80; }
+    .t4 .tema-num { color: var(--menta-d); }
+    .t4 .tema-badge { background: var(--menta-l); color: var(--menta-d); border: 1px solid #b2dfdb; }
+    .t5 .tema-num { color: var(--rosa); }
+    .t5 .tema-badge { background: var(--rosa-l); color: var(--rosa); border: 1px solid #f8bbd0; }
+
+    /* ── Proyecto sub-tabs ── */
+    .proy-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .proy-tab {
+      font-family: var(--font-b); font-size: 12px; font-weight: 500;
+      padding: 11px 18px; cursor: pointer; border: none; background: none;
+      color: var(--text-s); border-bottom: 2.5px solid transparent;
+      transition: color .18s, border-color .18s; white-space: nowrap;
+    }
+    .proy-tab:hover { color: var(--azul-m); }
+    .proy-tab.active { color: var(--azul); border-bottom-color: var(--azul-m); font-weight: 600; }
+
+    /* ── Proyecto panel ── */
+    .proy-panel { display: none; padding: 28px 32px 36px; }
+    .proy-panel.active { display: block; }
+
+    /* ── Sección 1: Enunciado ── */
+    .sec-block { margin-bottom: 24px; }
+    .sec-block-label {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 10px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; margin-bottom: 10px;
+    }
+    .sec-num-badge {
+      width: 22px; height: 22px; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; color: #fff;
+    }
+    .badge-azul { background: var(--azul); }
+    .badge-verde { background: var(--verde); }
+    .badge-morado { background: var(--morado); }
+    .badge-naranja { background: var(--naranja); }
+
+    .enunciado-box {
+      background: linear-gradient(135deg, var(--azul-l) 0%, var(--lila-l) 100%);
+      border: 1px solid #90caf9; border-radius: var(--rad); padding: 18px 20px;
+    }
+    .enunciado-box p { font-size: 13.5px; color: var(--text); line-height: 1.7; }
+
+    /* ── Sección 2: Código T-SQL ── */
+    .code-wrap {
+      background: #1a1a2e; border-radius: var(--rad); overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,.22);
+    }
+    .code-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 16px; background: #0f0f1e;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .code-lang { font-size: 10px; font-weight: 600; color: var(--azul-m); letter-spacing: .1em; text-transform: uppercase; }
+    .code-dots { display: flex; gap: 5px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot.r { background: #ff5f57; } .dot.y { background: #febc2e; } .dot.g { background: #28c840; }
+    .btn-copy {
+      font-family: var(--font-b); font-size: 11px; font-weight: 500;
+      padding: 4px 12px; border-radius: var(--rad-pill); cursor: pointer;
+      border: 1.5px solid rgba(66,165,245,.4); background: rgba(66,165,245,.1);
+      color: var(--azul-m); transition: background .18s;
+    }
+    .btn-copy:hover { background: rgba(66,165,245,.22); }
+    .code-body { padding: 20px; overflow-x: auto; max-height: 420px; }
+    .code-body pre {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px; line-height: 1.75; color: #e2e8f0; white-space: pre;
+      tab-size: 4;
+    }
+    /* Colores de sintaxis manual */
+    .kw  { color: #7dd3fc; font-weight: 600; }  /* keywords */
+    .fn  { color: #86efac; }                     /* funciones */
+    .str { color: #fde68a; }                     /* strings */
+    .cm  { color: #6b7280; font-style: italic; } /* comentarios */
+    .nm  { color: #c4b5fd; }                     /* números */
+    .tb  { color: #fda4af; }                     /* tabla */
+
+    /* ── Sección 3+4: info-grid ── */
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .info-card { border-radius: var(--rad); padding: 16px 18px; }
+    .info-card.just { background: var(--verde-l); border: 1px solid #a5d6a7; }
+    .info-card.prac { background: var(--lila-l); border: 1px solid #dbbfed; }
+    .info-label { font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px; }
+    .info-card.just .info-label { color: var(--verde); }
+    .info-card.prac .info-label { color: var(--morado); }
+    .info-card p, .info-card ul { font-size: 13px; color: var(--text); line-height: 1.65; }
+    .info-card ul { padding-left: 16px; }
+    .info-card li { margin-bottom: 5px; }
+
+    /* ── Tabla de resultados ── */
+    .result-wrap { margin-top: 24px; }
+    .result-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--menta-d); margin-bottom: 10px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .result-label::before { content:''; display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--menta); }
+    .result-table-wrap { overflow-x: auto; border-radius: var(--rad); border: 1.5px solid var(--border); box-shadow: var(--shadow); }
+    .result-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    .result-table thead tr { background: linear-gradient(135deg, #0f3460, #1565c0); }
+    .result-table thead th { padding: 11px 14px; text-align: left; color: #e3f2fd; font-weight: 600; font-size: 11px; letter-spacing: .05em; white-space: nowrap; }
+    .result-table tbody tr { border-bottom: 1px solid var(--border); transition: background .15s; }
+    .result-table tbody tr:last-child { border-bottom: none; }
+    .result-table tbody tr:hover { background: var(--azul-l); }
+    .result-table tbody td { padding: 10px 14px; color: var(--text); vertical-align: middle; }
+    .result-table tbody tr:nth-child(even) { background: #f8faff; }
+    .result-table tbody tr:nth-child(even):hover { background: var(--azul-l); }
+    .td-badge {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      padding: 2px 8px; border-radius: 99px;
+    }
+    .td-ok { background: var(--verde-l); color: var(--verde); border: 1px solid #a5d6a7; }
+    .td-warn { background: var(--naranja-l); color: var(--naranja); border: 1px solid #ffcc80; }
+    .td-info { background: var(--azul-l); color: var(--azul); border: 1px solid #90caf9; }
+    .td-lila { background: var(--lila-l); color: var(--morado); border: 1px solid #dbbfed; }
+    .td-code { font-family: 'Courier New', monospace; font-size: 11px; color: var(--azul); background: var(--azul-l); padding: 2px 6px; border-radius: 4px; }
+
+    /* ── Alert box ── */
+    .alert-box {
+      display: flex; gap: 12px; align-items: flex-start;
+      border-radius: var(--rad); padding: 13px 16px; margin-bottom: 18px;
+    }
+    .alert-box.info { background: var(--azul-l); border: 1px solid #90caf9; }
+    .alert-box.warn { background: #fff8e1; border: 1px solid #ffe082; }
+    .alert-box.ok   { background: var(--verde-l); border: 1px solid #a5d6a7; }
+    .alert-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .alert-text { font-size: 12.5px; color: var(--text); line-height: 1.6; }
+
+    /* ── Botones ── */
+    .btn-primary {
+      font-family: var(--font-b); font-size: 13px; font-weight: 500;
+      padding: 10px 22px; border-radius: var(--rad-pill); border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--azul) 0%, var(--azul-m) 100%);
+      color: #fff; transition: opacity .18s, transform .15s;
+    }
+    .btn-primary:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-verde {
+      font-family: var(--font-b); font-size: 13px; font-weight: 500;
+      padding: 10px 22px; border-radius: var(--rad-pill); border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--verde), #66bb6a);
+      color: #fff; transition: opacity .18s, transform .15s;
+    }
+    .btn-verde:hover { opacity: .9; transform: translateY(-1px); }
+    .actions-bar { display: flex; gap: 10px; padding: 0 0 28px; flex-wrap: wrap; }
+
+    /* ── Separador ── */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .overview-grid { grid-template-columns: 1fr 1fr; }
+      .ov-card.span2 { grid-column: span 2; }
+      .info-grid { grid-template-columns: 1fr; }
+      .nav-tabs { display: none; }
+    }
+    @media (max-width: 560px) {
+      .overview-grid { grid-template-columns: 1fr; }
+      .ov-card.span2 { grid-column: span 1; }
+      .hero { padding: 0 24px 28px; }
+      .proy-panel { padding: 20px 18px 24px; }
+      .tema-header { padding: 20px 18px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">
+      <img src="img/LogoUpla.png" alt="UPLA" class="logo-img"
+           onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+      <div class="logo-fallback" style="display:none">UP</div>
+      <span class="nav-title">Base de Datos</span>
+    </div>
+    <div class="nav-tabs" id="navTabs">
+      <button class="nav-tab active" onclick="switchPanel('inicio',this)">Inicio</button>
+      <button class="nav-tab" onclick="switchPanel('ejercicios',this)">Ejercicios</button>
+    </div>
+    <a class="btn-back" href="index.html">← Portafolio</a>
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════ INICIO ══════════ -->
+<div class="panel active" id="panel-inicio">
+  <div class="hero">
+    <div style="position:absolute;inset:0">
+      <div class="deco-c a"></div><div class="deco-c b"></div>
+      <div class="deco-c c"></div><div class="deco-c d"></div>
+    </div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Universidad Peruana Los Andes · Ingeniería de Sistemas</p>
+      <h1 class="hero-title">Respaldo y<br /><em>Recuperación</em></h1>
+      <p class="hero-sub">36 proyectos resueltos sobre estrategias de backup, restauración y mantenimiento de la base de datos GradosTitulos en SQL Server.</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Actividad 2 · SQL Server</p>
+      <h2 class="sec-title">GradosTitulos — Backup & Recovery</h2>
+      <p class="sec-desc">6 temas × 6 proyectos cada uno, con script T-SQL, justificación técnica, buenas prácticas y tabla de resultados.</p>
+    </div>
+
+    <div class="overview-grid">
+      <div class="ov-card span2">
+        <p class="ov-label">Descripción general</p>
+        <p class="ov-intro">
+          Este documento resuelve la <strong>Actividad 2 — Respaldo y Recuperación</strong> de la base de datos
+          <strong>GradosTitulos</strong> de la UPLA. Cada proyecto incluye el enunciado del ejercicio,
+          el script T-SQL completo, justificación técnica de la solución y explicación de las
+          buenas prácticas aplicadas, más una tabla con los resultados esperados.
+        </p>
+        <div class="ov-chips" style="margin-top:14px">
+          <span class="chip">BACKUP DATABASE</span>
+          <span class="chip lila">RESTORE DATABASE</span>
+          <span class="chip menta">Log Shipping</span>
+          <span class="chip verde">Planes de Mantenimiento</span>
+          <span class="chip naranja">Point-in-Time Recovery</span>
+          <span class="chip">msdb.dbo.backupset</span>
+        </div>
+      </div>
+      <div class="ov-card">
+        <p class="ov-label">Total de proyectos</p>
+        <span class="ov-stat-num">36</span>
+        <span class="ov-stat-label">Ejercicios resueltos</span>
+      </div>
+      <div class="ov-card" style="background:linear-gradient(135deg,var(--verde-l),#f1f8e9);border-color:#a5d6a7">
+        <p class="ov-label" style="color:var(--verde)">Temas cubiertos</p>
+        <span class="ov-stat-num" style="color:var(--verde)">6</span>
+        <span class="ov-stat-label">Estrategias distintas</span>
+      </div>
+    </div>
+
+    <div class="actions-bar">
+      <button class="btn-primary" onclick="switchPanel('ejercicios',document.querySelectorAll('.nav-tab')[1])">Ver ejercicios →</button>
+      <button class="btn-verde" onclick="switchPanel('ejercicios',document.querySelectorAll('.nav-tab')[1]);selectTema(0)">Tema 1: Backup →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ EJERCICIOS ══════════ -->
+<div class="panel" id="panel-ejercicios">
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Actividad 2 — Respaldo y Recuperación</p>
+      <h2 class="sec-title">Ejercicios Resueltos</h2>
+      <p class="sec-desc">Selecciona el tema para ver sus 6 proyectos.</p>
+    </div>
+    <div class="tema-nav" id="temaNave"></div>
+    <div id="temaContainer"></div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATOS DE LOS 6 TEMAS × 6 PROYECTOS
+═══════════════════════════════════════════════════════════════ */
+const temas = [
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA 1 — Estrategias de Backup: Completo, Diferencial y Transaccional
+───────────────────────────────────────────────────────────── */
+{
+  num: 'Tema 01',
+  titulo: 'Estrategias de Backup: Completo, Diferencial y Transaccional',
+  badge: 'BACKUP',
+  color: 't0',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Respaldo Completo Institucional',
+      enunciado: 'La Oficina de Tecnologías de Información requiere implementar una política de respaldo completo diario para GradosTitulos. El estudiante deberá crear un procedimiento que genere un respaldo completo de la base de datos y registre la fecha de ejecución.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Respaldo Completo Institucional
+-- Base de datos: GradosTitulos
+-- ============================================================
+
+USE master;
+GO
+
+-- Procedimiento almacenado para respaldo completo
+CREATE OR ALTER PROCEDURE dbo.SP_BackupCompleto_GradosTitulos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @RutaBackup  NVARCHAR(300);
+    DECLARE @FechaHora   NVARCHAR(20);
+    DECLARE @NombreArchivo NVARCHAR(300);
+    DECLARE @Mensaje     NVARCHAR(500);
+
+    -- Generar nombre de archivo con fecha y hora
+    SET @FechaHora = FORMAT(GETDATE(), 'yyyyMMdd_HHmmss');
+    SET @RutaBackup = 'C:\\Backups\\GradosTitulos\\Full\\';
+    SET @NombreArchivo = @RutaBackup + 'GradosTitulos_FULL_' + @FechaHora + '.bak';
+
+    -- Ejecutar backup completo con compresión y verificación
+    BACKUP DATABASE GradosTitulos
+    TO DISK = @NombreArchivo
+    WITH
+        FORMAT,               -- Sobreescribe sets anteriores en el medio
+        INIT,                 -- Inicializa el archivo
+        NAME = 'GradosTitulos - Backup Completo Diario',
+        COMPRESSION,          -- Compresión nativa SQL Server
+        CHECKSUM,             -- Verifica integridad durante backup
+        STATS = 10;           -- Progreso cada 10%
+
+    SET @Mensaje = 'Backup completo ejecutado: ' + @NombreArchivo;
+    PRINT @Mensaje;
+
+    -- Registrar en tabla de log (debe existir previamente)
+    IF OBJECT_ID('dbo.LogBackup') IS NOT NULL
+    BEGIN
+        INSERT INTO dbo.LogBackup (TipoBackup, NombreArchivo, FechaEjecucion, Estado)
+        VALUES ('FULL', @NombreArchivo, GETDATE(), 'EXITOSO');
+    END
+END;
+GO
+
+-- Crear tabla de registro de backups
+IF OBJECT_ID('dbo.LogBackup') IS NULL
+CREATE TABLE dbo.LogBackup (
+    IdLog         INT           IDENTITY(1,1) PRIMARY KEY,
+    TipoBackup    VARCHAR(15)   NOT NULL,
+    NombreArchivo NVARCHAR(300) NOT NULL,
+    FechaEjecucion DATETIME2    NOT NULL DEFAULT SYSDATETIME(),
+    Estado        VARCHAR(20)   NOT NULL,
+    Observacion   VARCHAR(500)  NULL
+);
+GO
+
+-- Ejecutar el procedimiento
+EXEC dbo.SP_BackupCompleto_GradosTitulos;
+GO
+
+-- Verificar en catálogo del sistema
+SELECT
+    bs.database_name           AS BaseDatos,
+    bs.backup_start_date       AS FechaInicio,
+    bs.backup_finish_date      AS FechaFin,
+    bs.type                    AS TipoBackup,
+    CAST(bs.compressed_backup_size/1024.0/1024.0 AS DECIMAL(10,2)) AS TamañoMB,
+    bmf.physical_device_name   AS RutaArchivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf
+    ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.type = 'D'  -- D = Database (Full)
+ORDER BY bs.backup_start_date DESC;`,
+      justificacion: 'El backup completo (tipo D en msdb) es la base de toda estrategia de recuperación. Al usar WITH CHECKSUM se verifica la integridad de páginas durante el backup, detectando errores antes de necesitar la restauración. La compresión nativa reduce el espacio en disco hasta un 60%. El SP encapsula la lógica permitiendo ser invocado por el Agente SQL Server de forma programada.',
+      practicas: ['Usar FORMAT + INIT para evitar archivos corruptos por sobreescritura parcial.', 'Incluir CHECKSUM para detectar corrupción a tiempo.', 'Nombrar archivos con timestamp para trazabilidad.', 'Registrar cada ejecución en una tabla de auditoría (LogBackup).', 'Almacenar backups en ruta diferente al servidor de BD.'],
+      tabla: {
+        headers: ['Campo', 'Valor esperado'],
+        rows: [
+          ['database_name', 'GradosTitulos'],
+          ['TipoBackup', 'D (Database Full)'],
+          ['TamañoMB', '~45.20 MB (comprimido)'],
+          ['Estado registro', 'EXITOSO'],
+          ['Compresión', 'Activada'],
+          ['Checksum', 'Verificado ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Backups Diferenciales para Trámites',
+      enunciado: 'La universidad necesita reducir los tiempos de respaldo debido al crecimiento de las tablas de los esquemas Tramite y Documento. Diseñe una estrategia que combine respaldos completos semanales y diferenciales diarios.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Backup Diferencial para GradosTitulos
+-- Completo: domingos | Diferencial: lunes a sábado
+-- ============================================================
+
+USE master;
+GO
+
+-- SP: Respaldo completo semanal (ejecutar cada domingo)
+CREATE OR ALTER PROCEDURE dbo.SP_BackupCompleto_Semanal
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Archivo NVARCHAR(300) =
+        'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_' +
+        FORMAT(GETDATE(),'yyyyMMdd') + '.bak';
+
+    BACKUP DATABASE GradosTitulos
+    TO DISK = @Archivo
+    WITH FORMAT, INIT, COMPRESSION, CHECKSUM,
+         NAME = 'GradosTitulos Full Semanal',
+         STATS = 5;
+
+    PRINT 'Full semanal OK: ' + @Archivo;
+END;
+GO
+
+-- SP: Respaldo diferencial diario (lunes a sábado)
+CREATE OR ALTER PROCEDURE dbo.SP_BackupDiferencial_Diario
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Archivo NVARCHAR(300) =
+        'C:\\Backups\\GradosTitulos\\Diff\\GT_DIFF_' +
+        FORMAT(GETDATE(),'yyyyMMdd_HHmm') + '.bak';
+
+    BACKUP DATABASE GradosTitulos
+    TO DISK = @Archivo
+    WITH DIFFERENTIAL,   -- Solo cambios desde el último FULL
+         FORMAT, INIT, COMPRESSION, CHECKSUM,
+         NAME = 'GradosTitulos Diferencial Diario',
+         STATS = 5;
+
+    PRINT 'Diferencial OK: ' + @Archivo;
+END;
+GO
+
+-- Consulta: comparar tamaño Full vs Diferencial
+SELECT
+    CASE bs.type
+        WHEN 'D' THEN 'COMPLETO'
+        WHEN 'I' THEN 'DIFERENCIAL'
+        WHEN 'L' THEN 'LOG'
+    END AS TipoBackup,
+    COUNT(*)  AS CantidadBackups,
+    CAST(AVG(bs.compressed_backup_size)/1024.0/1024.0 AS DECIMAL(10,2)) AS PromedioMB,
+    CAST(SUM(bs.compressed_backup_size)/1024.0/1024.0 AS DECIMAL(10,2)) AS TotalMB
+FROM msdb.dbo.backupset bs
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(DAY,-7,GETDATE())
+GROUP BY bs.type
+ORDER BY bs.type;`,
+      justificacion: 'El backup diferencial (tipo I) captura solo las extensiones modificadas desde el último backup completo. Esto reduce el tiempo de backup de horas a minutos en bases con pocos cambios diarios. La cadena de restauración es simple: 1 Full + 1 Differential más reciente, sin necesidad de aplicar múltiples logs.',
+      practicas: ['Ejecutar el Full los domingos fuera de horario laboral (23:00).', 'Ejecutar diferenciales cada día a las 22:00.', 'Retener al menos 2 semanas de backups diferenciales.', 'Validar que el diferencial no exceda el 50% del Full (indicaría muchos cambios y conviene un nuevo Full).', 'Documentar la ventana de pérdida máxima de datos (RPO ≤ 24 horas).'],
+      tabla: {
+        headers: ['TipoBackup', 'CantidadBackups', 'PromedioMB', 'TotalMB'],
+        rows: [
+          ['COMPLETO', '1', '45.20', '45.20'],
+          ['DIFERENCIAL', '6', '8.30', '49.80'],
+          ['LOG', '12', '1.10', '13.20']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Estrategia Integral Full + Differential + Log',
+      enunciado: 'La BD opera 24 horas registrando solicitudes de grados y títulos. Diseñe una estrategia que contemple respaldo completo semanal, diferencial diario y respaldo del log de transacciones cada 30 minutos.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Estrategia 3 niveles: Full + Diff + Log
+-- ============================================================
+
+USE master;
+GO
+
+-- PRERREQUISITO: Modelo de recuperación FULL
+ALTER DATABASE GradosTitulos SET RECOVERY FULL;
+GO
+
+-- SP: Backup de Log de Transacciones (cada 30 min)
+CREATE OR ALTER PROCEDURE dbo.SP_BackupLog_30min
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Archivo NVARCHAR(300) =
+        'C:\\Backups\\GradosTitulos\\Log\\GT_LOG_' +
+        FORMAT(GETDATE(),'yyyyMMdd_HHmmss') + '.trn';
+
+    BACKUP LOG GradosTitulos
+    TO DISK = @Archivo
+    WITH FORMAT, INIT, COMPRESSION, CHECKSUM,
+         NAME = 'GradosTitulos Log 30min',
+         STATS = 0;  -- Sin mensajes de progreso para logs frecuentes
+
+    PRINT 'Log backup OK: ' + @Archivo;
+END;
+GO
+
+-- Verificar modelo de recuperación actual
+SELECT
+    name              AS BaseDatos,
+    recovery_model_desc AS ModeloRecuperacion,
+    log_reuse_wait_desc AS EsperaReutilizacionLog,
+    state_desc        AS Estado
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO
+
+-- Verificar backups de las últimas 2 horas
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date  AS Inicio,
+    bs.backup_finish_date AS Fin,
+    DATEDIFF(SECOND, bs.backup_start_date, bs.backup_finish_date) AS DuracionSeg,
+    CAST(bs.compressed_backup_size/1024.0/1024.0 AS DECIMAL(8,2)) AS TamañoMB,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(HOUR,-2,GETDATE())
+ORDER BY bs.backup_start_date DESC;`,
+      justificacion: 'La combinación Full+Diff+Log es el estándar HADR (High Availability and Disaster Recovery). El log backup cada 30 minutos garantiza un RPO máximo de 30 minutos: en caso de fallo, se restaura Full + último Diff + secuencia de logs hasta el momento del incidente. Requiere el modelo de recuperación FULL (no SIMPLE) para que el log no se trunque automáticamente.',
+      practicas: ['Activar modelo FULL antes de la primera cadena de logs.', 'Nunca cambiar a SIMPLE si hay un job de log backup activo.', 'Monitorear el crecimiento del log con sys.dm_db_log_space_usage.', 'Comprimir logs para reducir I/O de red en backups frecuentes.', 'Documentar el horario: Full dom 23:00 | Diff lun-sáb 22:00 | Log cada 30 min 07:00-22:00.'],
+      tabla: {
+        headers: ['Tipo', 'Frecuencia', 'RPO máximo', 'Duración aprox.', 'Tamaño aprox.'],
+        rows: [
+          ['FULL', 'Semanal (Dom)', '7 días sin Diff/Log', '25 min', '45 MB'],
+          ['DIFF', 'Diario (22:00)', '24 h sin Log', '5 min', '8 MB'],
+          ['LOG', 'Cada 30 min', '30 minutos', '< 1 min', '1.1 MB']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Alta Disponibilidad y Recuperación ante Desastres',
+      enunciado: 'Se requiere una estrategia de recuperación ante desastres para la plataforma de grados y títulos. El estudiante deberá definir respaldos completos, diferenciales y transaccionales para garantizar una recuperación máxima de 15 minutos.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Diseño HA/DR — RPO 15 minutos
+-- ============================================================
+
+USE master;
+GO
+
+-- Garantizar modelo FULL
+ALTER DATABASE GradosTitulos SET RECOVERY FULL;
+GO
+
+-- SP Centralizado: administra los 3 tipos de backup
+CREATE OR ALTER PROCEDURE dbo.SP_EstrategiaHA_GradosTitulos
+    @TipoBackup CHAR(4)  -- 'FULL','DIFF','LOG'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Ruta    NVARCHAR(200);
+    DECLARE @Archivo NVARCHAR(300);
+    DECLARE @Ts      NVARCHAR(20) = FORMAT(GETDATE(),'yyyyMMdd_HHmmss');
+
+    SET @Ruta = CASE @TipoBackup
+        WHEN 'FULL' THEN 'C:\\Backups\\HA\\Full\\'
+        WHEN 'DIFF' THEN 'C:\\Backups\\HA\\Diff\\'
+        WHEN 'LOG'  THEN 'C:\\Backups\\HA\\Log\\'
+        ELSE NULL
+    END;
+
+    IF @Ruta IS NULL THROW 50001,'Tipo de backup inválido. Use FULL, DIFF o LOG.',1;
+
+    SET @Archivo = @Ruta + 'GT_' + @TipoBackup + '_' + @Ts + 
+        CASE @TipoBackup WHEN 'LOG' THEN '.trn' ELSE '.bak' END;
+
+    IF @TipoBackup = 'FULL'
+        BACKUP DATABASE GradosTitulos TO DISK = @Archivo
+        WITH FORMAT,INIT,COMPRESSION,CHECKSUM,STATS=5,
+             NAME='GradosTitulos HA Full';
+
+    IF @TipoBackup = 'DIFF'
+        BACKUP DATABASE GradosTitulos TO DISK = @Archivo
+        WITH DIFFERENTIAL,FORMAT,INIT,COMPRESSION,CHECKSUM,STATS=5,
+             NAME='GradosTitulos HA Diferencial';
+
+    IF @TipoBackup = 'LOG'
+        BACKUP LOG GradosTitulos TO DISK = @Archivo
+        WITH FORMAT,INIT,COMPRESSION,CHECKSUM,
+             NAME='GradosTitulos HA Log';
+
+    PRINT 'Backup ' + @TipoBackup + ' generado: ' + @Archivo;
+END;
+GO
+
+-- Verificar RPO: listar últimos backups de log (últimos 20 min)
+SELECT TOP 10
+    bs.backup_start_date   AS Inicio,
+    bs.backup_finish_date  AS Fin,
+    DATEDIFF(MINUTE, bs.backup_start_date, GETDATE()) AS MinutosAtras,
+    CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(8,2)) AS TamañoMB
+FROM msdb.dbo.backupset bs
+WHERE bs.database_name = 'GradosTitulos' AND bs.type = 'L'
+ORDER BY bs.backup_start_date DESC;`,
+      justificacion: 'Para RPO de 15 minutos, los log backups deben ejecutarse cada 15 minutos. El SP centralizado unifica la lógica evitando inconsistencias entre scripts. Al combinar Diff+Log se minimiza el RTO: en caso de fallo a las 10:47, se restaura Full (dom) + Diff (del día) + logs de 07:00 a 10:45, recuperando hasta ese punto con pérdida máxima de 15 min.',
+      practicas: ['Configurar el Agente SQL con jobs cada 15 min para LOG.', 'Almacenar backups en servidor NAS independiente (no en el mismo disco de datos).', 'Probar el proceso de restauración mensualmente (DR Drill).', 'Monitorear el tiempo de ejecución del backup; si excede 10 min, revisar I/O.', 'Usar BACKUP TO DISK con rutas UNC para redundancia geográfica.'],
+      tabla: {
+        headers: ['Escenario', 'Tipo restauración', 'RTO estimado', 'RPO garantizado'],
+        rows: [
+          ['Pérdida total del servidor', 'Full + Diff + Logs', '45-60 min', '15 min'],
+          ['Corrupción de tabla', 'Restore a punto anterior', '20-30 min', '15 min'],
+          ['Borrado accidental', 'Restore con STOPAT', '15-25 min', '15 min'],
+          ['Fallo de hardware', 'Full en servidor alterno', '60-90 min', '15 min']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Estrategia Corporativa con Compresión y Verificación',
+      enunciado: 'La Universidad identifica GradosTitulos como base crítica. Implemente una estrategia avanzada con: respaldo completo cada domingo, diferencial diario, log cada 15 minutos, compresión y verificación automática de integridad.',
+      sql: `-- ============================================================
+-- PROYECTO 5: Estrategia Corporativa Avanzada
+-- RPO: 15 min | Compresión + Checksum + Verificación
+-- ============================================================
+
+USE master;
+GO
+
+-- Habilitar compresión por defecto a nivel de servidor
+EXEC sp_configure 'backup compression default', 1;
+RECONFIGURE;
+GO
+
+-- SP: Backup completo corporativo con verificación
+CREATE OR ALTER PROCEDURE dbo.SP_BackupCorporativo_Full
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Archivo NVARCHAR(300) =
+        'C:\\Backups\\Corp\\Full\\GT_CORP_FULL_' +
+        FORMAT(GETDATE(),'yyyyMMdd') + '.bak';
+
+    BACKUP DATABASE GradosTitulos
+    TO DISK = @Archivo
+    WITH FORMAT, INIT, COMPRESSION, CHECKSUM,
+         NAME = 'GradosTitulos CORP Full',
+         DESCRIPTION = 'Backup corporativo semanal - Grados y Títulos UPLA',
+         STATS = 10;
+
+    -- Verificar backup inmediatamente después de crearlo
+    RESTORE VERIFYONLY
+    FROM DISK = @Archivo
+    WITH CHECKSUM;
+
+    PRINT 'Full corporativo verificado OK: ' + @Archivo;
+END;
+GO
+
+-- SP: Verificación automatizada de integridad
+CREATE OR ALTER PROCEDURE dbo.SP_VerificarBackups_Recientes
+    @HorasAtras INT = 24
+AS
+BEGIN
+    SELECT
+        bs.database_name                AS BaseDatos,
+        CASE bs.type
+            WHEN 'D' THEN 'FULL'
+            WHEN 'I' THEN 'DIFERENCIAL'
+            WHEN 'L' THEN 'LOG'
+        END                             AS Tipo,
+        bs.backup_start_date            AS FechaBackup,
+        CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(8,2)) AS TamañoMB,
+        CAST(bs.backup_size/1048576.0 AS DECIMAL(8,2))            AS TamañoSinCompMB,
+        CAST(100.0*(1 - bs.compressed_backup_size*1.0/NULLIF(bs.backup_size,0))
+             AS DECIMAL(5,1))           AS PorcAhorro,
+        bs.has_backup_checksums         AS TieneChecksum,
+        bmf.physical_device_name        AS Archivo
+    FROM msdb.dbo.backupset bs
+    JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+    WHERE bs.database_name = 'GradosTitulos'
+      AND bs.backup_start_date >= DATEADD(HOUR,-@HorasAtras,GETDATE())
+    ORDER BY bs.backup_start_date DESC;
+END;
+GO
+
+-- Ejecutar verificación de las últimas 24 horas
+EXEC dbo.SP_VerificarBackups_Recientes @HorasAtras = 24;`,
+      justificacion: 'La opción RESTORE VERIFYONLY comprueba que el archivo BAK está íntegro y puede ser leído, sin realizar la restauración completa. La compresión predeterminada a nivel servidor asegura que todos los backups (incluyendo los de planes de mantenimiento) usen compresión. Has_backup_checksums = 1 confirma que el archivo tiene checksums para detección de corrupción silenciosa.',
+      practicas: ['Siempre ejecutar RESTORE VERIFYONLY justo después del backup.', 'Monitorear el % de ahorro: compresiones menores al 20% pueden indicar datos ya comprimidos (XML, ZIP).', 'Configurar alertas si has_backup_checksums = 0 en algún backup.', 'Archivar backups más de 7 días en almacenamiento frío (Azure Blob, cinta).', 'Documentar SLA: RPO 15 min, RTO 60 min para el comité de TI.'],
+      tabla: {
+        headers: ['BaseDatos', 'Tipo', 'TamañoMB', 'TamañoSinCompMB', 'PorcAhorro %', 'TieneChecksum'],
+        rows: [
+          ['GradosTitulos', 'FULL', '45.20', '112.50', '59.8%', '1 (Sí)'],
+          ['GradosTitulos', 'DIFERENCIAL', '8.30', '20.10', '58.7%', '1 (Sí)'],
+          ['GradosTitulos', 'LOG', '1.10', '2.80', '60.7%', '1 (Sí)']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Disaster Recovery: Servidor Alterno',
+      enunciado: 'La Oficina de TI requiere implementar una estrategia de Disaster Recovery para GradosTitulos. Diseñe un esquema que permita reconstruir completamente la base en un servidor alterno ante pérdida total del servidor principal.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Disaster Recovery — Servidor Alterno
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. En servidor PRINCIPAL: generar backup de DR con COPY_ONLY
+-- (No interfiere con la cadena de backups regular)
+BACKUP DATABASE GradosTitulos
+TO DISK = '\\\\ServidorNAS\\DR\\GT_DR_FULL_' +
+           CAST(YEAR(GETDATE()) AS VARCHAR) +
+           RIGHT('0'+CAST(MONTH(GETDATE()) AS VARCHAR),2) +
+           RIGHT('0'+CAST(DAY(GETDATE()) AS VARCHAR),2) + '.bak'
+WITH COPY_ONLY,        -- No rompe la cadena diferencial
+     FORMAT, INIT, COMPRESSION, CHECKSUM,
+     NAME = 'GradosTitulos DR Offsite',
+     STATS = 10;
+GO
+
+-- 2. En servidor ALTERNO: restaurar con NORECOVERY para luego
+--    aplicar diferenciales y logs
+RESTORE DATABASE GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\DR\\GT_DR_FULL_20260627.bak'
+WITH
+    MOVE 'GradosTitulos'     TO 'E:\\SQL\\Data\\GradosTitulos.mdf',
+    MOVE 'GradosTitulos_log' TO 'E:\\SQL\\Log\\GradosTitulos_log.ldf',
+    NORECOVERY,   -- Permite aplicar backups adicionales
+    STATS = 10;
+GO
+
+-- 3. Aplicar último diferencial disponible
+RESTORE DATABASE GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\DR\\GT_DIFF_20260627.bak'
+WITH NORECOVERY, STATS = 5;
+GO
+
+-- 4. Aplicar logs en orden cronológico
+RESTORE LOG GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\DR\\GT_LOG_20260627_0700.trn'
+WITH NORECOVERY;
+GO
+-- (repetir para cada archivo .trn en orden)
+
+-- 5. Dejar la BD en línea
+RESTORE DATABASE GradosTitulos WITH RECOVERY;
+GO
+
+-- 6. Verificar estado de la BD restaurada
+SELECT
+    name              AS BaseDatos,
+    state_desc        AS Estado,
+    recovery_model_desc AS Modelo,
+    create_date       AS FechaCreacion,
+    (SELECT CAST(SUM(size)*8.0/1024 AS DECIMAL(10,2))
+     FROM sys.master_files mf WHERE mf.database_id = d.database_id) AS TamañoMB
+FROM sys.databases d
+WHERE name = 'GradosTitulos';`,
+      justificacion: 'COPY_ONLY evita alterar la cadena LSN del servidor principal, esencial para que los backups diferenciales posteriores sigan siendo válidos. La secuencia NORECOVERY → NORECOVERY → RECOVERY es el patrón oficial de restauración en cascada de SQL Server. Los archivos MOVE son necesarios cuando el servidor alterno tiene rutas de disco diferentes al principal.',
+      practicas: ['Guardar el backup DR en ruta UNC (NAS/SAN) independiente del servidor.', 'Ejecutar RESTORE VERIFYONLY del DR en el servidor alterno mensualmente.', 'Documentar las rutas de los archivos MDF/LDF en el servidor alterno.', 'Usar WITH COPY_ONLY para no interferir con la cadena de backups operativa.', 'Automatizar la transferencia de archivos BAK/TRN al NAS con SQL Agent o Robocopy.'],
+      tabla: {
+        headers: ['Paso', 'Acción', 'Archivo', 'Estado BD'],
+        rows: [
+          ['1', 'Backup DR (servidor principal)', 'GT_DR_FULL_*.bak', 'ONLINE (principal)'],
+          ['2', 'Restaurar Full', 'GT_DR_FULL_*.bak', 'RESTORING'],
+          ['3', 'Aplicar Diferencial', 'GT_DIFF_*.bak', 'RESTORING'],
+          ['4', 'Aplicar Logs', 'GT_LOG_*.trn (×N)', 'RESTORING'],
+          ['5', 'WITH RECOVERY', '—', 'ONLINE (alterno)']
+        ]
+      }
+    }
+  ]
+},
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA 2 — Restauración de Bases de Datos en Distintos Escenarios
+───────────────────────────────────────────────────────────── */
+{
+  num: 'Tema 02',
+  titulo: 'Restauración de Bases de Datos en Distintos Escenarios',
+  badge: 'RESTORE',
+  color: 't1',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Restauración por Eliminación Accidental',
+      enunciado: 'Un administrador eliminó accidentalmente registros relacionados con expedientes de titulación. Restaure la base de datos utilizando el respaldo más reciente.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Restaurar tras eliminación accidental
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Identificar el backup más reciente disponible
+SELECT TOP 3
+    bs.backup_set_id,
+    bs.backup_start_date,
+    bs.backup_finish_date,
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(8,2)) AS TamañoMB,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+ORDER BY bs.backup_start_date DESC;
+GO
+
+-- 2. Capturar el tail log ANTES de restaurar (preserva transacciones recientes)
+BACKUP LOG GradosTitulos
+TO DISK = 'C:\\Backups\\GradosTitulos\\Log\\GT_TAILLOG_PREVIO_RESTORE.trn'
+WITH NORECOVERY,  -- Deja la BD en estado de restauración
+     COPY_ONLY, CHECKSUM, COMPRESSION,
+     NAME = 'Tail Log antes de Restore';
+GO
+
+-- 3. Restaurar el último FULL
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260627.bak'
+WITH NORECOVERY, REPLACE, STATS = 10;
+GO
+
+-- 4. Restaurar último DIFERENCIAL
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Diff\\GT_DIFF_20260627.bak'
+WITH NORECOVERY, STATS = 5;
+GO
+
+-- 5. Aplicar el tail log (recupera hasta justo antes del DELETE)
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Log\\GT_TAILLOG_PREVIO_RESTORE.trn'
+WITH RECOVERY;  -- Deja la BD ONLINE
+GO
+
+-- 6. Verificar que los registros eliminados fueron recuperados
+USE GradosTitulos;
+SELECT COUNT(*) AS ExpedientesRecuperados
+FROM Tramite.Tramite;`,
+      justificacion: 'El tail log backup es crítico: captura las transacciones ocurridas entre el último log backup y el momento del incidente. Sin este paso se pierde ese intervalo. WITH REPLACE permite sobrescribir la BD existente dañada. La secuencia NORECOVERY → NORECOVERY → RECOVERY garantiza que solo el último paso ponga la BD en línea.',
+      practicas: ['Siempre hacer tail log backup antes de iniciar una restauración.', 'Usar WITH REPLACE solo cuando sea necesario (BD existente con el mismo nombre).', 'Verificar el LSN (Log Sequence Number) de cada backup antes de aplicarlo.', 'Restaurar primero en ambiente de pruebas si el tiempo lo permite.', 'Documentar el incidente: hora del error, tipo de operación, afectados.'],
+      tabla: {
+        headers: ['Paso', 'Tipo', 'Archivo', 'Resultado'],
+        rows: [
+          ['1', 'Consulta historial', 'msdb.dbo.backupset', '3 backups encontrados'],
+          ['2', 'Tail Log', 'GT_TAILLOG_*.trn', 'Log capturado'],
+          ['3', 'FULL Restore', 'GT_FULL_*.bak', 'RESTORING'],
+          ['4', 'DIFF Restore', 'GT_DIFF_*.bak', 'RESTORING'],
+          ['5', 'Log Restore', 'GT_TAILLOG_*.trn', 'ONLINE'],
+          ['6', 'Verificación', 'Tramite.Tramite', 'Registros recuperados ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Restauración en Servidor Alternativo',
+      enunciado: 'La universidad requiere habilitar un servidor de contingencia para pruebas y recuperación. Restaure la base de datos GradosTitulos en una nueva instancia SQL Server.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Restaurar en servidor alternativo
+-- Servidor destino: SQL-CONTINGENCIA\\SQLEXPRESS
+-- ============================================================
+
+USE master;
+GO
+
+-- En el servidor DESTINO (SQL-CONTINGENCIA):
+-- 1. Verificar el contenido del backup (nombres lógicos de archivos)
+RESTORE FILELISTONLY
+FROM DISK = '\\\\ServidorNAS\\Backups\\GT_FULL_20260627.bak';
+GO
+
+-- Resultado esperado:
+-- LogicalName: GradosTitulos   | PhysicalName: C:\SQL\Data\GradosTitulos.mdf
+-- LogicalName: GradosTitulos_log | PhysicalName: C:\SQL\Log\GradosTitulos_log.ldf
+
+-- 2. Restaurar con MOVE para adaptar las rutas al nuevo servidor
+RESTORE DATABASE GradosTitulos_Contingencia
+FROM DISK = '\\\\ServidorNAS\\Backups\\GT_FULL_20260627.bak'
+WITH
+    MOVE 'GradosTitulos'
+         TO 'D:\\SQL\\Data\\GradosTitulos_Contingencia.mdf',
+    MOVE 'GradosTitulos_log'
+         TO 'D:\\SQL\\Log\\GradosTitulos_Contingencia_log.ldf',
+    RECOVERY,      -- BD queda online directamente
+    STATS = 10,
+    REPLACE;
+GO
+
+-- 3. Verificar estado
+SELECT
+    name         AS BaseDatos,
+    state_desc   AS Estado,
+    recovery_model_desc AS ModeloRecuperacion,
+    CAST((SELECT SUM(size)*8.0/1024 FROM sys.master_files mf
+          WHERE mf.database_id = d.database_id) AS DECIMAL(10,2)) AS TamañoMB
+FROM sys.databases d
+WHERE name = 'GradosTitulos_Contingencia';
+GO
+
+-- 4. Prueba de integridad tras restauración
+USE GradosTitulos_Contingencia;
+GO
+DBCC CHECKDB('GradosTitulos_Contingencia')
+    WITH NO_INFOMSGS, ALL_ERRORMSGS;
+GO`,
+      justificacion: 'RESTORE FILELISTONLY extrae los nombres lógicos del backup sin restaurar, indispensable para construir la cláusula MOVE cuando las rutas del servidor destino difieren. Restaurar como GradosTitulos_Contingencia (nombre distinto) permite tener ambas instancias en el mismo servidor sin conflicto. DBCC CHECKDB confirma la integridad de todas las páginas después de restaurar.',
+      practicas: ['Siempre ejecutar RESTORE FILELISTONLY antes del RESTORE para obtener los nombres lógicos.', 'Usar MOVE para adaptar rutas: no asumir que el servidor alterno tiene la misma estructura de discos.', 'Ejecutar DBCC CHECKDB después de cada restauración crítica.', 'Documentar las credenciales y nombre de instancia del servidor de contingencia.', 'Sincronizar logins de SQL Server entre ambos servidores (los usuarios de BD no se transfieren automáticamente).'],
+      tabla: {
+        headers: ['Campo', 'Servidor Principal', 'Servidor Contingencia'],
+        rows: [
+          ['Nombre BD', 'GradosTitulos', 'GradosTitulos_Contingencia'],
+          ['Ruta MDF', 'C:\\SQL\\Data\\', 'D:\\SQL\\Data\\'],
+          ['Ruta LDF', 'C:\\SQL\\Log\\', 'D:\\SQL\\Log\\'],
+          ['Estado', 'ONLINE', 'ONLINE'],
+          ['DBCC CHECKDB', 'Semanal', 'Después de restauración ✓'],
+          ['Errores detectados', '0', '0']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Recuperación por Corrupción del Archivo MDF',
+      enunciado: 'El archivo principal de datos presenta corrupción física. Implemente el procedimiento de restauración completo utilizando los respaldos disponibles.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Recuperación ante corrupción de archivo MDF
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Detectar la corrupción (síntoma: error 823 o 824)
+-- Verificar errores en el log de SQL Server
+SELECT TOP 20
+    LogDate, ProcessInfo, Text
+FROM sys.fn_get_audit_file(
+    'C:\\Program Files\\Microsoft SQL Server\\MSSQL16.MSSQLSERVER\\MSSQL\\Log\\ERRORLOG',
+    DEFAULT, DEFAULT)
+WHERE Text LIKE '%823%' OR Text LIKE '%824%' OR Text LIKE '%corruption%';
+GO
+
+-- 2. Poner la BD en modo de emergencia para capturar tail log
+ALTER DATABASE GradosTitulos SET EMERGENCY;
+GO
+
+-- 3. Intentar capturar tail log (puede fallar si la corrupción es severa)
+BEGIN TRY
+    BACKUP LOG GradosTitulos
+    TO DISK = 'C:\\Backups\\GT_TAILLOG_EMERGENCIA.trn'
+    WITH NORECOVERY, CONTINUE_AFTER_ERROR, -- Continúa aunque haya errores
+         CHECKSUM, COMPRESSION;
+    PRINT 'Tail log capturado con éxito';
+END TRY
+BEGIN CATCH
+    PRINT 'No se pudo capturar tail log: ' + ERROR_MESSAGE();
+    PRINT 'Se perderán transacciones desde el último log backup';
+END CATCH;
+GO
+
+-- 4. Restaurar FULL
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260622.bak'
+WITH NORECOVERY, REPLACE, STATS = 10;
+GO
+
+-- 5. Restaurar DIFF más reciente
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Diff\\GT_DIFF_20260626.bak'
+WITH NORECOVERY, STATS = 5;
+GO
+
+-- 6. Aplicar logs en secuencia
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Log\\GT_LOG_20260627_0700.trn'
+WITH NORECOVERY;
+GO
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Log\\GT_LOG_20260627_0730.trn'
+WITH NORECOVERY;
+GO
+
+-- 7. Restaurar tail log si fue capturado
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\GT_TAILLOG_EMERGENCIA.trn'
+WITH RECOVERY;
+GO
+
+-- 8. Verificar integridad post-restauración
+DBCC CHECKDB('GradosTitulos') WITH NO_INFOMSGS;`,
+      justificacion: 'El error 823 indica corrupción a nivel de I/O (disco físico); el 824 indica corrupción lógica detectada por checksum. ALTER DATABASE SET EMERGENCY permite acceso de solo lectura a la BD corrupta para intentar extraer el tail log. CONTINUE_AFTER_ERROR en el BACKUP LOG hace su mejor esfuerzo incluso con páginas dañadas. La cadena Full→Diff→Logs es la secuencia estándar de restauración.',
+      practicas: ['Activar Page Verify CHECKSUM en todas las bases de producción.', 'Monitorear el event log de Windows para errores de disco (Event ID 7, 11, 15).', 'Mantener backups en discos/servidores distintos al de datos.', 'Ejecutar DBCC CHECKDB semanalmente en una réplica de solo lectura.', 'Documentar el procedimiento de emergencia (runbook) y probarlo semestralmente.'],
+      tabla: {
+        headers: ['Paso', 'Acción', 'Resultado esperado'],
+        rows: [
+          ['Detección', 'sys.fn_get_audit_file', 'Error 823/824 encontrado'],
+          ['Emergencia', 'SET EMERGENCY', 'BD en modo solo lectura'],
+          ['Tail Log', 'BACKUP LOG ... CONTINUE_AFTER_ERROR', 'Archivos TRN capturados'],
+          ['Full Restore', 'RESTORE DATABASE ... NORECOVERY', 'Estado: RESTORING'],
+          ['DBCC CHECK', 'DBCC CHECKDB', '0 errores de consistencia']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Recuperación ante Desastre Total del Servidor',
+      enunciado: 'Una falla de almacenamiento destruyó completamente el servidor donde se encontraba la base GradosTitulos. Diseñe el proceso de recuperación completa.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Recuperación ante desastre total
+-- El servidor principal no responde; se usa servidor alterno
+-- ============================================================
+
+-- [EN EL NUEVO SERVIDOR] Paso 1: Verificar backups disponibles en NAS
+RESTORE HEADERONLY
+FROM DISK = '\\\\ServidorNAS\\GT\\GT_FULL_20260622.bak';
+GO
+
+-- Paso 2: Listar archivos del backup
+RESTORE FILELISTONLY
+FROM DISK = '\\\\ServidorNAS\\GT\\GT_FULL_20260622.bak';
+GO
+
+-- Paso 3: Restaurar Full con MOVE (adaptar a nuevo servidor)
+RESTORE DATABASE GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\GT\\GT_FULL_20260622.bak'
+WITH
+    MOVE 'GradosTitulos'      TO 'E:\\SQL16\\Data\\GradosTitulos.mdf',
+    MOVE 'GradosTitulos_log'  TO 'E:\\SQL16\\Log\\GradosTitulos_log.ldf',
+    NORECOVERY,
+    REPLACE,
+    STATS = 10;
+GO
+
+-- Paso 4: Restaurar último DIFF
+RESTORE DATABASE GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\GT\\GT_DIFF_20260626.bak'
+WITH NORECOVERY, STATS = 5;
+GO
+
+-- Paso 5: Aplicar todos los logs disponibles en orden
+DECLARE @Log TABLE (LogFile NVARCHAR(300));
+-- (En práctica, se listan los .trn en orden cronológico)
+
+RESTORE LOG GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\GT\\Logs\\GT_LOG_20260627_0000.trn'
+WITH NORECOVERY;
+GO
+RESTORE LOG GradosTitulos
+FROM DISK = '\\\\ServidorNAS\\GT\\Logs\\GT_LOG_20260627_0015.trn'
+WITH NORECOVERY;
+GO
+-- [Repetir para cada .trn disponible hasta el último]
+
+-- Paso 6: Dejar ONLINE
+RESTORE DATABASE GradosTitulos WITH RECOVERY;
+GO
+
+-- Paso 7: Verificar
+SELECT name, state_desc, recovery_model_desc,
+       (SELECT CAST(SUM(size)*8.0/1024 AS DECIMAL(10,2)) FROM sys.master_files mf
+        WHERE mf.database_id = d.database_id) AS TamañoMB
+FROM sys.databases d WHERE name = 'GradosTitulos';
+GO
+DBCC CHECKDB('GradosTitulos') WITH NO_INFOMSGS;`,
+      justificacion: 'RESTORE HEADERONLY lista los metadatos del backup (fechas, tipo, LSN) sin extraer datos, útil para identificar rápidamente qué backups están disponibles. Al restaurar en nuevo hardware, MOVE es obligatorio para especificar las nuevas rutas. La cadena Full (sem) → Diff (día) → Logs (cada 15-30 min) permite recuperar hasta el último punto antes del desastre.',
+      practicas: ['Mantener un "runbook" de DR impreso y actualizado.', 'Probar la restauración completa en servidor alterno al menos cada 6 meses.', 'Guardar backups en al menos 3 ubicaciones (3-2-1: 3 copias, 2 medios, 1 offsite).', 'Actualizar el DNS / alias de conexión de las aplicaciones para apuntar al nuevo servidor.', 'Recrear logins de SQL Server en el nuevo servidor (no se incluyen en los backups de BD).'],
+      tabla: {
+        headers: ['Paso', 'Comando', 'Duración aprox.', 'Estado final'],
+        rows: [
+          ['1', 'RESTORE HEADERONLY', '< 1 seg', 'Metadatos obtenidos'],
+          ['2', 'RESTORE FILELISTONLY', '< 1 seg', 'Archivos identificados'],
+          ['3', 'RESTORE ... FULL', '20-30 min', 'RESTORING'],
+          ['4', 'RESTORE ... DIFF', '5-8 min', 'RESTORING'],
+          ['5', 'RESTORE LOG ×N', '2-5 min c/u', 'RESTORING'],
+          ['6', 'WITH RECOVERY', '< 1 min', 'ONLINE'],
+          ['7', 'DBCC CHECKDB', '15-30 min', '0 errores ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Recuperación Completa tras Corrupción del MDF',
+      enunciado: 'Se detectó corrupción física en el archivo principal de datos de GradosTitulos, impidiendo el acceso a las tablas relacionadas con expedientes. Recupere completamente la base usando la secuencia de respaldos disponibles.',
+      sql: `-- ============================================================
+-- PROYECTO 5: Recuperación completa con secuencia de backups
+-- Full (dom) + Diff (días) + múltiples Logs
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Identificar todos los backups disponibles en orden LSN
+SELECT
+    bs.backup_set_id,
+    bs.first_lsn,
+    bs.last_lsn,
+    bs.database_backup_lsn,
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date,
+    bs.backup_finish_date,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(DAY,-8,GETDATE())
+ORDER BY bs.first_lsn;
+GO
+
+-- 2. Restaurar Full (domingo)
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH NORECOVERY, REPLACE, CHECKSUM, STATS = 10;
+GO
+
+-- 3. Restaurar último Diff (viernes)
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Diff\\GT_DIFF_20260626.bak'
+WITH NORECOVERY, CHECKSUM, STATS = 5;
+GO
+
+-- 4. Aplicar logs del sábado (el día del incidente)
+RESTORE LOG GradosTitulos FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0000.trn' WITH NORECOVERY;
+RESTORE LOG GradosTitulos FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0030.trn' WITH NORECOVERY;
+RESTORE LOG GradosTitulos FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0100.trn' WITH NORECOVERY;
+RESTORE LOG GradosTitulos FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0130.trn' WITH NORECOVERY;
+-- ... continuar hasta el último log antes del incidente
+GO
+
+-- 5. Recuperar la BD
+RESTORE DATABASE GradosTitulos WITH RECOVERY;
+GO
+
+-- 6. Validar datos de expedientes
+USE GradosTitulos;
+SELECT
+    tt.IdTramite,
+    p.Nombres + ' ' + p.ApellidoPaterno AS Estudiante,
+    et.Descripcion AS Estado,
+    t.FechaInicio
+FROM Tramite.Tramite t
+JOIN Academico.Matricula m     ON m.IdMatricula = t.IdMatricula
+JOIN Academico.Persona p       ON p.IdPersona   = m.IdEstudiante
+JOIN Catalogo.EstadoTramite et ON et.IdEstadoTramite = t.IdEstadoTramite
+ORDER BY t.FechaInicio DESC;`,
+      justificacion: 'La consulta de LSN (first_lsn, last_lsn, database_backup_lsn) permite verificar que la cadena de backups está completa y que no hay saltos de LSN que impidan la restauración. WITH CHECKSUM en el RESTORE detecta si el archivo BAK fue dañado durante el almacenamiento. La consulta final valida que los expedientes de titulación son accesibles y los datos son consistentes.',
+      practicas: ['Verificar continuidad de LSN antes de iniciar la restauración.', 'Usar WITH CHECKSUM en el RESTORE para detectar corrupción en tránsito.', 'Conservar todos los logs de la cadena; uno faltante hace imposible aplicar los siguientes.', 'Después de restaurar, ejecutar la consulta de validación de negocio (no solo DBCC CHECKDB).', 'Notificar a los usuarios afectados del tiempo de recuperación estimado (RTO).'],
+      tabla: {
+        headers: ['Expediente', 'Estudiante', 'Estado', 'Recuperado'],
+        rows: [
+          ['TRM-0001', 'García López, Ana', 'EN_PROCESO', 'Sí ✓'],
+          ['TRM-0002', 'Quispe Rojas, Luis', 'APROBADO', 'Sí ✓'],
+          ['TRM-0003', 'Flores Mamani, Rosa', 'EN_VERIFICACION', 'Sí ✓'],
+          ['TRM-0004', 'Torres Silva, Juan', 'INICIADO', 'Sí ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Servidor de Contingencia para Continuidad',
+      enunciado: 'La universidad requiere un centro alterno de recuperación para continuar los procesos de grados y títulos. Restaure la base en una instancia secundaria y manténgala sincronizada.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Servidor de contingencia con log shipping manual
+-- ============================================================
+
+USE master;
+GO
+
+-- [SERVIDOR PRINCIPAL] 1. Backup Full para inicializar contingencia
+BACKUP DATABASE GradosTitulos
+TO DISK = '\\\\NAS\\Contingencia\\GT_INIT_FULL.bak'
+WITH FORMAT, INIT, COMPRESSION, CHECKSUM,
+     NAME = 'Backup inicial para contingencia',
+     STATS = 10;
+GO
+
+-- [SERVIDOR CONTINGENCIA] 2. Restaurar con STANDBY
+-- STANDBY permite lecturas durante la restauración
+RESTORE DATABASE GradosTitulos_Contingencia
+FROM DISK = '\\\\NAS\\Contingencia\\GT_INIT_FULL.bak'
+WITH
+    MOVE 'GradosTitulos'     TO 'E:\\Data\\GT_Cont.mdf',
+    MOVE 'GradosTitulos_log' TO 'E:\\Log\\GT_Cont_log.ldf',
+    STANDBY = 'E:\\Standby\\GT_UNDO.bak',
+    REPLACE, STATS = 10;
+GO
+
+-- [SERVIDOR PRINCIPAL] 3. Generar log backups para envío
+BACKUP LOG GradosTitulos
+TO DISK = '\\\\NAS\\Contingencia\\Logs\\GT_LOG_SYNC_' +
+           FORMAT(GETDATE(),'yyyyMMdd_HHmm') + '.trn'
+WITH FORMAT, INIT, COMPRESSION, CHECKSUM;
+GO
+
+-- [SERVIDOR CONTINGENCIA] 4. Aplicar logs manteniendo STANDBY
+RESTORE LOG GradosTitulos_Contingencia
+FROM DISK = '\\\\NAS\\Contingencia\\Logs\\GT_LOG_SYNC_20260627_2200.trn'
+WITH STANDBY = 'E:\\Standby\\GT_UNDO.bak';
+GO
+
+-- 5. Verificar estado de ambas instancias
+SELECT
+    name       AS BaseDatos,
+    state_desc AS Estado,
+    (SELECT MAX(backup_finish_date)
+     FROM msdb.dbo.backupset bs
+     WHERE bs.database_name = d.name AND bs.type = 'L') AS UltimoLogAplicado
+FROM sys.databases d
+WHERE name IN ('GradosTitulos','GradosTitulos_Contingencia');`,
+      justificacion: 'WITH STANDBY permite que la BD de contingencia sea consultable en modo solo lectura entre aplicaciones de log, lo que permite verificar los datos y ejecutar reportes sin necesitar el servidor principal. Cada log backup enviado al NAS se aplica con STANDBY manteniendo la BD actualizada. En caso de activación del DR, solo se necesita WITH RECOVERY para poner la BD online.',
+      practicas: ['Aplicar logs de contingencia cada hora o con la misma frecuencia del log backup.', 'Monitorear el "lag" entre el último log aplicado y la hora actual.', 'No permitir escrituras en la BD de contingencia (queda en STANDBY/NORECOVERY).', 'Definir un RTO para la activación del servidor de contingencia (< 30 min).', 'Documentar el procedimiento de failover para que cualquier DBA lo ejecute.'],
+      tabla: {
+        headers: ['Base de Datos', 'Estado', 'Último Log Aplicado', 'Lag'],
+        rows: [
+          ['GradosTitulos', 'ONLINE', 'Activo (principal)', '—'],
+          ['GradosTitulos_Contingencia', 'STANDBY / READ_ONLY', '2026-06-27 22:00', '~0 min']
+        ]
+      }
+    }
+  ]
+},
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA 3 — Mantenimiento y Verificación de Copias de Seguridad
+───────────────────────────────────────────────────────────── */
+{
+  num: 'Tema 03',
+  titulo: 'Mantenimiento y Verificación de Copias de Seguridad',
+  badge: 'CHECKDB',
+  color: 't2',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Verificación de Integridad de Backups',
+      enunciado: 'Verifique que todos los respaldos generados para GradosTitulos sean recuperables.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Verificar integridad de todos los backups
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Listar backups de los últimos 7 días
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date  AS FechaBackup,
+    CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(8,2)) AS TamañoMB,
+    bs.has_backup_checksums AS TieneChecksum,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(DAY,-7,GETDATE())
+ORDER BY bs.backup_start_date DESC;
+GO
+
+-- 2. Verificar el backup FULL más reciente
+RESTORE VERIFYONLY
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH CHECKSUM;
+GO
+
+-- 3. Verificar backup DIFF más reciente
+RESTORE VERIFYONLY
+FROM DISK = 'C:\\Backups\\Diff\\GT_DIFF_20260626.bak'
+WITH CHECKSUM;
+GO
+
+-- 4. SP automatizado: verifica todos los backups del día
+CREATE OR ALTER PROCEDURE dbo.SP_VerificarBackupsDia
+AS
+BEGIN
+    DECLARE @Archivo NVARCHAR(300);
+    DECLARE @Resultado TABLE (Archivo NVARCHAR(300), Estado VARCHAR(50));
+
+    DECLARE cur CURSOR FOR
+        SELECT bmf.physical_device_name
+        FROM msdb.dbo.backupset bs
+        JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+        WHERE bs.database_name = 'GradosTitulos'
+          AND CAST(bs.backup_start_date AS DATE) = CAST(GETDATE() AS DATE);
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @Archivo;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            EXEC('RESTORE VERIFYONLY FROM DISK = ''' + @Archivo + ''' WITH CHECKSUM');
+            INSERT INTO @Resultado VALUES (@Archivo, 'OK');
+        END TRY
+        BEGIN CATCH
+            INSERT INTO @Resultado VALUES (@Archivo, 'ERROR: ' + ERROR_MESSAGE());
+        END CATCH;
+        FETCH NEXT FROM cur INTO @Archivo;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+
+    SELECT * FROM @Resultado;
+END;
+GO
+
+EXEC dbo.SP_VerificarBackupsDia;`,
+      justificacion: 'RESTORE VERIFYONLY lee el backup completo verificando su estructura interna y checksums sin restaurar datos. Detecta corrupción en el archivo BAK antes de necesitarlo. El SP con cursor itera sobre todos los backups del día automatizando la verificación. Esto es esencial en entornos de producción donde un backup corrupto descubierto tarde puede ser catastrófico.',
+      practicas: ['Ejecutar RESTORE VERIFYONLY después de cada backup importante.', 'Automatizar la verificación con el Agente SQL Server.', 'Alertar al DBA si algún backup falla la verificación.', 'Registrar resultados de verificación en una tabla de auditoría.', 'Verificar también los backups almacenados en el NAS, no solo los locales.'],
+      tabla: {
+        headers: ['Archivo', 'Tipo', 'TamañoMB', 'TieneChecksum', 'Estado verificación'],
+        rows: [
+          ['GT_FULL_20260622.bak', 'FULL', '45.20', 'Sí', 'OK ✓'],
+          ['GT_DIFF_20260626.bak', 'DIFF', '8.30', 'Sí', 'OK ✓'],
+          ['GT_LOG_20260627_0700.trn', 'LOG', '1.10', 'Sí', 'OK ✓'],
+          ['GT_LOG_20260627_0730.trn', 'LOG', '1.05', 'Sí', 'OK ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Inventario Histórico de Copias de Seguridad',
+      enunciado: 'Construya un reporte que muestre todos los respaldos realizados durante el último mes.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Inventario histórico de backups (último mes)
+-- ============================================================
+
+USE msdb;
+GO
+
+-- Reporte completo del último mes
+SELECT
+    bs.database_name                        AS BaseDatos,
+    CASE bs.type
+        WHEN 'D' THEN 'FULL'
+        WHEN 'I' THEN 'DIFERENCIAL'
+        WHEN 'L' THEN 'LOG'
+    END                                     AS TipoBackup,
+    bs.backup_start_date                    AS FechaInicio,
+    bs.backup_finish_date                   AS FechaFin,
+    DATEDIFF(SECOND,bs.backup_start_date,
+             bs.backup_finish_date)         AS DuracionSeg,
+    CAST(bs.backup_size/1048576.0   AS DECIMAL(10,2)) AS TamañoOriginalMB,
+    CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(10,2)) AS TamañoCompMB,
+    CAST(100.0*(1 - bs.compressed_backup_size*1.0/NULLIF(bs.backup_size,0))
+         AS DECIMAL(5,1))                   AS AhorroPC,
+    bs.has_backup_checksums                 AS Checksum,
+    bmf.physical_device_name               AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(MONTH,-1,GETDATE())
+ORDER BY bs.backup_start_date DESC;
+GO
+
+-- Resumen por tipo de backup
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFERENCIAL' WHEN 'L' THEN 'LOG' END AS Tipo,
+    COUNT(*)                                              AS Cantidad,
+    CAST(SUM(bs.compressed_backup_size)/1048576.0 AS DECIMAL(10,2))  AS TotalCompMB,
+    CAST(AVG(bs.compressed_backup_size)/1048576.0 AS DECIMAL(10,2))  AS PromedioMB,
+    CAST(AVG(DATEDIFF(SECOND,bs.backup_start_date,bs.backup_finish_date)) AS DECIMAL(8,0)) AS DuracionPromSeg
+FROM msdb.dbo.backupset bs
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(MONTH,-1,GETDATE())
+GROUP BY bs.type
+ORDER BY bs.type;`,
+      justificacion: 'msdb.dbo.backupset es el catálogo oficial de SQL Server donde se registran todos los backups ejecutados. Este inventario permite auditar cumplimiento de las políticas de backup, detectar días sin backup, y calcular el consumo real de almacenamiento. El campo AhorroPC cuantifica el beneficio de la compresión.',
+      practicas: ['Consultar el inventario semanalmente para verificar cumplimiento.', 'Crear un dashboard con este reporte para el jefe de TI.', 'Alertar si hay días sin backup de algún tipo requerido.', 'Comparar AhorroPC entre periodos para detectar cambios en el tipo de datos.', 'Exportar el reporte a Excel mensualmente para el informe de TI.'],
+      tabla: {
+        headers: ['Tipo', 'Cantidad (mes)', 'TotalCompMB', 'PromedioMB', 'Duración prom (seg)'],
+        rows: [
+          ['FULL', '4', '180.80', '45.20', '1,520'],
+          ['DIFERENCIAL', '24', '199.20', '8.30', '285'],
+          ['LOG', '960', '1,056.00', '1.10', '18']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Detección de Respaldos Obsoletos',
+      enunciado: 'Identifique copias de seguridad que excedan la política institucional de retención.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Detección de backups fuera de política
+-- Política: Full 30 días | Diff 14 días | Log 7 días
+-- ============================================================
+
+USE msdb;
+GO
+
+-- Parámetros de política de retención
+DECLARE @DiasRetFull INT = 30;
+DECLARE @DiasRetDiff INT = 14;
+DECLARE @DiasRetLog  INT = 7;
+
+-- Consulta: backups que superan el período de retención
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFERENCIAL' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date  AS FechaBackup,
+    DATEDIFF(DAY,bs.backup_start_date,GETDATE()) AS DiasAntigüedad,
+    CASE bs.type
+        WHEN 'D' THEN @DiasRetFull
+        WHEN 'I' THEN @DiasRetDiff
+        WHEN 'L' THEN @DiasRetLog
+    END                   AS LimiteRetencion,
+    CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(8,2)) AS TamañoMB,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND (
+       (bs.type='D' AND bs.backup_start_date < DATEADD(DAY,-@DiasRetFull,GETDATE()))
+    OR (bs.type='I' AND bs.backup_start_date < DATEADD(DAY,-@DiasRetDiff,GETDATE()))
+    OR (bs.type='L' AND bs.backup_start_date < DATEADD(DAY,-@DiasRetLog ,GETDATE()))
+  )
+ORDER BY bs.backup_start_date;
+GO
+
+-- SP: Eliminar registros obsoletos de msdb Y notificar
+CREATE OR ALTER PROCEDURE dbo.SP_LimpiarBackupsObsoletos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Eliminar entradas antiguas del catálogo msdb
+    EXEC msdb.dbo.sp_delete_backuphistory
+         @oldest_date = DATEADD(DAY,-30,GETDATE());
+
+    -- Ver espacio liberado (estimado)
+    SELECT
+        CAST(SUM(bs.compressed_backup_size)/1048576.0 AS DECIMAL(10,2)) AS EspacioLiberadoMB
+    FROM msdb.dbo.backupset bs
+    WHERE bs.database_name = 'GradosTitulos'
+      AND bs.backup_start_date < DATEADD(DAY,-30,GETDATE());
+END;
+GO`,
+      justificacion: 'La política de retención diferenciada (30/14/7 días según tipo) equilibra seguridad vs consumo de almacenamiento. sp_delete_backuphistory limpia el catálogo msdb de entradas antiguas (no borra los archivos físicos del disco, eso requiere un job separado con xp_cmdshell o PowerShell). Detectar obsoletos permite recuperar espacio en disco y reducir el riesgo de confundir backups viejos con recientes.',
+      practicas: ['Definir la política de retención por escrito y aprobarla con el responsable de TI.', 'Ejecutar la limpieza del catálogo msdb mensualmente.', 'Usar un script PowerShell separado para eliminar los archivos físicos del disco.', 'Nunca borrar el último backup Full disponible (mantener al menos 1).', 'Revisar el espacio en disco después de cada limpieza.'],
+      tabla: {
+        headers: ['Tipo', 'Política (días)', 'Backups obsoletos', 'Espacio a recuperar (MB)'],
+        rows: [
+          ['FULL', '30 días', '2', '90.40'],
+          ['DIFERENCIAL', '14 días', '8', '66.40'],
+          ['LOG', '7 días', '480', '528.00'],
+          ['TOTAL', '—', '490', '684.80']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Sistema Automatizado de Verificación',
+      enunciado: 'Diseñe una solución que valide diariamente la integridad de todos los respaldos de GradosTitulos.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Sistema automatizado de verificación diaria
+-- ============================================================
+
+USE master;
+GO
+
+-- Tabla de resultados de verificación
+IF OBJECT_ID('dbo.VerificacionBackups') IS NULL
+CREATE TABLE dbo.VerificacionBackups (
+    IdVerif      INT           IDENTITY(1,1) PRIMARY KEY,
+    FechaVerif   DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    TipoBackup   VARCHAR(15)   NOT NULL,
+    Archivo      NVARCHAR(300) NOT NULL,
+    Estado       VARCHAR(20)   NOT NULL,  -- OK / ERROR / NO_ENCONTRADO
+    MensajeError NVARCHAR(500) NULL,
+    TamañoMB     DECIMAL(10,2) NULL
+);
+GO
+
+-- SP: Verificación diaria completa
+CREATE OR ALTER PROCEDURE dbo.SP_VerificacionDiaria_GradosTitulos
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Archivo   NVARCHAR(300);
+    DECLARE @Tipo      VARCHAR(15);
+    DECLARE @Tamaño    DECIMAL(10,2);
+    DECLARE @Estado    VARCHAR(20);
+    DECLARE @Msg       NVARCHAR(500);
+    DECLARE @TotalOK   INT = 0, @TotalErr INT = 0;
+
+    DECLARE cur CURSOR FOR
+        SELECT
+            bmf.physical_device_name,
+            CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END,
+            CAST(bs.compressed_backup_size/1048576.0 AS DECIMAL(10,2))
+        FROM msdb.dbo.backupset bs
+        JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+        WHERE bs.database_name = 'GradosTitulos'
+          AND CAST(bs.backup_start_date AS DATE) = CAST(GETDATE() AS DATE);
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @Archivo, @Tipo, @Tamaño;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @Estado = 'OK'; SET @Msg = NULL;
+        BEGIN TRY
+            EXEC('RESTORE VERIFYONLY FROM DISK = ''' + @Archivo + ''' WITH CHECKSUM');
+            SET @TotalOK += 1;
+        END TRY
+        BEGIN CATCH
+            SET @Estado = 'ERROR';
+            SET @Msg = ERROR_MESSAGE();
+            SET @TotalErr += 1;
+        END CATCH;
+
+        INSERT INTO dbo.VerificacionBackups
+               (TipoBackup, Archivo, Estado, MensajeError, TamañoMB)
+        VALUES (@Tipo, @Archivo, @Estado, @Msg, @Tamaño);
+
+        FETCH NEXT FROM cur INTO @Archivo, @Tipo, @Tamaño;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+
+    -- Reporte resumen
+    SELECT * FROM dbo.VerificacionBackups
+    WHERE CAST(FechaVerif AS DATE) = CAST(GETDATE() AS DATE)
+    ORDER BY FechaVerif DESC;
+
+    PRINT 'Verificación completada: ' + CAST(@TotalOK AS VARCHAR) + ' OK | ' +
+          CAST(@TotalErr AS VARCHAR) + ' ERRORES';
+END;
+GO
+
+EXEC dbo.SP_VerificacionDiaria_GradosTitulos;`,
+      justificacion: 'El SP centraliza la verificación y persiste los resultados en VerificacionBackups, creando un historial auditabe. El uso de TRY/CATCH permite que un archivo dañado no detenga la verificación de los demás. Los contadores TotalOK/TotalErr permiten generar alertas automáticas si TotalErr > 0, integrando con el Sistema de Alertas del Agente SQL.',
+      practicas: ['Programar este SP en el Agente SQL cada día a las 06:00 (antes del horario laboral).', 'Configurar alertas de correo (Database Mail) si TotalErr > 0.', 'Revisar el historial de VerificacionBackups semanalmente.', 'Incluir la tabla VerificacionBackups en el dashboard de monitoreo.', 'Probar el SP mensualmente forzando un error (backup corrupto simulado).'],
+      tabla: {
+        headers: ['FechaVerif', 'TipoBackup', 'Estado', 'TamañoMB'],
+        rows: [
+          ['2026-06-27 06:01', 'FULL', 'OK ✓', '45.20'],
+          ['2026-06-27 06:02', 'DIFF', 'OK ✓', '8.30'],
+          ['2026-06-27 06:03', 'LOG', 'OK ✓', '1.10'],
+          ['Total verificados', '3', '3 OK | 0 Errores', '54.60']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Sistema de Validación Automática de Backups',
+      enunciado: 'Diseñe un mecanismo que valide diariamente todos los respaldos de la base GradosTitulos.',
+      sql: `-- ============================================================
+-- PROYECTO 5: Validación automática con alerta por correo
+-- ============================================================
+
+USE master;
+GO
+
+-- Habilitar Database Mail si no está activo
+EXEC sp_configure 'show advanced options', 1; RECONFIGURE;
+EXEC sp_configure 'Database Mail XPs', 1; RECONFIGURE;
+GO
+
+-- SP: Validar y notificar por correo
+CREATE OR ALTER PROCEDURE dbo.SP_ValidarYNotificar_Backups
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Cuerpo    NVARCHAR(MAX) = '';
+    DECLARE @HayError  BIT = 0;
+    DECLARE @Archivo   NVARCHAR(300);
+    DECLARE @Tipo      VARCHAR(15);
+    DECLARE @Estado    VARCHAR(20);
+
+    -- Verificar backups de las últimas 24 horas
+    DECLARE cur CURSOR FOR
+        SELECT bmf.physical_device_name,
+               CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END
+        FROM msdb.dbo.backupset bs
+        JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+        WHERE bs.database_name = 'GradosTitulos'
+          AND bs.backup_start_date >= DATEADD(HOUR,-24,GETDATE());
+
+    SET @Cuerpo = 'REPORTE VALIDACIÓN BACKUPS - GradosTitulos' + CHAR(13);
+    SET @Cuerpo += 'Fecha: ' + CONVERT(VARCHAR,GETDATE(),120) + CHAR(13) + CHAR(13);
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @Archivo, @Tipo;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        BEGIN TRY
+            EXEC('RESTORE VERIFYONLY FROM DISK = ''' + @Archivo + ''' WITH CHECKSUM');
+            SET @Estado = '✓ OK';
+        END TRY
+        BEGIN CATCH
+            SET @Estado = '✗ ERROR: ' + ERROR_MESSAGE();
+            SET @HayError = 1;
+        END CATCH;
+
+        SET @Cuerpo += '[' + @Tipo + '] ' + @Archivo + ' -> ' + @Estado + CHAR(13);
+        FETCH NEXT FROM cur INTO @Archivo, @Tipo;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+
+    -- Enviar correo si hay error O como reporte diario
+    EXEC msdb.dbo.sp_send_dbmail
+        @profile_name = 'PerfilCorreoUPLA',
+        @recipients   = 'dba@upla.edu.pe',
+        @subject      = CASE @HayError
+                         WHEN 1 THEN '🔴 ALERTA: Backup corrupto detectado en GradosTitulos'
+                         ELSE        '🟢 OK: Backups GradosTitulos validados correctamente'
+                        END,
+        @body         = @Cuerpo;
+
+    PRINT 'Validación completada. Correo enviado.';
+END;
+GO
+
+-- Job del Agente SQL: ejecutar diariamente a las 07:00
+-- (crear via SSMS: SQL Server Agent > Jobs > New Job)
+EXEC msdb.dbo.sp_add_job
+    @job_name = 'ValidarBackups_GradosTitulos_Diario';
+EXEC msdb.dbo.sp_add_jobstep
+    @job_name = 'ValidarBackups_GradosTitulos_Diario',
+    @step_name = 'Ejecutar validacion',
+    @command   = 'EXEC master.dbo.SP_ValidarYNotificar_Backups';
+EXEC msdb.dbo.sp_add_schedule
+    @schedule_name = 'DiarioALas7AM',
+    @freq_type = 4, @freq_interval = 1,
+    @active_start_time = 70000;  -- 07:00:00
+EXEC msdb.dbo.sp_attach_schedule
+    @job_name = 'ValidarBackups_GradosTitulos_Diario',
+    @schedule_name = 'DiarioALas7AM';`,
+      justificacion: 'Database Mail integra notificaciones por correo directamente en T-SQL, eliminando la necesidad de scripts externos. sp_send_dbmail envía el reporte diario con asunto diferenciado (🟢 OK vs 🔴 ALERTA) para que el DBA identifique rápidamente si hay problemas. El job del Agente SQL automatiza la ejecución sin intervención manual.',
+      practicas: ['Configurar un perfil de Database Mail con SMTP de la institución.', 'Distribuir el correo al equipo de TI (no solo al DBA principal).', 'Probar el SP enviando a una dirección de prueba antes de producción.', 'Incluir el nombre del servidor en el asunto del correo para entornos multi-servidor.', 'Archivar los correos de validación en una carpeta dedicada.'],
+      tabla: {
+        headers: ['Tipo correo', 'Condición', 'Asunto', 'Destinatarios'],
+        rows: [
+          ['🟢 OK', 'Todos los backups válidos', 'OK: Backups validados correctamente', 'dba@upla.edu.pe'],
+          ['🔴 ALERTA', 'Algún backup con error', 'ALERTA: Backup corrupto detectado', 'dba@upla.edu.pe + jefe.ti@upla.edu.pe'],
+          ['Frecuencia', 'Diaria 07:00', '—', 'Automático (SQL Agent)']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Auditoría Integral del Historial de Copias',
+      enunciado: 'La Dirección de TI solicita un reporte detallado de los respaldos ejecutados sobre GradosTitulos durante los últimos 90 días.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Auditoría integral 90 días
+-- ============================================================
+
+USE msdb;
+GO
+
+-- Reporte ejecutivo: resumen mensual de backups
+SELECT
+    YEAR(bs.backup_start_date)  AS Año,
+    MONTH(bs.backup_start_date) AS Mes,
+    DATENAME(MONTH,bs.backup_start_date) AS NombreMes,
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFERENCIAL' WHEN 'L' THEN 'LOG' END AS Tipo,
+    COUNT(*)                    AS TotalBackups,
+    CAST(SUM(bs.compressed_backup_size)/1073741824.0 AS DECIMAL(8,2)) AS TotalGB,
+    CAST(AVG(DATEDIFF(SECOND,bs.backup_start_date,bs.backup_finish_date)) AS DECIMAL(8,0)) AS DurPromSeg,
+    SUM(CASE WHEN bs.has_backup_checksums=1 THEN 1 ELSE 0 END) AS ConChecksum,
+    MIN(bs.backup_start_date)   AS PrimerBackup,
+    MAX(bs.backup_start_date)   AS UltimoBackup
+FROM msdb.dbo.backupset bs
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date >= DATEADD(DAY,-90,GETDATE())
+GROUP BY YEAR(bs.backup_start_date), MONTH(bs.backup_start_date),
+         DATENAME(MONTH,bs.backup_start_date), bs.type
+ORDER BY Año, Mes, bs.type;
+GO
+
+-- Detección de días sin backup (crítico para compliance)
+WITH FechasCal AS (
+    SELECT CAST(DATEADD(DAY,-dv.n,GETDATE()) AS DATE) AS FechaControl
+    FROM (VALUES(0),(1),(2),(3),(4),(5),(6),(7),(8),(9),(10),(11),(12),(13),
+               (14),(15),(16),(17),(18),(19),(20),(21),(22),(23),(24),(25),
+               (26),(27),(28),(29),(30)) dv(n)
+),
+DiasConBackup AS (
+    SELECT DISTINCT CAST(bs.backup_start_date AS DATE) AS FechaBackup
+    FROM msdb.dbo.backupset bs
+    WHERE bs.database_name = 'GradosTitulos'
+      AND bs.type IN ('D','I')  -- Full o Diff
+      AND bs.backup_start_date >= DATEADD(DAY,-30,GETDATE())
+)
+SELECT fc.FechaControl AS DiaSinBackup
+FROM FechasCal fc
+LEFT JOIN DiasConBackup dcb ON fc.FechaControl = dcb.FechaBackup
+WHERE dcb.FechaBackup IS NULL
+ORDER BY fc.FechaControl;`,
+      justificacion: 'El CTE FechasCal genera un calendario de los últimos 30 días sin depender de tablas auxiliares. El LEFT JOIN detecta días sin backup (NULL en DiasConBackup), que son los incumplimientos de política. El reporte mensual permite a la Dirección de TI evaluar tendencias de almacenamiento y planificar capacidad. ConChecksum verifica que todos los backups tengan verificación habilitada.',
+      practicas: ['Generar este reporte mensualmente para el comité de TI.', 'Objetivo: 0 días sin backup en el último mes.', 'Si se detectan días sin backup, investigar qué falló en el Agente SQL.', 'Incluir el reporte en el informe de cumplimiento SOC2 / ISO 27001.', 'Comparar el TotalGB entre meses para detectar crecimiento anormal de datos.'],
+      tabla: {
+        headers: ['Mes', 'Tipo', 'TotalBackups', 'TotalGB', 'DurPromSeg', 'ConChecksum'],
+        rows: [
+          ['Abril', 'FULL', '4', '0.18', '1,520', '4/4'],
+          ['Abril', 'DIFERENCIAL', '25', '0.20', '285', '25/25'],
+          ['Abril', 'LOG', '1,440', '1.59', '18', '1440/1440'],
+          ['Mayo', 'FULL', '4', '0.18', '1,490', '4/4'],
+          ['Junio', 'FULL', '2', '0.09', '1,510', '2/2'],
+          ['Días sin backup (30 días)', '—', '0', '—', '—', 'Cumplimiento 100%']
+        ]
+      }
+    }
+  ]
+},
+
+/* ─────────────────────────────────────────────────────────────
+   TEMA 4 — Uso de BACKUP DATABASE y RESTORE DATABASE
+───────────────────────────────────────────────────────────── */
+{
+  num: 'Tema 04',
+  titulo: 'Uso de BACKUP DATABASE y RESTORE DATABASE',
+  badge: 'T-SQL',
+  color: 't3',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Respaldo Manual con T-SQL',
+      enunciado: 'Realice un respaldo completo utilizando únicamente instrucciones T-SQL.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Respaldo manual completo con T-SQL puro
+-- ============================================================
+
+USE master;
+GO
+
+-- Verificar que la BD existe antes de respaldar
+IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'GradosTitulos')
+    THROW 50001, 'La base de datos GradosTitulos no existe.', 1;
+GO
+
+-- Verificar modelo de recuperación
+SELECT name, recovery_model_desc FROM sys.databases WHERE name = 'GradosTitulos';
+GO
+
+-- Backup completo manual con todas las opciones documentadas
+BACKUP DATABASE GradosTitulos
+TO DISK = 'C:\\Backups\\Manual\\GT_MANUAL_FULL_' +
+           FORMAT(GETDATE(),'yyyyMMdd_HHmmss') + '.bak'
+WITH
+    FORMAT,          -- Sobreescribir cualquier backup previo en el archivo
+    INIT,            -- Inicializar el archivo (1 solo backup set)
+    COMPRESSION,     -- Compresión nativa SQL Server
+    CHECKSUM,        -- Calcular y escribir checksum
+    STATS = 10,      -- Progreso cada 10% completado
+    NAME = 'GradosTitulos Full Manual ' + CONVERT(VARCHAR,GETDATE(),120),
+    DESCRIPTION = 'Backup manual completo de la BD GradosTitulos - UPLA';
+GO
+
+-- Verificar resultado
+RESTORE HEADERONLY
+FROM DISK = 'C:\\Backups\\Manual\\GT_MANUAL_FULL_20260627_120000.bak';
+GO`,
+      justificacion: 'La instrucción BACKUP DATABASE es el comando fundamental. FORMAT crea un nuevo conjunto de medios, mientras INIT inicializa el archivo en el mismo medio. NAME y DESCRIPTION permiten identificar el backup en RESTORE HEADERONLY. Es importante siempre usar COMPRESSION y CHECKSUM en entornos de producción para maximizar eficiencia e integridad.',
+      practicas: ['Documentar cada backup manual en la tabla LogBackup.', 'Usar FORMAT+INIT juntos para evitar conflictos con backups previos en el mismo archivo.', 'Verificar con RESTORE HEADERONLY inmediatamente después.', 'No ejecutar backups manuales durante horas pico (impactan el rendimiento).', 'Guardar el script de backup manual en el repositorio de scripts de DBA.'],
+      tabla: {
+        headers: ['Propiedad', 'Valor'],
+        rows: [
+          ['BackupName', 'GradosTitulos Full Manual 2026-06-27'],
+          ['DatabaseName', 'GradosTitulos'],
+          ['BackupType', '1 (Database Full)'],
+          ['Compressed', '1 (Sí)'],
+          ['HasBackupChecksums', '1 (Sí)'],
+          ['BackupSize (bytes)', '47,382,528']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Restauración Completa desde Archivo BAK',
+      enunciado: 'Recupere la base de datos utilizando un archivo de respaldo existente.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Restauración desde archivo BAK existente
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Inspeccionar el archivo antes de restaurar
+RESTORE HEADERONLY
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260622.bak';
+GO
+
+-- 2. Obtener nombres lógicos de archivos
+RESTORE FILELISTONLY
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260622.bak';
+GO
+
+-- 3. Verificar integridad del archivo BAK
+RESTORE VERIFYONLY
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260622.bak'
+WITH CHECKSUM;
+GO
+
+-- 4. Restaurar la base de datos
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\GradosTitulos\\Full\\GT_FULL_20260622.bak'
+WITH
+    MOVE 'GradosTitulos'     TO 'C:\\SQL\\Data\\GradosTitulos.mdf',
+    MOVE 'GradosTitulos_log' TO 'C:\\SQL\\Log\\GradosTitulos_log.ldf',
+    RECOVERY,        -- Deja la BD online directamente
+    REPLACE,         -- Permite sobreescribir BD existente con el mismo nombre
+    STATS = 10;
+GO
+
+-- 5. Validar la restauración
+SELECT
+    name         AS BaseDatos,
+    state_desc   AS Estado,
+    recovery_model_desc AS Modelo,
+    create_date  AS FechaCreacion
+FROM sys.databases
+WHERE name = 'GradosTitulos';
+GO`,
+      justificacion: 'El flujo HEADERONLY → FILELISTONLY → VERIFYONLY → RESTORE es la secuencia recomendada: primero se inspecciona, luego se verifica y finalmente se restaura. WITH RECOVERY pone la BD en línea directamente (sin posibilidad de aplicar logs adicionales). WITH REPLACE es necesario si existe una BD con el mismo nombre en la instancia.',
+      practicas: ['Nunca saltar los pasos de inspección (HEADERONLY, FILELISTONLY).', 'Usar VERIFYONLY antes de restaurar en producción.', 'Usar RECOVERY cuando es el único backup a restaurar; NORECOVERY si se aplicarán más.', 'Con REPLACE tener cuidado: sobreescribe la BD existente sin confirmación adicional.', 'Documentar la fecha del backup restaurado en el ticket de incidente.'],
+      tabla: {
+        headers: ['Paso', 'Comando', 'Información obtenida'],
+        rows: [
+          ['1', 'RESTORE HEADERONLY', 'Tipo: Full, Fecha: 2026-06-22, Comprimido: Sí'],
+          ['2', 'RESTORE FILELISTONLY', 'GradosTitulos.mdf + GradosTitulos_log.ldf'],
+          ['3', 'RESTORE VERIFYONLY', 'El conjunto de copia de seguridad es válido ✓'],
+          ['4', 'RESTORE DATABASE', 'Estado: ONLINE'],
+          ['5', 'Verificación', 'RecoveryModel: FULL, Estado: ONLINE']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Automatización con Stored Procedures',
+      enunciado: 'Diseñe procedimientos almacenados que automaticen respaldos y restauraciones.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Framework de SP para backup y restore
+-- ============================================================
+
+USE master;
+GO
+
+-- SP Universal de Backup (3 tipos)
+CREATE OR ALTER PROCEDURE dbo.SP_BackupUniversal
+    @BaseDatos  SYSNAME = 'GradosTitulos',
+    @TipoBackup CHAR(4)  = 'FULL',  -- FULL | DIFF | LOG
+    @RutaBase   NVARCHAR(200) = 'C:\\Backups\\'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF @TipoBackup NOT IN ('FULL','DIFF','LOG')
+        THROW 50001,'Tipo inválido. Use FULL, DIFF o LOG.',1;
+
+    DECLARE @Ext  VARCHAR(4) = CASE @TipoBackup WHEN 'LOG' THEN '.trn' ELSE '.bak' END;
+    DECLARE @Dir  NVARCHAR(200) = @RutaBase + @BaseDatos + '\\' +
+                  CASE @TipoBackup WHEN 'FULL' THEN 'Full' WHEN 'DIFF' THEN 'Diff' ELSE 'Log' END + '\\';
+    DECLARE @File NVARCHAR(300) = @Dir + @BaseDatos + '_' + @TipoBackup + '_' +
+                  FORMAT(GETDATE(),'yyyyMMdd_HHmmss') + @Ext;
+    DECLARE @SQL NVARCHAR(MAX);
+
+    SET @SQL = 'BACKUP ' + CASE @TipoBackup WHEN 'LOG' THEN 'LOG' ELSE 'DATABASE' END +
+               ' ' + QUOTENAME(@BaseDatos) +
+               ' TO DISK = ''' + @File + '''' +
+               ' WITH ' + CASE @TipoBackup WHEN 'DIFF' THEN 'DIFFERENTIAL,' ELSE '' END +
+               ' FORMAT, INIT, COMPRESSION, CHECKSUM, STATS=10,' +
+               ' NAME = ''' + @BaseDatos + ' ' + @TipoBackup + ' Auto ' +
+               CONVERT(VARCHAR,GETDATE(),120) + '''';
+
+    EXEC sp_executesql @SQL;
+    PRINT 'Backup completado: ' + @File;
+    RETURN 0;
+END;
+GO
+
+-- SP Universal de Restore
+CREATE OR ALTER PROCEDURE dbo.SP_RestoreUniversal
+    @BaseDatos   SYSNAME = 'GradosTitulos',
+    @ArchivoBAK  NVARCHAR(300),
+    @RutaMDF     NVARCHAR(300) = NULL,
+    @RutaLDF     NVARCHAR(300) = NULL,
+    @ModoFinal   VARCHAR(12) = 'RECOVERY'  -- RECOVERY | NORECOVERY | STANDBY
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @SQL NVARCHAR(MAX);
+    SET @RutaMDF = ISNULL(@RutaMDF, 'C:\\SQL\\Data\\' + @BaseDatos + '.mdf');
+    SET @RutaLDF = ISNULL(@RutaLDF, 'C:\\SQL\\Log\\'  + @BaseDatos + '_log.ldf');
+
+    SET @SQL = 'RESTORE DATABASE ' + QUOTENAME(@BaseDatos) +
+               ' FROM DISK = ''' + @ArchivoBAK + '''' +
+               ' WITH MOVE ''' + @BaseDatos + ''' TO ''' + @RutaMDF + ''',' +
+               ' MOVE ''' + @BaseDatos + '_log'' TO ''' + @RutaLDF + ''',' +
+               @ModoFinal + ', REPLACE, STATS=10';
+
+    EXEC sp_executesql @SQL;
+    PRINT 'Restore completado en modo ' + @ModoFinal;
+END;
+GO
+
+-- Uso de los SP
+EXEC dbo.SP_BackupUniversal 'GradosTitulos', 'FULL';
+EXEC dbo.SP_BackupUniversal 'GradosTitulos', 'DIFF';
+EXEC dbo.SP_BackupUniversal 'GradosTitulos', 'LOG';`,
+      justificacion: 'Los SP parametrizados encapsulan la lógica de backup/restore eliminando hardcoding de rutas y nombres. QUOTENAME protege contra inyección SQL en los nombres dinámicos. El parámetro ModoFinal (RECOVERY/NORECOVERY) da flexibilidad para restaurar como BD final o como paso intermedio en una cadena de restauración.',
+      practicas: ['Usar QUOTENAME siempre que se construyan nombres de objetos dinámicamente.', 'Centralizar backup/restore en SP evita inconsistencias entre scripts.', 'Validar parámetros de entrada antes de ejecutar SQL dinámico.', 'Registrar cada ejecución en LogBackup desde dentro del SP.', 'Documentar los SP en el diccionario de datos del DBA.'],
+      tabla: {
+        headers: ['Llamada SP', 'Parámetros', 'Resultado esperado'],
+        rows: [
+          ['SP_BackupUniversal', "'GradosTitulos','FULL'", 'GradosTitulos_FULL_20260627.bak creado'],
+          ['SP_BackupUniversal', "'GradosTitulos','DIFF'", 'GradosTitulos_DIFF_20260627.bak creado'],
+          ['SP_BackupUniversal', "'GradosTitulos','LOG'", 'GradosTitulos_LOG_20260627.trn creado'],
+          ['SP_RestoreUniversal', 'ruta + RECOVERY', 'BD restaurada en estado ONLINE']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Framework Institucional de Recuperación',
+      enunciado: 'Construya un conjunto de scripts reutilizables para respaldo y restauración de todas las bases institucionales.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Framework multi-base para todas las BDs UPLA
+-- ============================================================
+
+USE master;
+GO
+
+-- Tabla de configuración de bases institucionales
+IF OBJECT_ID('dbo.ConfigBackupBases') IS NULL
+CREATE TABLE dbo.ConfigBackupBases (
+    BaseDatos      SYSNAME       NOT NULL PRIMARY KEY,
+    RutaBackup     NVARCHAR(200) NOT NULL,
+    RetFull_dias   INT           NOT NULL DEFAULT 30,
+    RetDiff_dias   INT           NOT NULL DEFAULT 14,
+    RetLog_dias    INT           NOT NULL DEFAULT 7,
+    Activo         BIT           NOT NULL DEFAULT 1,
+    UltimoBackup   DATETIME2     NULL
+);
+GO
+
+-- Registrar bases institucionales UPLA
+INSERT INTO dbo.ConfigBackupBases (BaseDatos, RutaBackup, RetFull_dias, RetDiff_dias, RetLog_dias)
+VALUES
+    ('GradosTitulos',    'C:\\Backups\\GradosTitulos\\',    30, 14, 7),
+    ('SistemaAcademico', 'C:\\Backups\\SistemaAcademico\\', 30, 14, 7),
+    ('Matriculas',       'C:\\Backups\\Matriculas\\',       30, 14, 7),
+    ('Biblioteca',       'C:\\Backups\\Biblioteca\\',       14, 7,  3)
+ON CONFLICT DO NOTHING;
+GO
+
+-- SP: Backup masivo de todas las bases activas
+CREATE OR ALTER PROCEDURE dbo.SP_BackupInstitucional_Masivo
+    @TipoBackup CHAR(4) = 'FULL'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @BD      SYSNAME;
+    DECLARE @Ruta    NVARCHAR(200);
+    DECLARE @Archivo NVARCHAR(300);
+    DECLARE @SQL     NVARCHAR(MAX);
+    DECLARE @OK  INT = 0, @Err INT = 0;
+
+    DECLARE cur CURSOR FOR
+        SELECT BaseDatos, RutaBackup
+        FROM dbo.ConfigBackupBases
+        WHERE Activo = 1;
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @BD, @Ruta;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Solo respaldar si la BD existe
+        IF EXISTS (SELECT 1 FROM sys.databases WHERE name = @BD AND state = 0)
+        BEGIN
+            SET @Archivo = @Ruta + @TipoBackup + '\\' + @BD + '_' + @TipoBackup + '_' +
+                           FORMAT(GETDATE(),'yyyyMMdd_HHmmss') +
+                           CASE @TipoBackup WHEN 'LOG' THEN '.trn' ELSE '.bak' END;
+            BEGIN TRY
+                SET @SQL = 'BACKUP ' + CASE @TipoBackup WHEN 'LOG' THEN 'LOG' ELSE 'DATABASE' END +
+                           ' ' + QUOTENAME(@BD) + ' TO DISK=''' + @Archivo +
+                           ''' WITH ' + CASE @TipoBackup WHEN 'DIFF' THEN 'DIFFERENTIAL,' ELSE '' END +
+                           'FORMAT,INIT,COMPRESSION,CHECKSUM,STATS=0';
+                EXEC sp_executesql @SQL;
+                UPDATE dbo.ConfigBackupBases SET UltimoBackup = GETDATE() WHERE BaseDatos = @BD;
+                PRINT '✓ ' + @BD + ' -> ' + @Archivo;
+                SET @OK += 1;
+            END TRY
+            BEGIN CATCH
+                PRINT '✗ Error en ' + @BD + ': ' + ERROR_MESSAGE();
+                SET @Err += 1;
+            END CATCH;
+        END;
+        FETCH NEXT FROM cur INTO @BD, @Ruta;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+    PRINT 'Completado: ' + CAST(@OK AS VARCHAR) + ' OK | ' + CAST(@Err AS VARCHAR) + ' Errores';
+END;
+GO
+
+EXEC dbo.SP_BackupInstitucional_Masivo @TipoBackup = 'FULL';`,
+      justificacion: 'El framework de tabla de configuración + SP masivo permite agregar nuevas bases sin modificar código. El cursor itera solo sobre bases activas y existentes (state=0), evitando errores con bases en modos especiales. UPDATE de UltimoBackup permite monitorear qué bases fueron respaldadas recientemente desde una sola consulta.',
+      practicas: ['Centralizar la configuración en una tabla en lugar de hardcodear en scripts.', 'Excluir bases del sistema (master, model, msdb, tempdb) del backup masivo.', 'Registrar errores en una tabla de incidentes, no solo en PRINT.', 'Ejecutar el SP masivo con el Agente SQL para automatización total.', 'Revisar ConfigBackupBases cuando se crea o elimina una base institucional.'],
+      tabla: {
+        headers: ['BaseDatos', 'TipoBackup', 'Estado', 'UltimoBackup'],
+        rows: [
+          ['GradosTitulos', 'FULL', 'OK ✓', '2026-06-27 23:00'],
+          ['SistemaAcademico', 'FULL', 'OK ✓', '2026-06-27 23:01'],
+          ['Matriculas', 'FULL', 'OK ✓', '2026-06-27 23:03'],
+          ['Biblioteca', 'FULL', 'OK ✓', '2026-06-27 23:04']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Framework Automatizado con Timestamp',
+      enunciado: 'Desarrolle un procedimiento almacenado reutilizable que genere respaldos completos de GradosTitulos utilizando fecha y hora en el nombre del archivo.',
+      sql: `-- ============================================================
+-- PROYECTO 5: SP de backup con timestamp dinámico
+-- ============================================================
+
+USE master;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_BackupTimestamp
+    @BaseDatos  SYSNAME = 'GradosTitulos',
+    @RutaBase   NVARCHAR(200) = 'C:\\Backups\\',
+    @TipoBackup CHAR(4) = 'FULL',
+    @Comentario NVARCHAR(200) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @FechaStr  NVARCHAR(20) = FORMAT(GETDATE(),'yyyyMMdd_HHmmss');
+    DECLARE @DiaSem    NVARCHAR(10) = DATENAME(WEEKDAY,GETDATE());
+    DECLARE @TamDir    NVARCHAR(10) = CASE @TipoBackup WHEN 'LOG' THEN 'Log' WHEN 'DIFF' THEN 'Diff' ELSE 'Full' END;
+    DECLARE @Ext       VARCHAR(4)   = CASE @TipoBackup WHEN 'LOG' THEN '.trn' ELSE '.bak' END;
+    DECLARE @Archivo   NVARCHAR(400) = @RutaBase + @BaseDatos + '\\' + @TamDir + '\\' +
+                       @BaseDatos + '_' + @TipoBackup + '_' + @FechaStr + @Ext;
+    DECLARE @Nombre    NVARCHAR(200) = @BaseDatos + ' ' + @TipoBackup + ' ' + @FechaStr +
+                       ISNULL(' [' + @Comentario + ']','');
+
+    PRINT 'Iniciando backup: ' + @Archivo;
+    PRINT 'Día semana: ' + @DiaSem;
+    PRINT 'Hora: ' + FORMAT(GETDATE(),'HH:mm:ss');
+
+    DECLARE @SQL NVARCHAR(MAX) =
+        'BACKUP ' + CASE @TipoBackup WHEN 'LOG' THEN 'LOG' ELSE 'DATABASE' END +
+        ' ' + QUOTENAME(@BaseDatos) +
+        ' TO DISK = ''' + @Archivo + '''' +
+        ' WITH ' + CASE @TipoBackup WHEN 'DIFF' THEN 'DIFFERENTIAL,' ELSE '' END +
+        ' FORMAT, INIT, COMPRESSION, CHECKSUM, STATS=10,' +
+        ' NAME = ''' + @Nombre + ''',' +
+        ' DESCRIPTION = ''Backup automatico UPLA | Dia: ' + @DiaSem + ' | ' +
+        ISNULL(@Comentario,'Sin comentario') + '''';
+
+    EXEC sp_executesql @SQL;
+
+    -- Registrar en log
+    IF OBJECT_ID('dbo.LogBackup') IS NOT NULL
+        INSERT INTO dbo.LogBackup (TipoBackup, NombreArchivo, FechaEjecucion, Estado)
+        VALUES (@TipoBackup, @Archivo, GETDATE(), 'EXITOSO');
+
+    PRINT 'Backup completado exitosamente.';
+    PRINT 'Archivo: ' + @Archivo;
+END;
+GO
+
+-- Llamadas de ejemplo
+EXEC dbo.SP_BackupTimestamp 'GradosTitulos', 'C:\\Backups\\', 'FULL', 'Backup manual pre-deploy';
+EXEC dbo.SP_BackupTimestamp 'GradosTitulos', 'C:\\Backups\\', 'DIFF', 'Diferencial nocturno';
+EXEC dbo.SP_BackupTimestamp 'GradosTitulos', 'C:\\Backups\\', 'LOG',  'Log 30min automatico';`,
+      justificacion: 'FORMAT(GETDATE(),"yyyyMMdd_HHmmss") genera timestamps ISO 8601 que se ordenan correctamente de manera alfanumérica, facilitando la identificación del backup más reciente con un simple listado de directorio. El parámetro @Comentario permite agregar contexto (ej: "pre-deploy", "antes de migración") para identificar backups especiales en el historial.',
+      practicas: ['El formato yyyyMMdd_HHmmss garantiza orden cronológico en listados de archivos.', 'Incluir el día de la semana en el nombre ayuda a identificar backups semanales.', 'El parámetro @Comentario es valioso para backups manuales antes de cambios importantes.', 'Registrar en LogBackup desde el SP evita omisiones.', 'Usar el mismo SP desde el Agente SQL y desde llamadas manuales.'],
+      tabla: {
+        headers: ['Llamada', 'Archivo generado', 'Comentario'],
+        rows: [
+          ['SP_BackupTimestamp ... FULL', 'GradosTitulos_FULL_20260627_120000.bak', 'pre-deploy'],
+          ['SP_BackupTimestamp ... DIFF', 'GradosTitulos_DIFF_20260627_220000.bak', 'Diferencial nocturno'],
+          ['SP_BackupTimestamp ... LOG', 'GradosTitulos_LOG_20260627_143000.trn', 'Log 30min automatico']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Plataforma de Restauración Automatizada',
+      enunciado: 'Construya un procedimiento que permita restaurar automáticamente GradosTitulos desde cualquier archivo BAK seleccionado.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Restauración automatizada desde BAK seleccionado
+-- ============================================================
+
+USE master;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_RestoreAutomatico
+    @ArchivoBAK      NVARCHAR(300),
+    @NombreDestino   SYSNAME = 'GradosTitulos',
+    @RutaMDF         NVARCHAR(300) = 'C:\\SQL\\Data\\',
+    @RutaLDF         NVARCHAR(300) = 'C:\\SQL\\Log\\',
+    @AplicarLogs     BIT = 0,
+    @ListaLogs       NVARCHAR(MAX) = NULL  -- rutas separadas por |
+AS
+BEGIN
+    SET NOCOUNT ON;
+    BEGIN TRY
+        -- 1. Verificar que el archivo BAK existe y es válido
+        DECLARE @Verify NVARCHAR(MAX) = 'RESTORE VERIFYONLY FROM DISK=''' + @ArchivoBAK + ''' WITH CHECKSUM';
+        EXEC sp_executesql @Verify;
+        PRINT '✓ Archivo BAK verificado: ' + @ArchivoBAK;
+
+        -- 2. Obtener nombre lógico del archivo de datos
+        DECLARE @NomLogico TABLE (
+            LogicalName NVARCHAR(128), PhysicalName NVARCHAR(260),
+            [Type] CHAR(1), FileGroupName NVARCHAR(128), Size BIGINT,
+            MaxSize BIGINT, FileId INT, CreateLSN NUMERIC(25,0),
+            DropLSN NUMERIC(25,0), UniqueId UNIQUEIDENTIFIER, ReadOnlyLSN NUMERIC(25,0),
+            ReadWriteLSN NUMERIC(25,0), BackupSizeInBytes BIGINT,
+            SourceBlockSize INT, FileGroupId INT, LogGroupGUID UNIQUEIDENTIFIER,
+            DifferentialBaseLSN NUMERIC(25,0), DifferentialBaseGUID UNIQUEIDENTIFIER,
+            IsReadOnly INT, IsPresent INT, TDEThumbprint VARBINARY(32),
+            SnapshotUrl NVARCHAR(360)
+        );
+        INSERT INTO @NomLogico
+        EXEC('RESTORE FILELISTONLY FROM DISK=''' + @ArchivoBAK + '''');
+
+        DECLARE @NomData NVARCHAR(128) = (SELECT TOP 1 LogicalName FROM @NomLogico WHERE [Type]='D');
+        DECLARE @NomLog  NVARCHAR(128) = (SELECT TOP 1 LogicalName FROM @NomLogico WHERE [Type]='L');
+
+        -- 3. Restaurar Full
+        DECLARE @SQL NVARCHAR(MAX) =
+            'RESTORE DATABASE ' + QUOTENAME(@NombreDestino) +
+            ' FROM DISK=''' + @ArchivoBAK + '''' +
+            ' WITH MOVE ''' + @NomData + ''' TO ''' + @RutaMDF + @NombreDestino + '.mdf'',' +
+            ' MOVE ''' + @NomLog  + ''' TO ''' + @RutaLDF + @NombreDestino + '_log.ldf'',' +
+            CASE @AplicarLogs WHEN 1 THEN 'NORECOVERY' ELSE 'RECOVERY' END +
+            ', REPLACE, STATS=10';
+
+        EXEC sp_executesql @SQL;
+        PRINT '✓ Base restaurada: ' + @NombreDestino;
+
+        -- 4. Aplicar logs adicionales si se indicaron
+        IF @AplicarLogs = 1 AND @ListaLogs IS NOT NULL
+        BEGIN
+            -- Parsear lista de logs separados por |
+            DECLARE @Log NVARCHAR(300);
+            DECLARE @Pos INT = 1;
+            DECLARE @Fin INT;
+            WHILE @Pos <= LEN(@ListaLogs)
+            BEGIN
+                SET @Fin = CHARINDEX('|', @ListaLogs, @Pos);
+                IF @Fin = 0 SET @Fin = LEN(@ListaLogs) + 1;
+                SET @Log = SUBSTRING(@ListaLogs, @Pos, @Fin - @Pos);
+                IF LEN(TRIM(@Log)) > 0
+                BEGIN
+                    EXEC('RESTORE LOG ' + QUOTENAME(@NombreDestino) +
+                         ' FROM DISK=''' + @Log + ''' WITH NORECOVERY');
+                    PRINT '  Log aplicado: ' + @Log;
+                END;
+                SET @Pos = @Fin + 1;
+            END;
+            -- Poner online
+            EXEC('RESTORE DATABASE ' + QUOTENAME(@NombreDestino) + ' WITH RECOVERY');
+            PRINT '✓ BD puesta en línea con logs aplicados';
+        END;
+
+        -- 5. Verificar
+        SELECT name, state_desc FROM sys.databases WHERE name = @NombreDestino;
+    END TRY
+    BEGIN CATCH
+        PRINT '✗ Error: ' + ERROR_MESSAGE();
+        THROW;
+    END CATCH;
+END;
+GO
+
+-- Ejemplos de uso
+-- Restore solo Full:
+EXEC dbo.SP_RestoreAutomatico
+    'C:\\Backups\\Full\\GT_FULL_20260622.bak',
+    'GradosTitulos';
+
+-- Restore Full + Logs:
+EXEC dbo.SP_RestoreAutomatico
+    'C:\\Backups\\Full\\GT_FULL_20260622.bak',
+    'GradosTitulos', NULL, NULL, 1,
+    'C:\\Backups\\Log\\GT_LOG_0700.trn|C:\\Backups\\Log\\GT_LOG_0730.trn';`,
+      justificacion: 'El SP extrae automáticamente los nombres lógicos del BAK con RESTORE FILELISTONLY insertando en una variable tabla, eliminando la necesidad de conocerlos de antemano. El parseo de la lista de logs con CHARINDEX permite pasar múltiples archivos como un parámetro de texto. TRY/CATCH garantiza que los errores se comunican claramente sin dejar la BD en estado RESTORING indefinidamente.',
+      practicas: ['Insertar resultado de RESTORE FILELISTONLY en tabla variable para obtener nombres lógicos dinámicamente.', 'Parsear listas con CHARINDEX en lugar de usar cursores para mayor rendimiento.', 'Incluir WITH RECOVERY como último paso si se aplican logs.', 'Probar el SP en ambiente de QA antes de usar en producción.', 'Registrar cada ejecución del SP con los parámetros usados.'],
+      tabla: {
+        headers: ['Parámetro', 'Valor ejemplo', 'Descripción'],
+        rows: [
+          ['@ArchivoBAK', 'C:\\Backups\\Full\\GT_FULL_20260622.bak', 'Archivo fuente'],
+          ['@NombreDestino', 'GradosTitulos', 'Nombre de la BD destino'],
+          ['@AplicarLogs', '1', 'Sí aplica logs adicionales'],
+          ['@ListaLogs', 'log1.trn|log2.trn', 'Lista de logs separada por pipe'],
+          ['Resultado', 'ONLINE', 'BD restaurada exitosamente ✓']
+        ]
+      }
+    }
+  ]
+},
+
+/* TEMA 5 */
+{
+  num: 'Tema 05',
+  titulo: 'Planes de Mantenimiento y Políticas de Retención',
+  badge: 'MAINTENANCE',
+  color: 't4',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Plan de Mantenimiento Semanal',
+      enunciado: 'Creación de un Plan de Mantenimiento Semanal para GradosTitulos.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Plan de mantenimiento semanal completo
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Verificar integridad de la BD (domingos antes del Full)
+DBCC CHECKDB('GradosTitulos')
+WITH NO_INFOMSGS, ALL_ERRORMSGS;
+GO
+
+-- 2. Reorganizar índices fragmentados entre 10% y 30%
+USE GradosTitulos;
+GO
+SELECT
+    OBJECT_NAME(i.object_id) AS Tabla,
+    i.name                   AS Indice,
+    s.avg_fragmentation_in_percent AS Fragmentacion,
+    s.page_count             AS Paginas
+FROM sys.dm_db_index_physical_stats(DB_ID('GradosTitulos'),NULL,NULL,NULL,'LIMITED') s
+JOIN sys.indexes i ON i.object_id=s.object_id AND i.index_id=s.index_id
+WHERE s.avg_fragmentation_in_percent > 5
+  AND s.page_count > 1000
+ORDER BY s.avg_fragmentation_in_percent DESC;
+GO
+
+-- SP: Mantenimiento semanal automatizado
+USE master;
+GO
+CREATE OR ALTER PROCEDURE dbo.SP_MantenimientoSemanal_GT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    PRINT '=== Inicio Mantenimiento Semanal GradosTitulos ===';
+    PRINT FORMAT(GETDATE(),'yyyy-MM-dd HH:mm:ss');
+
+    -- a. CHECKDB
+    DBCC CHECKDB('GradosTitulos') WITH NO_INFOMSGS;
+    PRINT '✓ CHECKDB completado';
+
+    -- b. Reorganizar / Reconstruir índices según fragmentación
+    DECLARE @Sql NVARCHAR(MAX) = '';
+    SELECT @Sql += CASE
+        WHEN s.avg_fragmentation_in_percent >= 30
+        THEN 'ALTER INDEX ' + QUOTENAME(i.name) + ' ON ' +
+             QUOTENAME(sc.name) + '.' + QUOTENAME(OBJECT_NAME(i.object_id)) +
+             ' REBUILD WITH (ONLINE=OFF);' + CHAR(13)
+        WHEN s.avg_fragmentation_in_percent >= 10
+        THEN 'ALTER INDEX ' + QUOTENAME(i.name) + ' ON ' +
+             QUOTENAME(sc.name) + '.' + QUOTENAME(OBJECT_NAME(i.object_id)) +
+             ' REORGANIZE;' + CHAR(13)
+        ELSE ''
+    END
+    FROM sys.dm_db_index_physical_stats(DB_ID('GradosTitulos'),NULL,NULL,NULL,'LIMITED') s
+    JOIN sys.indexes i ON i.object_id=s.object_id AND i.index_id=s.index_id
+    JOIN sys.objects o ON o.object_id=i.object_id
+    JOIN sys.schemas sc ON sc.schema_id=o.schema_id
+    WHERE s.avg_fragmentation_in_percent > 10 AND s.page_count > 1000 AND i.index_id > 0;
+
+    IF LEN(@Sql) > 0 EXEC sp_executesql @Sql;
+    PRINT '✓ Índices mantenidos';
+
+    -- c. Actualizar estadísticas
+    EXEC sp_updatestats;
+    PRINT '✓ Estadísticas actualizadas';
+
+    -- d. Backup Full al final
+    EXEC dbo.SP_BackupUniversal 'GradosTitulos','FULL';
+    PRINT '=== Mantenimiento Semanal Completado ===';
+END;
+GO
+
+EXEC dbo.SP_MantenimientoSemanal_GT;`,
+      justificacion: 'El plan semanal integra CHECKDB, mantenimiento de índices (REORGANIZE para 10-30% de fragmentación, REBUILD para >30%), actualización de estadísticas y backup Full, en ese orden específico. El CHECKDB primero detecta problemas antes de hacer el backup (no tiene sentido respaldar una BD corrupta). sp_updatestats actualiza las estadísticas del optimizador de consultas.',
+      practicas: ['Ejecutar el plan semanal los domingos en horario de menor uso (23:00).', 'REBUILD vs REORGANIZE: REBUILD crea índice desde cero (más costoso pero mejor resultado); REORGANIZE desfragmenta in-place.', 'Solo mantener índices con más de 1000 páginas (los pequeños no justifican el costo).', 'Revisar el log del Agente SQL después de cada ejecución.', 'Documentar la duración del mantenimiento para planificar la ventana de mantenimiento.'],
+      tabla: {
+        headers: ['Tarea', 'Condición/Criterio', 'Resultado esperado', 'Duración aprox.'],
+        rows: [
+          ['DBCC CHECKDB', 'Semanal', '0 errores', '15-30 min'],
+          ['REORGANIZE', 'Fragmentación 10-30%', 'Índices desfragmentados', '5-15 min'],
+          ['REBUILD', 'Fragmentación > 30%', 'Índices reconstruidos', '10-25 min'],
+          ['sp_updatestats', 'Semanal', 'Estadísticas actualizadas', '2-5 min'],
+          ['Backup FULL', 'Dom 23:30', 'BAK generado y verificado', '20-30 min']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Política de Retención de 90 Días',
+      enunciado: 'Implemente una política institucional para conservar respaldos durante 90 días.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Política de retención 90 días
+-- ============================================================
+
+USE master;
+GO
+
+-- Tabla de política de retención
+IF OBJECT_ID('dbo.PoliticaRetencion') IS NULL
+CREATE TABLE dbo.PoliticaRetencion (
+    IdPolitica      INT           IDENTITY(1,1) PRIMARY KEY,
+    BaseDatos       SYSNAME       NOT NULL,
+    TipoBackup      CHAR(4)       NOT NULL,
+    DiasRetencion   INT           NOT NULL,
+    RutaBackup      NVARCHAR(200) NOT NULL,
+    FechaVigencia   DATE          NOT NULL DEFAULT CAST(GETDATE() AS DATE),
+    AprobadoPor     NVARCHAR(100) NULL,
+    CONSTRAINT UQ_Politica UNIQUE (BaseDatos, TipoBackup)
+);
+GO
+
+INSERT INTO dbo.PoliticaRetencion (BaseDatos, TipoBackup, DiasRetencion, RutaBackup, AprobadoPor)
+VALUES
+    ('GradosTitulos','FULL', 90, 'C:\\Backups\\GradosTitulos\\Full\\', 'Dir. TI UPLA'),
+    ('GradosTitulos','DIFF', 30, 'C:\\Backups\\GradosTitulos\\Diff\\', 'Dir. TI UPLA'),
+    ('GradosTitulos','LOG',  14, 'C:\\Backups\\GradosTitulos\\Log\\',  'Dir. TI UPLA');
+GO
+
+-- SP: Aplicar política de retención (limpieza de catálogo msdb)
+CREATE OR ALTER PROCEDURE dbo.SP_AplicarRetencion
+    @BaseDatos SYSNAME = 'GradosTitulos'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @TipoBackup CHAR(4), @Dias INT, @FechaCorte DATETIME2;
+    DECLARE @Eliminados INT = 0;
+
+    DECLARE cur CURSOR FOR
+        SELECT TipoBackup, DiasRetencion FROM dbo.PoliticaRetencion
+        WHERE BaseDatos = @BaseDatos;
+
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @TipoBackup, @Dias;
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @FechaCorte = DATEADD(DAY, -@Dias, GETDATE());
+        -- Contar backups a eliminar
+        SELECT @Eliminados = COUNT(*)
+        FROM msdb.dbo.backupset
+        WHERE database_name=@BaseDatos AND type=LEFT(@TipoBackup,1)
+          AND backup_start_date < @FechaCorte;
+
+        PRINT 'Eliminando ' + CAST(@Eliminados AS VARCHAR) + ' registros de ' +
+              @TipoBackup + ' anteriores a ' + CONVERT(VARCHAR,@FechaCorte,120);
+
+        -- Limpiar catálogo msdb
+        EXEC msdb.dbo.sp_delete_backuphistory @oldest_date = @FechaCorte;
+
+        FETCH NEXT FROM cur INTO @TipoBackup, @Dias;
+    END;
+    CLOSE cur; DEALLOCATE cur;
+    PRINT 'Política de retención aplicada para: ' + @BaseDatos;
+END;
+GO
+
+EXEC dbo.SP_AplicarRetencion 'GradosTitulos';
+
+-- Verificar: backups que se conservan por la política de 90 días
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    COUNT(*) AS TotalConservados,
+    MIN(bs.backup_start_date) AS MasAntiguo,
+    MAX(bs.backup_start_date) AS MasReciente
+FROM msdb.dbo.backupset bs
+WHERE bs.database_name = 'GradosTitulos'
+GROUP BY bs.type ORDER BY bs.type;`,
+      justificacion: 'La tabla PoliticaRetencion formaliza las reglas en datos, no en código, facilitando cambios sin modificar scripts. Retener Full por 90 días permite auditorías históricas y recuperación forense de meses atrás. La diferencia entre Diff (30 días) y Log (14 días) refleja su frecuencia: los logs son muy numerosos y ocupan más espacio proporcional.',
+      practicas: ['Documentar la política formalmente y obtener aprobación del responsable de TI.', 'No eliminar físicamente archivos del disco automáticamente sin validación previa.', 'Conservar al menos 1 backup Full sin importar la política (si solo hay 1, no se elimina).', 'Revisar la política anualmente o cuando cambien los requisitos de negocio.', 'Para compliance (ISO 27001, SOC2), considerar retención de 12 meses.'],
+      tabla: {
+        headers: ['Tipo', 'Retención', 'Backups conservados (90 días)', 'MasAntiguo'],
+        rows: [
+          ['FULL', '90 días', '13 (dominicales)', '2026-03-29'],
+          ['DIFF', '30 días', '30', '2026-05-28'],
+          ['LOG', '14 días', '672 (cada 30 min)', '2026-06-13']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Plan de Mantenimiento Integral',
+      enunciado: 'Diseñe un plan que incluya: backups, reorganización de índices, actualización de estadísticas y verificación de integridad.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Plan de mantenimiento integral completo
+-- ============================================================
+
+USE master;
+GO
+
+-- Tabla de log de mantenimiento
+IF OBJECT_ID('dbo.LogMantenimiento') IS NULL
+CREATE TABLE dbo.LogMantenimiento (
+    IdLog        INT        IDENTITY(1,1) PRIMARY KEY,
+    FechaInicio  DATETIME2  NOT NULL,
+    FechaFin     DATETIME2  NULL,
+    Tarea        VARCHAR(50) NOT NULL,
+    Estado       VARCHAR(20) NOT NULL,
+    Detalle      NVARCHAR(500) NULL,
+    DuracionSeg  AS DATEDIFF(SECOND,FechaInicio,FechaFin)
+);
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_MantenimientoIntegral_GT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Inicio DATETIME2 = SYSDATETIME();
+    DECLARE @IdLog  INT;
+
+    PRINT '====================================================';
+    PRINT ' MANTENIMIENTO INTEGRAL — GradosTitulos';
+    PRINT ' Inicio: ' + FORMAT(SYSDATETIME(),'yyyy-MM-dd HH:mm:ss');
+    PRINT '====================================================';
+
+    -- TAREA 1: Verificación de integridad
+    INSERT INTO dbo.LogMantenimiento (FechaInicio,Tarea,Estado)
+    VALUES (SYSDATETIME(),'CHECKDB','EN_PROCESO');
+    SET @IdLog = SCOPE_IDENTITY();
+    BEGIN TRY
+        DBCC CHECKDB('GradosTitulos') WITH NO_INFOMSGS;
+        UPDATE dbo.LogMantenimiento SET Estado='OK',FechaFin=SYSDATETIME() WHERE IdLog=@IdLog;
+        PRINT '✓ TAREA 1: CHECKDB completado sin errores';
+    END TRY
+    BEGIN CATCH
+        UPDATE dbo.LogMantenimiento SET Estado='ERROR',FechaFin=SYSDATETIME(),
+               Detalle=ERROR_MESSAGE() WHERE IdLog=@IdLog;
+        PRINT '✗ TAREA 1: CHECKDB con errores - ' + ERROR_MESSAGE();
+    END CATCH;
+
+    -- TAREA 2: Reorganización de índices
+    INSERT INTO dbo.LogMantenimiento (FechaInicio,Tarea,Estado)
+    VALUES (SYSDATETIME(),'INDICES','EN_PROCESO');
+    SET @IdLog = SCOPE_IDENTITY();
+    BEGIN TRY
+        USE GradosTitulos;
+        EXEC sp_MSforeachtable 'ALTER INDEX ALL ON ? REORGANIZE';
+        UPDATE dbo.LogMantenimiento SET Estado='OK',FechaFin=SYSDATETIME() WHERE IdLog=@IdLog;
+        PRINT '✓ TAREA 2: Índices reorganizados';
+    END TRY
+    BEGIN CATCH
+        UPDATE dbo.LogMantenimiento SET Estado='ERROR',FechaFin=SYSDATETIME(),
+               Detalle=ERROR_MESSAGE() WHERE IdLog=@IdLog;
+    END CATCH;
+
+    -- TAREA 3: Actualizar estadísticas
+    INSERT INTO dbo.LogMantenimiento (FechaInicio,Tarea,Estado)
+    VALUES (SYSDATETIME(),'ESTADISTICAS','EN_PROCESO');
+    SET @IdLog = SCOPE_IDENTITY();
+    BEGIN TRY
+        EXEC sp_updatestats;
+        UPDATE dbo.LogMantenimiento SET Estado='OK',FechaFin=SYSDATETIME() WHERE IdLog=@IdLog;
+        PRINT '✓ TAREA 3: Estadísticas actualizadas';
+    END TRY
+    BEGIN CATCH
+        UPDATE dbo.LogMantenimiento SET Estado='ERROR',FechaFin=SYSDATETIME(),
+               Detalle=ERROR_MESSAGE() WHERE IdLog=@IdLog;
+    END CATCH;
+
+    -- TAREA 4: Backup Full
+    INSERT INTO dbo.LogMantenimiento (FechaInicio,Tarea,Estado)
+    VALUES (SYSDATETIME(),'BACKUP_FULL','EN_PROCESO');
+    SET @IdLog = SCOPE_IDENTITY();
+    BEGIN TRY
+        EXEC master.dbo.SP_BackupUniversal 'GradosTitulos','FULL';
+        UPDATE dbo.LogMantenimiento SET Estado='OK',FechaFin=SYSDATETIME() WHERE IdLog=@IdLog;
+        PRINT '✓ TAREA 4: Backup Full generado';
+    END TRY
+    BEGIN CATCH
+        UPDATE dbo.LogMantenimiento SET Estado='ERROR',FechaFin=SYSDATETIME(),
+               Detalle=ERROR_MESSAGE() WHERE IdLog=@IdLog;
+    END CATCH;
+
+    -- Resumen
+    SELECT Tarea, Estado, DuracionSeg FROM dbo.LogMantenimiento
+    WHERE FechaInicio >= @Inicio ORDER BY IdLog;
+
+    PRINT '====================================================';
+    PRINT ' FIN Mantenimiento. Duración total: ' +
+          CAST(DATEDIFF(MINUTE,@Inicio,SYSDATETIME()) AS VARCHAR) + ' min';
+END;
+GO
+
+EXEC dbo.SP_MantenimientoIntegral_GT;`,
+      justificacion: 'El SP integral registra cada tarea en LogMantenimiento con timestamps, permitiendo calcular la duración de cada paso. TRY/CATCH por tarea asegura que un error en CHECKDB no cancele las tareas de índices o backup. La columna calculada DuracionSeg en la tabla de log permite identificar qué tarea es el cuello de botella del mantenimiento.',
+      practicas: ['Registrar cada tarea individualmente para poder diagnosticar fallas específicas.', 'Ejecutar el SP integral una vez por semana (domingos noche).', 'Monitorear la duración total: si supera la ventana de mantenimiento, optimizar.', 'Configurar alertas si alguna tarea queda en estado ERROR.', 'Revisar el LogMantenimiento mensualmente para detectar tendencias.'],
+      tabla: {
+        headers: ['Tarea', 'Estado', 'DuracionSeg'],
+        rows: [
+          ['CHECKDB', 'OK', '1,245'],
+          ['INDICES', 'OK', '380'],
+          ['ESTADISTICAS', 'OK', '45'],
+          ['BACKUP_FULL', 'OK', '1,520'],
+          ['TOTAL', '4/4 OK', '3,190 (~53 min)']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Gestión Corporativa de Retención (5 años)',
+      enunciado: 'Diseñe una política institucional de respaldo y retención para cinco años de operación.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Política de retención corporativa 5 años
+-- ============================================================
+
+USE master;
+GO
+
+-- Política escalonada por niveles
+IF OBJECT_ID('dbo.PoliticaRetencionCorp') IS NULL
+CREATE TABLE dbo.PoliticaRetencionCorp (
+    Nivel           VARCHAR(20)  NOT NULL PRIMARY KEY,
+    TipoBackup      CHAR(4)      NOT NULL,
+    Frecuencia      VARCHAR(30)  NOT NULL,
+    RetencionDias   INT          NOT NULL,
+    Destino         VARCHAR(50)  NOT NULL,  -- LOCAL | NAS | CLOUD
+    Descripcion     NVARCHAR(200) NULL
+);
+GO
+
+INSERT INTO dbo.PoliticaRetencionCorp VALUES
+('DIARIO_LOG',  'LOG',  'Cada 30 minutos',  14,   'LOCAL',  'Log horario en disco local'),
+('DIARIO_DIFF', 'DIFF', 'Diario (22:00)',    30,   'NAS',    'Diferencial diario en NAS institucional'),
+('SEMANAL',     'FULL', 'Semanal (dom)',     90,   'NAS',    'Full semanal en NAS institucional'),
+('MENSUAL',     'FULL', 'Primer dom del mes',365,  'CLOUD',  'Full mensual en Azure Blob Storage'),
+('ANUAL',       'FULL', '31 de diciembre',  1825, 'CLOUD',  'Full anual - Archivo histórico 5 años');
+GO
+
+-- Ver política completa
+SELECT Nivel, TipoBackup, Frecuencia,
+       CAST(RetencionDias/365.0 AS DECIMAL(4,2)) AS RetencionAnios,
+       Destino, Descripcion
+FROM dbo.PoliticaRetencionCorp
+ORDER BY RetencionDias;
+GO
+
+-- SP: Backup de archivo mensual hacia Cloud (Azure Blob)
+CREATE OR ALTER PROCEDURE dbo.SP_BackupMensual_Azure
+AS
+BEGIN
+    -- Backup a Azure Blob Storage (requiere credencial configurada)
+    DECLARE @Container NVARCHAR(200) =
+        'https://storageupla.blob.core.windows.net/backups-gt/';
+    DECLARE @Archivo   NVARCHAR(300) =
+        @Container + 'GT_MENSUAL_' + FORMAT(GETDATE(),'yyyyMM') + '.bak';
+
+    BACKUP DATABASE GradosTitulos
+    TO URL = @Archivo
+    WITH CREDENTIAL = 'AzureBlobCredential',
+         FORMAT, INIT, COMPRESSION, CHECKSUM,
+         NAME = 'GradosTitulos Mensual ' + FORMAT(GETDATE(),'yyyy-MM'),
+         STATS = 10;
+
+    PRINT 'Backup mensual en Azure: ' + @Archivo;
+END;
+GO
+
+-- Consulta: calcular espacio total de almacenamiento a 5 años
+SELECT
+    pr.Nivel,
+    pr.Frecuencia,
+    pr.RetencionDias,
+    pr.Destino,
+    -- Estimado de número de backups en retención
+    CASE pr.Nivel
+        WHEN 'DIARIO_LOG'  THEN pr.RetencionDias * 48  -- 48 logs por día
+        WHEN 'DIARIO_DIFF' THEN pr.RetencionDias
+        WHEN 'SEMANAL'     THEN pr.RetencionDias / 7
+        WHEN 'MENSUAL'     THEN pr.RetencionDias / 30
+        WHEN 'ANUAL'       THEN 5
+    END                             AS CantidadEstimada,
+    CAST(
+        CASE pr.Nivel
+            WHEN 'DIARIO_LOG'  THEN pr.RetencionDias * 48 * 1.1
+            WHEN 'DIARIO_DIFF' THEN pr.RetencionDias * 8.3
+            WHEN 'SEMANAL'     THEN (pr.RetencionDias / 7) * 45.2
+            WHEN 'MENSUAL'     THEN (pr.RetencionDias / 30) * 45.2
+            WHEN 'ANUAL'       THEN 5 * 45.2
+        END / 1024.0 AS DECIMAL(10,2)
+    )                               AS EstimadoGB
+FROM dbo.PoliticaRetencionCorp pr
+ORDER BY pr.RetencionDias;`,
+      justificacion: 'La política escalonada (diario→semanal→mensual→anual) equilibra el costo de almacenamiento con los requisitos de recuperación: los backups frecuentes se guardan localmente (barato, rápido), los mensuales y anuales en la nube (Azure Blob Storage) con costo por GB pero alta durabilidad. El backup TO URL requiere una credencial de SQL Server con acceso al Storage Account de Azure.',
+      practicas: ['Documentar la política en el manual de TI y obtener firma del Director.', 'Calcular el costo de Azure Blob Storage antes de implementar.', 'Usar Azure Geo-Redundant Storage (GRS) para el archivo histórico de 5 años.', 'Probar la restauración de un backup anual al menos una vez por año.', 'Incluir la retención en el contrato con el proveedor de infraestructura.'],
+      tabla: {
+        headers: ['Nivel', 'Frecuencia', 'Retención', 'Destino', 'Est. GB'],
+        rows: [
+          ['DIARIO_LOG', 'Cada 30 min', '14 días', 'LOCAL', '0.72'],
+          ['DIARIO_DIFF', 'Diario', '30 días', 'NAS', '0.24'],
+          ['SEMANAL', 'Semanal', '90 días', 'NAS', '0.58'],
+          ['MENSUAL', 'Mensual', '1 año', 'CLOUD', '0.53'],
+          ['ANUAL', '31 Dic', '5 años', 'CLOUD (GRS)', '0.22']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Plan Corporativo de Mantenimiento Integral',
+      enunciado: 'Diseñe un plan de mantenimiento que incluya: respaldo completo, reorganización de índices, actualización de estadísticas y validación de integridad.',
+      sql: `-- ============================================================
+-- PROYECTO 5: Plan corporativo de mantenimiento
+-- Ejecuta: backup + índices + estadísticas + integridad
+-- ============================================================
+
+USE master;
+GO
+
+CREATE OR ALTER PROCEDURE dbo.SP_PlanCorporativo_GT
+    @Modo VARCHAR(10) = 'COMPLETO'  -- COMPLETO | RAPIDO | SOLO_BACKUP
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @t0 DATETIME2 = SYSDATETIME();
+    PRINT '=== Plan Corporativo GradosTitulos | Modo: ' + @Modo + ' ===';
+
+    -- ── FASE 1: Integridad ──────────────────────────────────
+    IF @Modo IN ('COMPLETO')
+    BEGIN
+        PRINT '>> Fase 1: Verificación de integridad...';
+        DBCC CHECKDB('GradosTitulos')
+             WITH NO_INFOMSGS, ALL_ERRORMSGS, DATA_PURITY;
+        PRINT '   ✓ CHECKDB sin errores';
+    END;
+
+    -- ── FASE 2: Índices (diferenciado por fragmentación) ────
+    IF @Modo IN ('COMPLETO','RAPIDO')
+    BEGIN
+        PRINT '>> Fase 2: Mantenimiento de índices...';
+        DECLARE @Idx NVARCHAR(MAX) = '';
+        SELECT @Idx += CASE
+            WHEN s.avg_fragmentation_in_percent >= 30
+            THEN 'ALTER INDEX ' + QUOTENAME(i.name) + ' ON ' +
+                 QUOTENAME(sc.name)+'.'+ QUOTENAME(obj.name) +
+                 ' REBUILD WITH(ONLINE=OFF,FILLFACTOR=85);'+CHAR(13)
+            ELSE 'ALTER INDEX ' + QUOTENAME(i.name) + ' ON ' +
+                 QUOTENAME(sc.name)+'.'+QUOTENAME(obj.name)+
+                 ' REORGANIZE;'+CHAR(13)
+            END
+        FROM sys.dm_db_index_physical_stats(DB_ID('GradosTitulos'),NULL,NULL,NULL,'SAMPLED') s
+        JOIN sys.indexes i ON i.object_id=s.object_id AND i.index_id=s.index_id AND i.index_id>0
+        JOIN sys.objects obj ON obj.object_id=i.object_id
+        JOIN sys.schemas sc  ON sc.schema_id=obj.schema_id
+        WHERE s.avg_fragmentation_in_percent > 10 AND s.page_count > 500;
+
+        IF LEN(@Idx) > 0 EXEC sp_executesql @Idx;
+        PRINT '   ✓ Índices mantenidos';
+    END;
+
+    -- ── FASE 3: Estadísticas ────────────────────────────────
+    IF @Modo IN ('COMPLETO','RAPIDO')
+    BEGIN
+        PRINT '>> Fase 3: Actualización de estadísticas...';
+        EXEC sp_updatestats;
+        PRINT '   ✓ Estadísticas actualizadas';
+    END;
+
+    -- ── FASE 4: Backup ─────────────────────────────────────
+    PRINT '>> Fase 4: Backup Full...';
+    EXEC dbo.SP_BackupUniversal 'GradosTitulos','FULL';
+    PRINT '   ✓ Backup Full generado';
+
+    PRINT '=== Plan completado en ' +
+          CAST(DATEDIFF(MINUTE,@t0,SYSDATETIME()) AS VARCHAR) + ' min ===';
+END;
+GO
+
+-- Modos de ejecución
+EXEC dbo.SP_PlanCorporativo_GT 'COMPLETO';   -- Domingo noche (todo)
+-- EXEC dbo.SP_PlanCorporativo_GT 'RAPIDO';  -- Miércoles (sin CHECKDB)
+-- EXEC dbo.SP_PlanCorporativo_GT 'SOLO_BACKUP'; -- Emergencia`,
+      justificacion: 'Los tres modos (COMPLETO/RAPIDO/SOLO_BACKUP) adaptan el plan a distintas situaciones: el modo COMPLETO es para la ventana semanal larga; RAPIDO omite CHECKDB para ejecuciones a mediados de semana; SOLO_BACKUP es para cuando solo se necesita el backup sin esperar el mantenimiento completo. FILLFACTOR=85 en REBUILD deja 15% de espacio libre en cada página para futuras inserciones sin fragmentación inmediata.',
+      practicas: ['Configurar FILLFACTOR entre 80-90% según la tasa de inserción de la tabla.', 'Usar ONLINE=ON en REBUILD si el horario no permite interrupciones (requiere Enterprise Edition).', 'El modo RAPIDO puede ejecutarse los miércoles sin impactar la ventana del domingo.', 'Documentar el tiempo de ejecución de cada modo en el log de mantenimiento.', 'Verificar que no haya procesos de larga duración antes de iniciar el plan.'],
+      tabla: {
+        headers: ['Modo', 'Tareas incluidas', 'Duración aprox.', 'Cuándo usar'],
+        rows: [
+          ['COMPLETO', 'CHECKDB + Índices + Stats + Backup', '~55 min', 'Domingo 23:00'],
+          ['RAPIDO', 'Índices + Stats + Backup', '~30 min', 'Miércoles 22:00'],
+          ['SOLO_BACKUP', 'Solo Backup Full', '~20 min', 'Emergencia / pre-cambio']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Política de Retención Automatizada (180 días)',
+      enunciado: 'Diseñe una política que elimine automáticamente respaldos con más de 180 días de antigüedad.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Limpieza automatizada de backups > 180 días
+-- ============================================================
+
+USE master;
+GO
+
+-- SP: Limpieza automatizada con log de acciones
+CREATE OR ALTER PROCEDURE dbo.SP_LimpiezaAutomatica_Backups
+    @DiasLimite INT = 180,
+    @ModoPrueba BIT = 1  -- 1=Solo mostrar lo que eliminaría; 0=Eliminar realmente
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @FechaCorte DATETIME2 = DATEADD(DAY,-@DiasLimite,GETDATE());
+
+    PRINT '=== Limpieza Automática de Backups ===';
+    PRINT 'Fecha de corte: ' + FORMAT(@FechaCorte,'yyyy-MM-dd');
+    PRINT 'Modo prueba: ' + CASE @ModoPrueba WHEN 1 THEN 'SÍ (solo reporte)' ELSE 'NO (ejecutará eliminación)' END;
+
+    -- Mostrar lo que se va a eliminar
+    SELECT
+        CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+        COUNT(*)  AS CantidadRegistros,
+        CAST(SUM(bs.compressed_backup_size)/1073741824.0 AS DECIMAL(8,2)) AS TotalGB,
+        MIN(bs.backup_start_date) AS MasAntiguo,
+        MAX(bs.backup_start_date) AS MasReciente
+    FROM msdb.dbo.backupset bs
+    WHERE bs.database_name = 'GradosTitulos'
+      AND bs.backup_start_date < @FechaCorte
+    GROUP BY bs.type;
+
+    IF @ModoPrueba = 0
+    BEGIN
+        -- Eliminar historial del catálogo msdb
+        EXEC msdb.dbo.sp_delete_backuphistory
+             @oldest_date = @FechaCorte;
+
+        PRINT '✓ Historial eliminado del catálogo msdb';
+
+        -- Registrar la limpieza
+        IF OBJECT_ID('dbo.LogLimpiezaBackups') IS NULL
+        CREATE TABLE dbo.LogLimpiezaBackups (
+            IdLog       INT       IDENTITY(1,1) PRIMARY KEY,
+            FechaEjec   DATETIME2 NOT NULL DEFAULT SYSDATETIME(),
+            FechaCorte  DATETIME2 NOT NULL,
+            DiasLimite  INT       NOT NULL,
+            EjecutadoPor NVARCHAR(100) DEFAULT SUSER_NAME()
+        );
+
+        INSERT INTO dbo.LogLimpiezaBackups (FechaCorte, DiasLimite)
+        VALUES (@FechaCorte, @DiasLimite);
+
+        PRINT '✓ Limpieza registrada en LogLimpiezaBackups';
+    END;
+END;
+GO
+
+-- Ejecutar en modo prueba primero
+EXEC dbo.SP_LimpiezaAutomatica_Backups @DiasLimite=180, @ModoPrueba=1;
+
+-- Luego ejecutar la limpieza real
+-- EXEC dbo.SP_LimpiezaAutomatica_Backups @DiasLimite=180, @ModoPrueba=0;
+
+-- Verificar espacio liberado en msdb
+SELECT
+    CAST(SUM(reserved_page_count)*8.0/1024/1024 AS DECIMAL(8,2)) AS TamañoMSDB_GB
+FROM sys.dm_db_partition_stats
+WHERE OBJECT_NAME(object_id, DB_ID('msdb')) IN
+      ('backupset','backupmediafamily','backupmediaset');`,
+      justificacion: 'El parámetro @ModoPrueba permite ejecutar el SP en modo dry-run para revisar qué se eliminaría antes de hacerlo efectivamente, reduciendo el riesgo de eliminación accidental. SUSER_NAME() registra automáticamente quién ejecutó la limpieza. La consulta final muestra el tamaño de las tablas de backup en msdb para verificar que la limpieza redujo el tamaño de la base del sistema.',
+      practicas: ['Siempre ejecutar en modo prueba (@ModoPrueba=1) antes de la limpieza real.', 'Programar la limpieza mensualmente (primer domingo de cada mes).', 'Verificar que no se elimine el único backup disponible para restauración.', 'Combinar con un script PowerShell para eliminar los archivos físicos del disco.', 'Revisar el LogLimpiezaBackups trimestralmente para auditoría.'],
+      tabla: {
+        headers: ['Tipo', 'Registros a eliminar', 'TotalGB', 'MasAntiguo'],
+        rows: [
+          ['FULL', '8 (> 180 días)', '0.36', '2025-12-28'],
+          ['DIFF', '120', '0.99', '2025-12-29'],
+          ['LOG', '8,640', '9.50', '2025-12-29'],
+          ['TOTAL', '8,768', '10.85 GB liberados', '—']
+        ]
+      }
+    }
+  ]
+},
+
+/* TEMA 6 */
+{
+  num: 'Tema 06',
+  titulo: 'Restauración Punto en el Tiempo',
+  badge: 'POINT-IN-TIME',
+  color: 't5',
+  proyectos: [
+    {
+      titulo: 'Proyecto 1 — Recuperación Antes de Eliminación Accidental',
+      enunciado: 'Un operador eliminó registros de expedientes a las 10:15 a.m. Restaure la base exactamente a las 10:14 a.m.',
+      sql: `-- ============================================================
+-- PROYECTO 1: Restauración punto en tiempo 10:14 a.m.
+-- Incidente: DELETE accidental a las 10:15
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Identificar la cadena de backups hasta las 10:14
+SELECT
+    bs.backup_set_id,
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date,
+    bs.backup_finish_date,
+    bs.first_lsn,
+    bs.last_lsn,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date <= '2026-06-27 10:15:00'
+ORDER BY bs.first_lsn;
+GO
+
+-- 2. Restaurar Full (domingo anterior)
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH NORECOVERY, REPLACE, STATS = 10;
+GO
+
+-- 3. Restaurar Diff (del viernes)
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Diff\\GT_DIFF_20260626.bak'
+WITH NORECOVERY, STATS = 5;
+GO
+
+-- 4. Aplicar logs hasta las 10:14 (STOPAT es el punto clave)
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0700.trn'
+WITH NORECOVERY;
+GO
+
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0730.trn'
+WITH NORECOVERY;
+GO
+
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1000.trn'
+WITH NORECOVERY;
+GO
+
+-- PUNTO CLAVE: STOPAT define el momento exacto de recuperación
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1030.trn'
+WITH RECOVERY,
+     STOPAT = '2026-06-27 10:14:00';  -- 1 minuto antes del incidente
+GO
+
+-- 5. Verificar recuperación
+USE GradosTitulos;
+SELECT COUNT(*) AS ExpedientesRecuperados,
+       MAX(FechaInicio) AS UltimaFechaExpediente
+FROM Tramite.Tramite;`,
+      justificacion: 'STOPAT en T-SQL permite especificar el momento exacto de recuperación dentro del rango cubierto por el log backup. SQL Server aplica las transacciones del log hasta ese punto y descarta las posteriores. Para que esto funcione: 1) la BD debe estar en modelo FULL, 2) debe existir un backup de log que cubra el momento del STOPAT, 3) los backups anteriores deben haberse aplicado con NORECOVERY.',
+      practicas: ['El modelo de recuperación FULL es prerequisito obligatorio para point-in-time.', 'La precisión del STOPAT depende de la frecuencia del log backup (cada 30 min = máx 30 min de granularidad).', 'Anotar la hora exacta del incidente (con segundos) para el STOPAT.', 'Si el log backup es de 07:00 a 10:30, el STOPAT puede ser cualquier momento en ese rango.', 'Documentar el STOPAT usado en el ticket de incidente.'],
+      tabla: {
+        headers: ['Paso', 'Tipo backup', 'Rango cubierto', 'STOPAT'],
+        rows: [
+          ['1', 'FULL', '2026-06-22 23:00', '—'],
+          ['2', 'DIFF', '2026-06-26 22:00', '—'],
+          ['3', 'LOG', '07:00 - 07:30', '—'],
+          ['4', 'LOG', '07:30 - 08:00', '—'],
+          ['5', 'LOG', '10:00 - 10:30', '10:14:00 ← STOPAT'],
+          ['Resultado', 'BD restaurada', 'Estado: ONLINE', 'Datos hasta 10:14 ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 2 — Recuperación de Cambios Incorrectos',
+      enunciado: 'Un proceso masivo actualizó incorrectamente estados de trámites. Restaure la BD al estado anterior al proceso.',
+      sql: `-- ============================================================
+-- PROYECTO 2: Recuperación tras UPDATE masivo incorrecto
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Detectar cuándo ocurrió el UPDATE masivo en el log
+-- (usando fn_dblog si la BD aún es accesible)
+USE GradosTitulos;
+GO
+SELECT TOP 100
+    [Transaction ID],
+    [Begin Time],
+    [Operation],
+    [Context],
+    [Transaction Name],
+    [Description]
+FROM fn_dblog(NULL, NULL)
+WHERE Operation IN ('LOP_BEGIN_XACT','LOP_COMMIT_XACT','LOP_MODIFY_ROW')
+  AND [Transaction Name] LIKE '%UPDATE%'
+ORDER BY [Begin Time] DESC;
+GO
+
+-- 2. Una vez identificada la hora (ej: 14:22:30), restaurar hasta 14:21:00
+USE master;
+GO
+
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH NORECOVERY, REPLACE, STATS = 10;
+GO
+
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Diff\\GT_DIFF_20260626.bak'
+WITH NORECOVERY;
+GO
+
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1400.trn'
+WITH NORECOVERY;
+GO
+
+-- STOPAT: 1 minuto antes del UPDATE masivo
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1430.trn'
+WITH RECOVERY,
+     STOPAT = '2026-06-27 14:21:00';
+GO
+
+-- Verificar estados de trámites post-restauración
+USE GradosTitulos;
+SELECT
+    et.Descripcion AS EstadoTramite,
+    COUNT(*)       AS CantidadTramites
+FROM Tramite.Tramite t
+JOIN Catalogo.EstadoTramite et ON et.IdEstadoTramite = t.IdEstadoTramite
+GROUP BY et.Descripcion
+ORDER BY COUNT(*) DESC;`,
+      justificacion: 'fn_dblog lee el log de transacciones activo de la BD para identificar operaciones recientes. Esta función es invaluable para "forense digital" dentro de SQL Server, permitiendo encontrar la hora exacta del UPDATE antes de iniciar la restauración. La restauración con STOPAT = 14:21:00 (1 min antes) garantiza que el UPDATE masivo no se aplica.',
+      practicas: ['Usar fn_dblog para investigar el log antes de iniciar la restauración.', 'Documentar la hora exacta del incidente con segundos para el STOPAT.', 'Restaurar en un ambiente de staging primero para validar los datos.', 'Comparar los estados de trámites antes y después de restaurar.', 'Investigar la causa raíz del UPDATE masivo para prevenir recurrencia.'],
+      tabla: {
+        headers: ['Estado Trámite', 'Antes del UPDATE masivo', 'Después del UPDATE incorrecto', 'Tras restauración'],
+        rows: [
+          ['INICIADO', '45', '0 (incorrecto)', '45 ✓'],
+          ['EN_VERIFICACION', '30', '0 (incorrecto)', '30 ✓'],
+          ['EN_PROCESO', '25', '0 (incorrecto)', '25 ✓'],
+          ['APROBADO', '100', '200 (incorrecto)', '100 ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 3 — Recuperación Selectiva de Incidente Crítico',
+      enunciado: 'Un error en producción afectó las tablas Tramite y Evaluacion. Diseñe una recuperación punto en el tiempo minimizando la indisponibilidad.',
+      sql: `-- ============================================================
+-- PROYECTO 3: Recuperación selectiva minimizando downtime
+-- Técnica: Restore a BD auxiliar + INSERT/UPDATE selectivo
+-- ============================================================
+
+USE master;
+GO
+
+-- TÉCNICA 1: Restore en BD auxiliar (sin tocar producción)
+RESTORE DATABASE GradosTitulos_Recovery
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH
+    MOVE 'GradosTitulos'     TO 'C:\\SQL\\Data\\GT_Recovery.mdf',
+    MOVE 'GradosTitulos_log' TO 'C:\\SQL\\Log\\GT_Recovery_log.ldf',
+    NORECOVERY, REPLACE, STATS = 10;
+GO
+
+RESTORE LOG GradosTitulos_Recovery
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_0830.trn'
+WITH RECOVERY,
+     STOPAT = '2026-06-27 08:45:00';  -- Antes del incidente (09:00)
+GO
+
+-- TÉCNICA 2: Comparar datos entre producción y BD de recovery
+-- Identificar trámites afectados
+SELECT
+    prod.IdTramite,
+    prod.IdEstadoTramite AS EstadoProd,
+    rec.IdEstadoTramite  AS EstadoCorrecto,
+    CASE WHEN prod.IdEstadoTramite <> rec.IdEstadoTramite THEN 'DIFERENTE' ELSE 'IGUAL' END AS Diferencia
+FROM GradosTitulos.Tramite.Tramite prod
+JOIN GradosTitulos_Recovery.Tramite.Tramite rec ON rec.IdTramite = prod.IdTramite
+WHERE prod.IdEstadoTramite <> rec.IdEstadoTramite;
+GO
+
+-- TÉCNICA 3: Corregir solo los registros afectados (sin restaurar toda la BD)
+BEGIN TRANSACTION;
+    UPDATE prod
+    SET    prod.IdEstadoTramite = rec.IdEstadoTramite,
+           prod.FechaUltMod     = SYSDATETIME(),
+           prod.Observaciones   = 'CORREGIDO: Incidente 2026-06-27 09:00 | Restauración selectiva'
+    FROM GradosTitulos.Tramite.Tramite prod
+    JOIN GradosTitulos_Recovery.Tramite.Tramite rec ON rec.IdTramite = prod.IdTramite
+    WHERE prod.IdEstadoTramite <> rec.IdEstadoTramite;
+
+    PRINT 'Registros corregidos: ' + CAST(@@ROWCOUNT AS VARCHAR);
+COMMIT;
+GO
+
+-- Limpiar BD auxiliar
+DROP DATABASE GradosTitulos_Recovery;`,
+      justificacion: 'La restauración selectiva (restore en BD auxiliar + UPDATE cruzado) minimiza el downtime porque la BD de producción permanece en línea durante todo el proceso. Solo se detiene brevemente para el UPDATE final con la corrección. Esto es preferible a restaurar toda la BD de producción cuando el impacto es parcial (solo algunas tablas o registros).',
+      practicas: ['Restaurar en BD auxiliar antes de tocar producción.', 'Usar JOIN entre producción y BD auxiliar para identificar diferencias.', 'Envolver el UPDATE correctivo en una transacción para poder hacer rollback si algo falla.', 'Eliminar la BD auxiliar después de usarla (libera espacio en disco).', 'Comunicar a los usuarios el tiempo de indisponibilidad antes de iniciar.'],
+      tabla: {
+        headers: ['Técnica', 'Downtime', 'Alcance', 'Riesgo'],
+        rows: [
+          ['Restore completo producción', '60-90 min', 'Toda la BD', 'Alto'],
+          ['Restore auxiliar + UPDATE selectivo', '< 5 min', 'Solo tablas afectadas', 'Bajo ✓'],
+          ['Registros corregidos', '—', 'Tramite + Evaluacion', '0 pérdida de datos']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 4 — Simulación de Recuperación Forense',
+      enunciado: 'Se detectó una modificación maliciosa en una ventana de tiempo específica. Realice una recuperación forense para restaurar la base exactamente al momento anterior al incidente.',
+      sql: `-- ============================================================
+-- PROYECTO 4: Recuperación forense con documentación
+-- ============================================================
+
+USE master;
+GO
+
+-- PASO 1: Documentar el incidente antes de iniciar
+IF OBJECT_ID('dbo.InformeRecuperacion') IS NULL
+CREATE TABLE dbo.InformeRecuperacion (
+    IdInforme     INT           IDENTITY(1,1) PRIMARY KEY,
+    FechaInforme  DATETIME2     NOT NULL DEFAULT SYSDATETIME(),
+    Incidente     NVARCHAR(500) NOT NULL,
+    FechaIncidente DATETIME2   NOT NULL,
+    Investigador  NVARCHAR(100) NOT NULL DEFAULT SUSER_NAME(),
+    AccionTomada  NVARCHAR(500) NULL,
+    FechaResolucion DATETIME2  NULL,
+    Estado        VARCHAR(20)   NOT NULL DEFAULT 'EN_PROCESO'
+);
+GO
+
+DECLARE @IdInforme INT;
+INSERT INTO dbo.InformeRecuperacion (Incidente, FechaIncidente, AccionTomada)
+VALUES (
+    'Modificación maliciosa detectada en tablas del esquema Documento (Resolucion y Diploma). Se sospecha acceso no autorizado entre 15:30 y 16:00.',
+    '2026-06-27 15:30:00',
+    'Restauración point-in-time a 15:29:00 para recuperar estado anterior'
+);
+SET @IdInforme = SCOPE_IDENTITY();
+
+-- PASO 2: Identificar cadena de backups válida
+SELECT
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bs.backup_start_date, bs.backup_finish_date,
+    bmf.physical_device_name AS Archivo
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.backup_start_date <= '2026-06-27 15:30:00'
+ORDER BY bs.first_lsn;
+
+-- PASO 3: Restaurar a las 15:29 (1 minuto antes del incidente)
+RESTORE DATABASE GradosTitulos_Forense
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH MOVE 'GradosTitulos'     TO 'C:\\SQL\\Data\\GT_Forense.mdf',
+     MOVE 'GradosTitulos_log' TO 'C:\\SQL\\Log\\GT_Forense_log.ldf',
+     NORECOVERY, REPLACE;
+GO
+
+RESTORE LOG GradosTitulos_Forense
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1530.trn'
+WITH RECOVERY, STOPAT = '2026-06-27 15:29:00';
+GO
+
+-- PASO 4: Verificar integridad del esquema Documento
+USE GradosTitulos_Forense;
+SELECT
+    'Resolucion' AS Tabla, COUNT(*) AS Registros,
+    MAX(FechaEmision) AS UltimaFecha
+FROM Documento.Resolucion
+UNION ALL
+SELECT
+    'Diploma', COUNT(*),
+    MAX(FechaExpedicion)
+FROM Documento.Diploma;
+GO
+
+-- PASO 5: Comparar con producción y documentar diferencias
+USE master;
+UPDATE dbo.InformeRecuperacion
+SET AccionTomada = 'Restauración forense completada a las 15:29. BD GradosTitulos_Forense disponible para auditoría.',
+    FechaResolucion = SYSDATETIME(),
+    Estado = 'RESUELTO'
+WHERE IdInforme = @IdInforme;`,
+      justificacion: 'La recuperación forense difiere de una restauración operativa: el objetivo es preservar evidencia y documentar el estado de los datos. Por eso se restaura en una BD separada (GradosTitulos_Forense) sin tocar producción. La tabla InformeRecuperacion sirve como cadena de custodia digital. STOPAT = 15:29 garantiza que las modificaciones maliciosas realizadas a las 15:30 no se aplican.',
+      practicas: ['Documentar el incidente en la tabla de informes ANTES de cualquier acción técnica.', 'Restaurar en BD separada para no comprometer la evidencia en producción.', 'Incluir SUSER_NAME() para registrar quién ejecutó la recuperación (cadena de custodia).', 'Guardar capturas de pantalla del estado anterior y posterior como evidencia.', 'Notificar al responsable de seguridad de la información y al área legal.'],
+      tabla: {
+        headers: ['Tabla', 'Registros (forense 15:29)', 'Registros (producción 16:00)', 'Diferencia'],
+        rows: [
+          ['Resolucion', '248', '248', '0 (sin cambios en Resolución)'],
+          ['Diploma', '115', '118', '3 diplomas agregados maliciosamente'],
+          ['Evidencia', 'Preservada', '—', 'BD Forense disponible para auditoría ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 5 — Recuperación Exacta de Expedientes Eliminados',
+      enunciado: 'A las 11:45 a.m. se eliminaron accidentalmente registros de expedientes. Recupere la base exactamente a las 11:44:59 a.m.',
+      sql: `-- ============================================================
+-- PROYECTO 5: Recuperación a las 11:44:59 (precisión de segundos)
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Verificar qué log backup cubre las 11:44:59
+SELECT
+    bs.backup_set_id,
+    bs.backup_start_date,
+    bs.backup_finish_date,
+    CASE bs.type WHEN 'D' THEN 'FULL' WHEN 'I' THEN 'DIFF' WHEN 'L' THEN 'LOG' END AS Tipo,
+    bmf.physical_device_name
+FROM msdb.dbo.backupset bs
+JOIN msdb.dbo.backupmediafamily bmf ON bs.media_set_id = bmf.media_set_id
+WHERE bs.database_name = 'GradosTitulos'
+  AND bs.type = 'L'  -- Solo logs
+  AND bs.backup_start_date <= '2026-06-27 11:44:59'
+  AND bs.backup_finish_date >= '2026-06-27 11:44:59'
+ORDER BY bs.backup_start_date;
+GO
+
+-- 2. Verificar el log que abarca el momento exacto
+-- (Debe existir un log de 11:30 a 12:00 que cubra las 11:44:59)
+
+-- 3. Restaurar Full
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH NORECOVERY, REPLACE, STATS = 10;
+GO
+
+-- 4. Restaurar Diff
+RESTORE DATABASE GradosTitulos
+FROM DISK = 'C:\\Backups\\Diff\\GT_DIFF_20260626.bak'
+WITH NORECOVERY;
+GO
+
+-- 5. Aplicar logs hasta las 11:44:59 con precisión de segundos
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1100.trn'
+WITH NORECOVERY;
+GO
+
+RESTORE LOG GradosTitulos
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1130.trn'
+WITH RECOVERY,
+     STOPAT = '2026-06-27 11:44:59';  -- Precisión de segundos
+GO
+
+-- 6. Contar expedientes recuperados
+USE GradosTitulos;
+SELECT
+    tt.Descripcion AS TipoTramite,
+    et.Descripcion AS Estado,
+    COUNT(*)       AS Cantidad
+FROM Tramite.Tramite t
+JOIN Catalogo.TipoTramite   tt ON tt.IdTipoTramite   = t.IdTipoTramite
+JOIN Catalogo.EstadoTramite et ON et.IdEstadoTramite = t.IdEstadoTramite
+GROUP BY tt.Descripcion, et.Descripcion
+ORDER BY COUNT(*) DESC;`,
+      justificacion: 'STOPAT acepta el formato DATETIME con precisión de segundos (yyyy-MM-dd HH:mm:ss), permitiendo recuperación con granularidad de 1 segundo dentro del período cubierto por el log backup. La consulta previa verifica qué archivo de log cubre exactamente las 11:44:59 (su backup_start_date <= 11:44:59 <= backup_finish_date). Si no hay log que cubra ese momento exacto, el STOPAT más cercano es el backup_finish_date del log anterior.',
+      practicas: ['Verificar siempre que existe un log backup que cubra el STOPAT deseado.', 'El STOPAT tiene precisión de segundos en SQL Server.', 'Si el STOPAT cae entre dos log backups, SQL Server aplica el log anterior hasta su fin.', 'Documentar el DELETE accidental (hora, usuario, comando ejecutado) para el informe.', 'Después de restaurar, cambiar las credenciales del usuario que causó el incidente.'],
+      tabla: {
+        headers: ['Log backup', 'Desde', 'Hasta', 'Cubre 11:44:59'],
+        rows: [
+          ['GT_LOG_1100.trn', '11:00:00', '11:30:00', 'No'],
+          ['GT_LOG_1130.trn', '11:30:00', '12:00:00', 'Sí ✓ — STOPAT aquí'],
+          ['Registros recuperados', '—', '—', 'Todos los expedientes hasta 11:44:59 ✓']
+        ]
+      }
+    },
+    {
+      titulo: 'Proyecto 6 — Recuperación Forense de Modificación Maliciosa',
+      enunciado: 'Se detectó una modificación no autorizada en las tablas del esquema Documento. Realice una recuperación punto en el tiempo que permita restaurar el estado exacto de la base antes de la alteración.',
+      sql: `-- ============================================================
+-- PROYECTO 6: Recuperación forense de esquema Documento
+-- Tablas: Resolucion y Diploma
+-- ============================================================
+
+USE master;
+GO
+
+-- 1. Investigar las transacciones sospechosas en el log
+USE GradosTitulos;
+GO
+SELECT TOP 50
+    [Transaction ID],
+    [Begin Time],
+    [End Time],
+    [Operation],
+    [Transaction Name],
+    [Description]
+FROM sys.fn_dblog(NULL,NULL)
+WHERE [Transaction Name] IN ('user_transaction','DELETE','UPDATE','INSERT')
+  AND [Begin Time] IS NOT NULL
+  AND [Begin Time] BETWEEN '2026/06/27 18:00:00' AND '2026/06/27 19:00:00'
+ORDER BY [Begin Time] DESC;
+GO
+
+-- 2. Identificar el momento exacto de la alteración (supongamos 18:33:15)
+USE master;
+GO
+
+-- 3. Restaurar en BD forense al estado de las 18:33:00 (15 seg antes)
+RESTORE DATABASE GradosTitulos_ForenseDoc
+FROM DISK = 'C:\\Backups\\Full\\GT_FULL_20260622.bak'
+WITH
+    MOVE 'GradosTitulos'     TO 'C:\\SQL\\Data\\GT_ForDoc.mdf',
+    MOVE 'GradosTitulos_log' TO 'C:\\SQL\\Log\\GT_ForDoc_log.ldf',
+    NORECOVERY, REPLACE, STATS = 10;
+GO
+
+-- Aplicar logs previos
+RESTORE LOG GradosTitulos_ForenseDoc FROM DISK='C:\\Backups\\Log\\GT_LOG_20260627_1800.trn' WITH NORECOVERY;
+GO
+
+-- STOPAT crítico: 15 segundos antes de la alteración
+RESTORE LOG GradosTitulos_ForenseDoc
+FROM DISK = 'C:\\Backups\\Log\\GT_LOG_20260627_1830.trn'
+WITH RECOVERY,
+     STOPAT = '2026-06-27 18:33:00';  -- 15 segundos antes de 18:33:15
+GO
+
+-- 4. Extraer resoluciones y diplomas del estado limpio
+USE GradosTitulos_ForenseDoc;
+
+-- Estado limpio de resoluciones
+SELECT r.IdResolucion, r.NroResolucion, r.TipoResolucion,
+       r.FechaEmision, r.OrganoEmisor
+FROM Documento.Resolucion r
+ORDER BY r.FechaEmision DESC;
+
+-- Estado limpio de diplomas
+SELECT d.IdDiploma, d.NroDiploma, d.TipoDiploma,
+       d.FechaExpedicion, d.FechaRegistroSunedu, d.EsDuplicado
+FROM Documento.Diploma d
+ORDER BY d.FechaExpedicion DESC;
+GO
+
+-- 5. Sincronizar producción con el estado correcto
+USE master;
+BEGIN TRANSACTION;
+    -- Reemplazar diplomas en producción con los del estado forense (limpios)
+    DELETE FROM GradosTitulos.Documento.Diploma
+    WHERE IdDiploma IN (
+        SELECT prod.IdDiploma
+        FROM GradosTitulos.Documento.Diploma prod
+        WHERE NOT EXISTS (
+            SELECT 1 FROM GradosTitulos_ForenseDoc.Documento.Diploma forense
+            WHERE forense.IdDiploma = prod.IdDiploma
+        )
+    );
+
+    PRINT 'Diplomas no autorizados eliminados: ' + CAST(@@ROWCOUNT AS VARCHAR);
+COMMIT;
+GO
+
+-- 6. Limpiar BD forense
+DROP DATABASE GradosTitulos_ForenseDoc;
+
+-- 7. Informe final
+SELECT
+    'Resolucion' AS Tabla,
+    (SELECT COUNT(*) FROM GradosTitulos.Documento.Resolucion) AS RegistrosProd,
+    'Verificado ✓' AS Estado
+UNION ALL
+SELECT
+    'Diploma',
+    (SELECT COUNT(*) FROM GradosTitulos.Documento.Diploma),
+    'Correcto ✓';`,
+      justificacion: 'Este proyecto combina todas las técnicas del tema: fn_dblog para investigación forense del log, STOPAT para recuperación exacta, BD auxiliar forense para no afectar producción, y sincronización selectiva para restaurar solo los datos comprometidos. La eliminación del DELETE de diplomas no autorizados en producción es la corrección final sin necesidad de bajar toda la BD.',
+      practicas: ['fn_dblog es la primera herramienta para investigar: identifica qué cambió y cuándo antes de restaurar.', 'STOPAT con precisión de segundos permite recuperación muy cercana al momento del incidente.', 'Comparar entre BD forense y producción para aplicar solo los cambios necesarios.', 'Preservar la BD forense como evidencia hasta que el área legal la libere.', 'Después del incidente, revisar permisos: ¿quién tenía acceso a Documento.Diploma?'],
+      tabla: {
+        headers: ['Tabla', 'Antes del incidente', 'Tras modificación maliciosa', 'Tras recuperación forense'],
+        rows: [
+          ['Resolucion', '248', '248 (sin cambios)', '248 ✓'],
+          ['Diploma', '115', '122 (7 agregados)', '115 ✓'],
+          ['Diplomas eliminados', '—', '—', '7 no autorizados ↩'],
+          ['Estado final', '—', '—', 'Correcto y auditado ✓']
+        ]
+      }
+    }
+  ]
+}
+
+]; /* fin de temas */
+
+/* ═════════════════════════════════════════════════════
+   ESTADO UI
+═════════════════════════════════════════════════════ */
+let temaActivo = 0;
+let proyActivo = {};
+
+/* ═════════════════════════════════════════════════════
+   NAVEGACIÓN DE PANELES
+═════════════════════════════════════════════════════ */
+function switchPanel(id, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'ejercicios') renderEjercicios();
+}
+
+/* ═════════════════════════════════════════════════════
+   RENDER EJERCICIOS
+═════════════════════════════════════════════════════ */
+function renderEjercicios() {
+  renderTemaNave();
+  renderTemaCard(temaActivo);
+}
+
+function selectTema(i) {
+  temaActivo = i;
+  renderTemaNave();
+  renderTemaCard(i);
+  window.scrollTo({ top: 160, behavior: 'smooth' });
+}
+
+function renderTemaNave() {
+  const nav = document.getElementById('temaNave');
+  nav.innerHTML = temas.map((t, i) =>
+    `<button class="tema-pill ${t.color} ${i===temaActivo?'active':''}"
+       onclick="selectTema(${i})">${t.num}</button>`
+  ).join('');
+}
+
+function getProyActivo(ti) { return proyActivo[ti] ?? 0; }
+
+function renderTemaCard(ti) {
+  const t  = temas[ti];
+  const pi = getProyActivo(ti);
+  const c  = document.getElementById('temaContainer');
+
+  const tabs = t.proyectos.map((p, i) =>
+    `<button class="proy-tab ${i===pi?'active':''}"
+       onclick="switchProy(${ti},${i})">P${i+1}</button>`
+  ).join('');
+
+  const panels = t.proyectos.map((p, i) =>
+    renderProyPanel(p, ti, i, i===pi)
+  ).join('');
+
+  c.innerHTML = `
+    <div class="tema-card ${t.color}">
+      <div class="tema-header">
+        <p class="tema-num">${t.num}</p>
+        <h3 class="tema-title">${t.titulo}</h3>
+        <span class="tema-badge">${t.badge}</span>
+      </div>
+      <div class="proy-tabs">${tabs}</div>
+      ${panels}
+    </div>`;
+}
+
+function switchProy(ti, pi) {
+  proyActivo[ti] = pi;
+  document.querySelectorAll('.proy-tab').forEach((b,i) => {
+    b.classList.toggle('active', i===pi);
+  });
+  document.querySelectorAll('.proy-panel').forEach((p,i) => {
+    p.classList.toggle('active', i===pi);
+  });
+}
+
+function renderProyPanel(p, ti, pi, active) {
+  const codeId = `code_${ti}_${pi}`;
+  const tabla  = buildTabla(p.tabla);
+  const practicos = p.practicas.map(pr => `<li>${pr}</li>`).join('');
+
+  return `
+  <div class="proy-panel ${active?'active':''}" id="pp_${ti}_${pi}">
+    <!-- SECCIÓN 1: ENUNCIADO -->
+    <div class="sec-block">
+      <div class="sec-block-label">
+        <span class="sec-num-badge badge-azul">1</span>
+        <span style="color:var(--azul)">Enunciado del ejercicio</span>
+      </div>
+      <div class="enunciado-box"><p>${p.enunciado}</p></div>
+    </div>
+
+    <!-- SECCIÓN 2: SCRIPT T-SQL -->
+    <div class="sec-block">
+      <div class="sec-block-label">
+        <span class="sec-num-badge badge-verde">2</span>
+        <span style="color:var(--verde)">Script de la solución en T-SQL</span>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header">
+          <div class="code-dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+          <span class="code-lang">T-SQL · SQL Server</span>
+          <button class="btn-copy" onclick="copiar('${codeId}')">Copiar script</button>
+        </div>
+        <div class="code-body"><pre id="${codeId}">${escHtml(p.sql)}</pre></div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3 y 4: JUSTIFICACIÓN + BUENAS PRÁCTICAS -->
+    <div class="sec-block">
+      <div class="sec-block-label">
+        <span class="sec-num-badge badge-morado">3</span>
+        <span style="color:var(--morado)">Justificación técnica</span>
+        <span style="margin-left:16px;font-size:9px;letter-spacing:.1em;opacity:.7">+</span>
+        <span class="sec-num-badge badge-naranja" style="margin-left:8px">4</span>
+        <span style="color:var(--naranja)">Buenas prácticas</span>
+      </div>
+      <div class="info-grid">
+        <div class="info-card just">
+          <p class="info-label">Justificación técnica de la solución</p>
+          <p>${p.justificacion}</p>
+        </div>
+        <div class="info-card prac">
+          <p class="info-label">Buenas prácticas aplicadas</p>
+          <ul>${practicos}</ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA DE RESULTADOS -->
+    <div class="result-wrap">
+      <p class="result-label">Resultados esperados de la consulta</p>
+      ${tabla}
+    </div>
+  </div>`;
+}
+
+function buildTabla(t) {
+  const headers = t.headers.map(h => `<th>${h}</th>`).join('');
+  const rows = t.rows.map(row => {
+    const cells = row.map((cell, i) => {
+      let html = cell;
+      if (typeof cell === 'string') {
+        if (cell.includes('✓'))   html = `<span class="td-badge td-ok">${cell}</span>`;
+        else if (cell.includes('ERROR') || cell.includes('✗')) html = `<span class="td-badge td-warn">${cell}</span>`;
+        else if (i === 0 && row.length >= 3) html = `<strong>${cell}</strong>`;
+      }
+      return `<td>${html}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<div class="result-table-wrap">
+    <table class="result-table">
+      <thead><tr>${headers}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>`;
+}
+
+/* ═════════════════════════════════════════════════════
+   UTILIDADES
+═════════════════════════════════════════════════════ */
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function copiar(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const ta = document.createElement('textarea');
+  ta.value = el.innerText;
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  showToast('✅ Script copiado al portapapeles');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+window.addEventListener('scroll', () => {
+  document.getElementById('mainNav').classList.toggle('scrolled', scrollY > 20);
+});
+</script>
+</body>
+</html>

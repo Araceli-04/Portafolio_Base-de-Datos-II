@@ -73,23 +73,22 @@ const UNIDADES = {
         temas: ['SQL Server 2022', 'Normalización'],
         archivos: [
           { id:'s05a1', nombre:'Resumen Introduccion a Microsoft SQL Server 2022.pdf', tipo:'pdf', label:'Resumen: Microsoft SQL Server 2022', url:'./docs/Resumen 05.pdf' },
-          { id:'s05a2', nombre:'Normalizacion de Bases de Datos.pdf',                  tipo:'pdf', label:'Normalización de Bases de Datos' }
+          { id:'s05a2', nombre:'Normalizacion de Bases de Datos.pdf',                  tipo:'pdf', label:'Normalización de Bases de Datos', url:'./docs/Normalización.pdf' }
         ]
       },
       {
         num: '06', titulo: 'Microsoft SQL Server — Profundización',
         temas: ['SQL Server', 'Actividad práctica'],
         archivos: [
-          { id:'s06a1', nombre:'Resumen Microsoft SQL Server.pdf',   tipo:'pdf', label:'Resumen: Microsoft SQL Server' },
-          { id:'s06a2', nombre:'Actividad Respondiendo Preguntas.pdf', tipo:'pdf', label:'Actividad: Respondiendo Preguntas' }
+          { id:'s06a1', nombre:'Resumen Microsoft SQL Server.pdf',   tipo:'pdf', label:'Resumen: Microsoft SQL Server',url:'./docs/Resumen_06.pdf' },
+          { id:'s06a2', nombre:'Actividad Respondiendo Preguntas.pdf', tipo:'pdf', label:'Actividad: Respondiendo Preguntas',url:'./docs/Actividad_06.pdf' }
         ]
       },
       {
         num: '07', titulo: 'Introducción a SQL',
         temas: ['DDL', 'DML', 'SQL básico'],
         archivos: [
-          { id:'s07a1', nombre:'Intro SQL.pdf',  tipo:'pdf', label:'Introducción a SQL' },
-          { id:'s07a2', nombre:'practica01.sql', tipo:'sql', label:'Script de Práctica 01' }
+          { id:'s07a1', nombre:'Intro SQL.pdf',  tipo:'pdf', label:'Introducción a SQL', url:'./docs/Resumen_07.pdf' },
         ]
       },
       {
@@ -109,12 +108,31 @@ const UNIDADES = {
       { num:'09', titulo:'Normativa Académica: Reglamento General de Grados y Títulos', 
         temas:['Reglamento General','Grados Académicos','Títulos Profesionales'],
         archivos:[
-          {id:'s09a1', nombre:'Reglamento General de Grados y Títulos.pdf', tipo:'pdf', label:'Reglamento General de Grados y Títulos', url:'./docs/Reglamentos.pdf'}
+          {id:'s09a1', nombre:'Reglamento General de Grados y Títulos.pdf', tipo:'pdf', label:'Reglamento General de Grados y Títulos', url:'./docs/Reglamento de Grados_Titulos.pdf'},
+          {id:'s9a2', nombre:'Infografías sobre Vistas,funciones,eschemas,indices y store procedures', tipo:'pdf', label:'Infografias Semana_09, según Grados_Titulos', url:'./docs/Semana_09.pdf'}
         ] 
       },
-      { num:'10', titulo:'Subconsultas',                temas:['Pendiente'], archivos:[] },
-      { num:'11', titulo:'Vistas e Índices',            temas:['Pendiente'], archivos:[] },
-      { num:'12', titulo:'Procedimientos Almacenados',  temas:['Pendiente'], archivos:[] }
+      { num:'10', titulo:'Gestion de BDD', 
+        temas:['Administracion esencial','Gestión de BDD'], 
+        archivos:[
+          {id:'s10a1', nombre:'Gestion de BDD.pdf', tipo:'pdf', label:'Gestion de BDD', url:'./docs/Gestion de BDD.pdf'},
+          {id:'s10a2', nombre:'Administración Esencial de BDD', tipo:'html', label:'Ejercicios_Propuestos', url:'./Admin.html'},
+          {id:'s10a3', nombre:'Manual', tipo:'pdf', label:'Manual de Azure', url:'./docs/Manual AZURE.pdf'},
+          {id:'s10a4', nombre:'Ejercicios Prácticos en AZURE', tipo:'html', label:'Ejercicios Prácticos en AZURE', url:'./Ejercicios.html'}
+        ] },
+      { num:'11', titulo:'Seguridad y Control de acceso',
+        temas:['Autentificacion','autorizacion','cifrado','seguridad'],
+        archivos:[
+          {id:'s11a1', nombre:'Seguridad y control de acceso.pdf', tipo:'pdf', label:'Seguridad y contro de acceso', url:'./docs/Seguridad y control de acceso.pdf'},
+          {id:'s11a2', nombre:'Actividades de Contro de Acceso', tipo:'html', label:'Actividades_Ejercicios', url:'./control.html'}
+        ] 
+      },
+      { num:'12', titulo:'Respaldo y recuperación',
+        temas:['Disponibilidad', 'Recuperación','Respaldo'], 
+        archivos:[
+          {id:'s12a1', nombre:'Respaldo y recuperación de BDD', tipo:'pdf',label:'Respaldo y recuperación de BDD', url:'./docs/Respaldo y recuperacion.pdf'},
+          {id:'s12a2', nombre:'Ejercicios_Respaldo y Recuperación de BDD', tipo:'html',label:'Ejercicios_Respaldo y Recuperación de BDD', url:'./seguridad.html'}
+        ] }
     ]
   },
   u4: {
