@@ -138,10 +138,30 @@ const UNIDADES = {
   u4: {
     grid: 'gridU4',
     semanas: [
-      { num:'13', titulo:'Transacciones y ACID',    temas:['Pendiente'], archivos:[] },
-      { num:'14', titulo:'Control de Concurrencia', temas:['Pendiente'], archivos:[] },
-      { num:'15', titulo:'Seguridad en BD',          temas:['Pendiente'], archivos:[] },
-      { num:'16', titulo:'Bases de Datos NoSQL',     temas:['Pendiente'], archivos:[] }
+      { num:'13', titulo:'Monitoreo y Rendimiento',    
+        temas:['Estadísticas','Administración','Análisis'], 
+        archivos:[
+          {id:'s13a1:', nombre:'Monitoreo y Rendimiento', tipo:'pdf', label:'Monitoreo y Rendimiento', url:'./docs/Monitoreo.pdf'},
+          {id:'s13a2', nombre:'Ejercicios de Monitoreo y Rendimiento en SQL', tipo:'html', label:'Ejercicios de Monitoreo y Rendimiento en SQL', url:'./Ejercicios-Monitoreo.html'}
+        ] },
+      { num:'14', titulo:'Autentificación y Mantenimiento en SQL Server', 
+        temas:['Manual AWS', 'Microsoft Azure', 'Servidor de B.D'], 
+        archivos:[
+        {id:'s14a1', nombre:'Manual AWS-Creación de BD', tipo:'html', label:'Manual AWS-Creación de BD', url:'./AWS.html'},
+        {id:'s14a2', nombre:'Autentificación y Mantenimiento', tipo:'pdf', label:'Autentificación y Mantenimiento', url:'./docs/Automatización.pdf'},
+        {id:'s14a3', nombre:'Ejercicicios de Autentificación y Mantenimiento en SQL', tipo:'html', label:'Ejercicicios de Autentificación y Mantenimiento en SQL', url:'./Automatizacion.html'}
+      ]
+     },
+      { num:'15', titulo:'Microsoft SQL Azure',
+        temas:['Conceptos de BDD','Administrar BDD','Copiar BDD','Conectar con SQL Azure'],
+        archivos:[
+        {id:'s15a1', nombre:'SQL Azure_Capitulos I, II, III, IV, V', tipo:'html',label:'SQL Azure_ Capitulos del I-V', url:'./SQL.html'},
+        ] },
+      { num:'16', titulo:'Microsoft SQL Azure',
+        temas:['TRANSACT-SQL','Instrucciones SQL','Lenguaje de definición de datos'],
+        archivos:[
+        {id:'s16a1', nombre:'SQL Azure_Capitulos VI, VII, VIII, IX', tipo:'html',label:'SQL Azure_ Capitulos del VI-IX', url:'./ResuAzure.html'}, 
+        ] }
     ]
   }
 };
