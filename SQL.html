@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Microsoft SQL Azure — Resúmenes Capítulos 1-5 · UPLA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --rosa:#f06292;--rosa-l:#fce4ec;--lila:#ce93d8;--lila-l:#ede7f6;--morado:#9c27b0;
+  --menta:#4db6ac;--menta-l:#e0f2f1;--menta-d:#00897b;
+  --naranja:#ff9800;--naranja-l:#fff3e0;--naranja-d:#e65100;
+  --azul:#1565c0;--azul-l:#e3f2fd;--azul-m:#42a5f5;
+  --text:#2d2d2d;--text-s:#6b6b6b;--bg:#fdfbfe;--white:#ffffff;--border:#f0e6f8;
+  --shadow:0 2px 16px rgba(206,147,216,.13);--shadow-h:0 8px 32px rgba(240,98,146,.18);
+  --rad:14px;--rad-sm:8px;--rad-pill:99px;
+  --font-d:'Instrument Serif',Georgia,serif;--font-b:'DM Sans',system-ui,sans-serif;--font-m:'JetBrains Mono',Menlo,monospace;
+  --code-bg:#f8f9fc;--code-text:#2d2d2d;--code-border:#e2e6f2;
+  --kw:#1565c0;--fn:#2e7d32;--str:#c2622d;--num:#ad1457;--com:#8a8fa3;--op:#d81b60;--type:#00897b;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-b);background:var(--bg);color:var(--text);font-size:15px;line-height:1.65;padding-top:64px}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(253,251,254,.9);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);transition:background .3s,box-shadow .3s}
+.nav.scrolled{background:rgba(253,251,254,.98);box-shadow:0 2px 20px rgba(206,147,216,.15)}
+.nav-inner{max-width:1180px;margin:0 auto;padding:0 24px;height:64px;display:flex;align-items:center;gap:18px}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-img{height:36px;width:auto;object-fit:contain}
+.nav-title{font-family:var(--font-d);font-size:16px;color:var(--text);letter-spacing:.01em;white-space:nowrap}
+.nav-tabs{display:flex;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{font-size:13px;color:var(--text-s);padding:7px 15px;border-radius:var(--rad-pill);transition:background .18s,color .18s;font-weight:500;cursor:pointer;border:none;background:none;font-family:var(--font-b);white-space:nowrap}
+.nav-tab:hover{background:var(--rosa-l);color:var(--rosa)}
+.nav-tab.active{color:#fff}
+.nav-tab.active.c1{background:linear-gradient(135deg,var(--rosa) 0%,#ff8fab 100%)}
+.nav-tab.active.c2{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%)}
+.nav-tab.active.c3{background:linear-gradient(135deg,var(--naranja-d) 0%,var(--naranja) 100%)}
+.nav-tab.active.c4{background:linear-gradient(135deg,var(--menta-d) 0%,var(--menta) 100%)}
+.nav-tab.active.c5{background:linear-gradient(135deg,var(--morado) 0%,var(--lila) 100%)}
+.nav-tab.active.inicio{background:linear-gradient(135deg,#5a4570 0%,#8a6fa8 100%)}
+
+.panel{display:none}.panel.active{display:block}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px 60px}
+
+/* HERO */
+.hero{position:relative;min-height:230px;background:linear-gradient(135deg,#fff3e0 0%,#ffe0b2 25%,#ede7f6 60%,#e8eaf6 100%);overflow:hidden;display:flex;align-items:flex-end;padding:40px 48px 34px}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 55% 70% at 10% 60%,rgba(230,81,0,.13) 0%,transparent 60%),radial-gradient(ellipse 45% 60% at 70% 30%,rgba(206,147,216,.16) 0%,transparent 60%);animation:holo 8s ease-in-out infinite alternate}
+@keyframes holo{0%{opacity:.8;transform:scale(1)}100%{opacity:1;transform:scale(1.04)}}
+.deco-c{position:absolute;border-radius:50%;opacity:.18;animation:floatC 7s ease-in-out infinite}
+.deco-c.a{width:200px;height:200px;background:var(--naranja);top:-50px;right:16%}
+.deco-c.b{width:130px;height:130px;background:var(--lila);top:40px;right:7%;animation-delay:1.5s}
+.deco-c.c{width:80px;height:80px;background:var(--menta);bottom:10px;right:28%;animation-delay:3s}
+@keyframes floatC{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+.hero-text{position:relative;z-index:2}
+.hero-eyebrow{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--naranja-d);margin-bottom:10px;font-weight:600;opacity:.9}
+.hero-title{font-family:var(--font-d);font-size:clamp(28px,5vw,52px);font-weight:400;color:#3a1d5e;line-height:1.05}
+.hero-title em{font-style:italic;color:var(--naranja-d)}
+.hero-sub{font-size:13.5px;color:var(--text-s);margin-top:10px;max-width:640px}
+
+.sec-header{padding:40px 0 26px}
+.sec-eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--menta-d);font-weight:600;margin-bottom:8px}
+.sec-title{font-family:var(--font-d);font-size:30px;color:var(--text);line-height:1.1}
+.sec-desc{font-size:14px;color:var(--text-s);margin-top:6px;max-width:680px}
+
+/* OVERVIEW CARDS (inicio) */
+.overview-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin-bottom:30px}
+.ov-card{background:var(--white);border:1px solid var(--border);border-radius:var(--rad);padding:24px;box-shadow:var(--shadow);transition:box-shadow .2s,transform .2s}
+.ov-card:hover{box-shadow:var(--shadow-h);transform:translateY(-2px)}
+.ov-card.span2{grid-column:span 2}
+.ov-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--text-s);margin-bottom:10px}
+.ov-stat-num{font-family:var(--font-d);font-size:48px;line-height:1;color:var(--naranja-d);display:block}
+.ov-stat-label{font-size:12px;color:var(--text-s);margin-top:4px}
+.ov-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{font-size:11px;font-weight:500;padding:3px 11px;border-radius:var(--rad-pill);background:var(--azul-l);color:var(--azul);border:1px solid #90caf9}
+.chip.lila{background:var(--lila-l);color:var(--morado);border-color:#dbbfed}
+.chip.menta{background:var(--menta-l);color:var(--menta-d);border-color:#b2dfdb}
+.chip.naranja{background:var(--naranja-l);color:var(--naranja-d);border-color:#ffcc80}
+.ov-intro{font-size:14px;color:var(--text-s);line-height:1.7}
+.ov-intro strong{color:var(--text)}
+
+.chap-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px}
+.chap-card{background:var(--white);border:1.5px solid var(--border);border-radius:18px;padding:22px 24px;box-shadow:var(--shadow);cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.chap-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-h)}
+.chap-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:5px}
+.chap-card.c1::before{background:linear-gradient(var(--rosa),#ff8fab)}
+.chap-card.c2::before{background:linear-gradient(var(--azul),var(--azul-m))}
+.chap-card.c3::before{background:linear-gradient(var(--naranja-d),var(--naranja))}
+.chap-card.c4::before{background:linear-gradient(var(--menta-d),var(--menta))}
+.chap-card.c5::before{background:linear-gradient(var(--morado),var(--lila))}
+.chap-num{font-family:var(--font-d);font-size:34px;opacity:.8}
+.chap-card.c1 .chap-num{color:var(--rosa)}
+.chap-card.c2 .chap-num{color:var(--azul)}
+.chap-card.c3 .chap-num{color:var(--naranja-d)}
+.chap-card.c4 .chap-num{color:var(--menta-d)}
+.chap-card.c5 .chap-num{color:var(--morado)}
+.chap-title{font-family:var(--font-d);font-size:19px;margin:6px 0 8px;color:var(--text)}
+.chap-desc{font-size:12.5px;color:var(--text-s);line-height:1.6}
+.chap-meta{display:flex;gap:8px;margin-top:14px}
+.chap-meta span{font-size:10.5px;font-weight:600;padding:3px 10px;border-radius:var(--rad-pill);background:var(--border);color:var(--text-s)}
+
+/* SUB NAV (Resumen / Cuestionario) */
+.sub-nav{display:flex;gap:10px;margin-bottom:28px}
+.sub-tab{flex:1;display:flex;align-items:center;gap:12px;text-align:left;font-family:var(--font-b);padding:16px 20px;border-radius:16px;cursor:pointer;border:1.5px solid var(--border);background:var(--white);color:var(--text);transition:all .2s;box-shadow:var(--shadow)}
+.sub-tab:hover{transform:translateY(-2px);box-shadow:var(--shadow-h)}
+.sub-tab .n{font-family:var(--font-d);font-size:24px;opacity:.7}
+.sub-tab strong{display:block;font-size:14px}
+.sub-tab span.d{display:block;font-size:11px;color:var(--text-s);margin-top:2px}
+.sub-tab.active{color:#fff}
+.sub-tab.active .n, .sub-tab.active span.d{color:#fff;opacity:.92}
+.sub-tab.active.c1{background:linear-gradient(135deg,var(--rosa) 0%,#ff8fab 100%);border-color:transparent;box-shadow:0 8px 24px rgba(240,98,146,.28)}
+.sub-tab.active.c2{background:linear-gradient(135deg,var(--azul) 0%,var(--azul-m) 100%);border-color:transparent;box-shadow:0 8px 24px rgba(21,101,192,.28)}
+.sub-tab.active.c3{background:linear-gradient(135deg,var(--naranja-d) 0%,var(--naranja) 100%);border-color:transparent;box-shadow:0 8px 24px rgba(230,81,0,.28)}
+.sub-tab.active.c4{background:linear-gradient(135deg,var(--menta-d) 0%,var(--menta) 100%);border-color:transparent;box-shadow:0 8px 24px rgba(0,137,123,.28)}
+.sub-tab.active.c5{background:linear-gradient(135deg,var(--morado) 0%,var(--lila) 100%);border-color:transparent;box-shadow:0 8px 24px rgba(156,39,176,.28)}
+
+/* STEP CARDS para contenido de resumen */
+.topic-card{background:var(--white);border:1px solid var(--border);border-radius:20px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:20px;position:relative;transition:transform .2s,box-shadow .2s}
+.topic-card:hover{transform:translateY(-2px);box-shadow:var(--shadow-h)}
+.topic-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:6px}
+.topic-head{padding:22px 28px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px}
+.topic-num{font-family:var(--font-d);font-size:40px;font-weight:400;line-height:1;flex-shrink:0;width:52px;text-align:center}
+.topic-head-text{flex:1;min-width:0}
+.topic-order{display:block;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+.topic-title{font-family:var(--font-d);font-size:21px;color:var(--text);line-height:1.2}
+/* Color = el del capítulo (coherente con el resto de la página) */
+.c1 .topic-card::before{background:linear-gradient(135deg,var(--rosa),#ff8fab)}
+.c2 .topic-card::before{background:linear-gradient(135deg,var(--azul),var(--azul-m))}
+.c1 .topic-num,.c1 .topic-order{color:var(--rosa)}
+.c2 .topic-num,.c2 .topic-order{color:var(--azul)}
+.c3 .topic-card::before{background:linear-gradient(135deg,var(--naranja-d),var(--naranja))}
+.c3 .topic-num,.c3 .topic-order{color:var(--naranja-d)}
+.c4 .topic-card::before{background:linear-gradient(135deg,var(--menta-d),var(--menta))}
+.c4 .topic-num,.c4 .topic-order{color:var(--menta-d)}
+.c5 .topic-card::before{background:linear-gradient(135deg,var(--morado),var(--lila))}
+.c5 .topic-num,.c5 .topic-order{color:var(--morado)}
+.topic-body{padding:24px 28px 30px}
+.topic-body p{font-size:14px;color:var(--text);line-height:1.8;margin-bottom:15px;max-width:66ch}
+.topic-body p:last-child{margin-bottom:0}
+.topic-body strong{color:var(--naranja-d);font-weight:600}
+
+/* Subtítulos como "badge" de color, bien diferenciados del texto */
+.topic-body h4{font-family:var(--font-b);font-size:12.5px;font-weight:700;color:#6a3f85;text-transform:uppercase;letter-spacing:.06em;margin:32px 0 14px;padding:8px 16px;border-radius:9px;display:inline-flex;align-items:center;gap:9px;background:linear-gradient(120deg,#fdeef7,#f2e8fb);border:1px solid #ecd7f2;box-shadow:0 2px 8px rgba(156,39,176,.08)}
+.topic-body h4:first-child{margin-top:0}
+.topic-body h4::before{content:'';width:6px;height:6px;border-radius:50%;background:#c983df;flex-shrink:0}
+
+/* Primer párrafo de cada tema = intro, algo más grande para dar aire antes de entrar al detalle */
+.topic-body > p:first-child{font-size:14.5px;color:var(--text-s);line-height:1.85}
+
+.tag-list{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0 16px}
+.tag{font-size:11.5px;font-weight:500;padding:4px 12px;border-radius:var(--rad-pill);background:var(--lila-l);color:var(--morado);border:1px solid #dbbfed;font-family:var(--font-m)}
+.tag.b{background:var(--azul-l);color:var(--azul);border-color:#90caf9}
+.tag.o{background:var(--naranja-l);color:var(--naranja-d);border-color:#ffcc80}
+.tag.m{background:var(--menta-l);color:var(--menta-d);border-color:#b2dfdb}
+.tag.r{background:var(--rosa-l);color:var(--rosa);border-color:#f5b8ce}
+
+.mini-table{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0 20px;font-size:12.5px;border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border)}
+.mini-table th{color:#fff;text-align:left;padding:10px 14px;font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
+.mini-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--text)}
+.mini-table tr:last-child td{border-bottom:none}
+.mini-table td.tk{font-family:var(--font-m);font-weight:700}
+.mini-table td.status-si{color:var(--menta-d);font-weight:700}
+.mini-table td.status-no{color:#c2185b;font-weight:700}
+.mini-table td.status-p{color:var(--naranja-d);font-weight:700}
+.c1 .mini-table{border-color:#f6c9d9}
+.c2 .mini-table{border-color:#c8e2fa}
+.c1 .mini-table th{background:linear-gradient(135deg,var(--rosa),#ff8fab)}
+.c2 .mini-table th{background:linear-gradient(135deg,var(--azul),var(--azul-m))}
+.c1 .mini-table tr:nth-child(even) td{background:var(--rosa-l)}
+.c2 .mini-table tr:nth-child(even) td{background:var(--azul-l)}
+.c1 .mini-table tr:hover td{background:#f8cfe0}
+.c2 .mini-table tr:hover td{background:#d3e9fc}
+.c1 .mini-table td.tk{color:#c2185b}
+.c2 .mini-table td.tk{color:var(--azul)}
+.c3 .mini-table{border-color:#ffdca8}
+.c3 .mini-table th{background:linear-gradient(135deg,var(--naranja-d),var(--naranja))}
+.c3 .mini-table tr:nth-child(even) td{background:var(--naranja-l)}
+.c3 .mini-table tr:hover td{background:#ffe6bf}
+.c3 .mini-table td.tk{color:var(--naranja-d)}
+.c4 .mini-table{border-color:#a8ded7}
+.c4 .mini-table th{background:linear-gradient(135deg,var(--menta-d),var(--menta))}
+.c4 .mini-table tr:nth-child(even) td{background:var(--menta-l)}
+.c4 .mini-table tr:hover td{background:#c3ebe6}
+.c4 .mini-table td.tk{color:var(--menta-d)}
+.c5 .mini-table{border-color:#e3c3ec}
+.c5 .mini-table th{background:linear-gradient(135deg,var(--morado),var(--lila))}
+.c5 .mini-table tr:nth-child(even) td{background:var(--lila-l)}
+.c5 .mini-table tr:hover td{background:#ecd9f3}
+.c5 .mini-table td.tk{color:var(--morado)}
+
+.codebox{background:var(--code-bg);border:1.5px solid var(--code-border);border-radius:12px;padding:16px 20px;margin:14px 0 18px;overflow-x:auto;box-shadow:var(--shadow)}
+.codebox pre{font-family:var(--font-m);font-size:12.3px;color:var(--code-text);line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.codebox .kw{color:var(--kw);font-weight:600}
+.codebox .fn{color:var(--fn)}
+.codebox .str{color:var(--str)}
+.codebox .num{color:var(--num)}
+.codebox .com{color:var(--com);font-style:italic}
+.codebox .op{color:var(--op)}
+.codebox .type{color:var(--type)}
+
+.callout{border-radius:14px;padding:14px 18px;margin:14px 0 18px;font-size:13px;line-height:1.65;border:1.5px solid;display:flex;gap:12px}
+.callout .ic{font-size:18px;flex-shrink:0}
+.callout.warn{background:var(--naranja-l);border-color:#ffcc80;color:#7a3d00}
+.callout.info{background:var(--azul-l);border-color:#90caf9;color:#0d3d70}
+.callout.ok{background:var(--menta-l);border-color:#b2dfdb;color:#004d40}
+
+/* QUIZ */
+.quiz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:20px;flex-wrap:wrap}
+.quiz-score{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-s)}
+.score-pill{font-family:var(--font-d);font-size:20px;padding:4px 16px;border-radius:var(--rad-pill);background:var(--white);border:1.5px solid var(--border);box-shadow:var(--shadow)}
+.progress-wrap{margin-bottom:26px}
+.progress-bar{height:7px;border-radius:99px;background:var(--border);overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;transition:width .3s}
+.c1 .progress-fill{background:linear-gradient(90deg,var(--rosa),#ff8fab)}
+.c2 .progress-fill{background:linear-gradient(90deg,var(--azul),var(--azul-m))}
+.c3 .progress-fill{background:linear-gradient(90deg,var(--naranja-d),var(--naranja))}
+.c4 .progress-fill{background:linear-gradient(90deg,var(--menta-d),var(--menta))}
+.c5 .progress-fill{background:linear-gradient(90deg,var(--morado),var(--lila))}
+.progress-label{font-size:11.5px;color:var(--text-s);margin-top:6px;text-align:right}
+
+.q-card{background:var(--white);border:1px solid var(--border);border-radius:20px;padding:30px 32px 28px;box-shadow:var(--shadow)}
+.q-eyebrow{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--menta-d);margin-bottom:10px}
+.q-text{font-family:var(--font-d);font-size:22px;color:var(--text);line-height:1.3;margin-bottom:22px}
+.q-options{display:flex;flex-direction:column;gap:10px}
+.q-opt{display:flex;align-items:center;gap:14px;text-align:left;font-family:var(--font-b);font-size:13.8px;color:var(--text);padding:14px 18px;border-radius:14px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;transition:all .15s}
+.q-opt:hover:not(:disabled){border-color:var(--azul-m);background:var(--azul-l)}
+.q-opt .letter{width:26px;height:26px;border-radius:50%;background:var(--border);color:var(--text-s);font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.q-opt.correct{border-color:var(--menta-d);background:var(--menta-l);color:#004d40}
+.q-opt.correct .letter{background:var(--menta-d);color:#fff}
+.q-opt.incorrect{border-color:var(--rosa);background:var(--rosa-l);color:#8a1338}
+.q-opt.incorrect .letter{background:var(--rosa);color:#fff}
+.q-opt:disabled{cursor:default}
+.q-opt:disabled:not(.correct):not(.incorrect){opacity:.5}
+.quiz-dots{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.quiz-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:all .2s}
+.quiz-dot.correct{background:var(--menta-d)}
+.quiz-dot.incorrect{background:#e0568a}
+.quiz-dot.current{transform:scale(1.6)}
+.c1 .quiz-dot.current{background:#ff8fab}
+.c2 .quiz-dot.current{background:var(--azul-m)}
+.c3 .quiz-dot.current{background:var(--naranja)}
+.c4 .quiz-dot.current{background:var(--menta)}
+.c5 .quiz-dot.current{background:var(--lila)}
+.q-feedback{margin-top:18px;padding:16px 18px;border-radius:14px;font-size:13px;line-height:1.65;display:none}
+.q-feedback.show{display:flex;gap:12px;align-items:flex-start}
+.q-feedback.ok{background:var(--menta-l);color:#004d40;border:1.5px solid #b2dfdb}
+.q-feedback.bad{background:var(--rosa-l);color:#8a1338;border:1.5px solid #f5b8ce}
+.q-feedback .fb-ic{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:14px;color:#fff;font-weight:700}
+.q-feedback.ok .fb-ic{background:var(--menta-d)}
+.q-feedback.bad .fb-ic{background:#e0568a}
+.q-feedback .fb-body strong.fb-title{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;opacity:.85}
+.q-actions{display:flex;justify-content:flex-end;margin-top:22px}
+.btn-next{font-family:var(--font-b);font-size:13.5px;font-weight:600;padding:11px 26px;border-radius:var(--rad-pill);border:none;cursor:pointer;color:#fff;transition:opacity .18s,transform .15s;opacity:0;pointer-events:none}
+.btn-next.show{opacity:1;pointer-events:auto}
+.btn-next:hover{transform:translateY(-1px);opacity:.9}
+.c1 .btn-next{background:linear-gradient(135deg,var(--rosa),#ff8fab)}
+.c2 .btn-next{background:linear-gradient(135deg,var(--azul),var(--azul-m))}
+.c3 .btn-next{background:linear-gradient(135deg,var(--naranja-d),var(--naranja))}
+.c4 .btn-next{background:linear-gradient(135deg,var(--menta-d),var(--menta))}
+.c5 .btn-next{background:linear-gradient(135deg,var(--morado),var(--lila))}
+
+.result-card{background:var(--white);border:1px solid var(--border);border-radius:24px;padding:44px 40px;text-align:center;box-shadow:var(--shadow)}
+.result-ring-wrap{position:relative;width:150px;height:150px;margin:0 auto 18px}
+.result-ring{width:150px;height:150px;transform:rotate(-90deg)}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:11}
+.ring-fg{fill:none;stroke-width:11;stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.16,1,.3,1)}
+.c1 .ring-fg{stroke:var(--rosa)}
+.c2 .ring-fg{stroke:var(--azul)}
+.c3 .ring-fg{stroke:var(--naranja-d)}
+.c4 .ring-fg{stroke:var(--menta-d)}
+.c5 .ring-fg{stroke:var(--morado)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring-pct{font-family:var(--font-d);font-size:32px;color:var(--text);line-height:1}
+.ring-frac{font-size:11px;color:var(--text-s);margin-top:2px}
+.result-grade{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:var(--rad-pill);margin-bottom:10px}
+.result-grade.a{background:var(--menta-l);color:var(--menta-d)}
+.result-grade.b{background:var(--azul-l);color:var(--azul)}
+.result-grade.c{background:var(--naranja-l);color:var(--naranja-d)}
+.result-grade.d{background:var(--rosa-l);color:#c2185b}
+.result-label{font-size:14px;color:var(--text-s);margin:0 0 18px}
+.result-stats{display:flex;gap:10px;justify-content:center;margin-bottom:22px}
+.result-stat{padding:7px 16px;border-radius:var(--rad-pill);font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px}
+.result-stat.ok{background:var(--menta-l);color:var(--menta-d)}
+.result-stat.bad{background:var(--rosa-l);color:#c2185b}
+.result-msg{font-size:14px;color:var(--text);max-width:440px;margin:0 auto 26px;line-height:1.7}
+.btn-retry{font-family:var(--font-b);font-size:13.5px;font-weight:600;padding:11px 26px;border-radius:var(--rad-pill);border:1.5px solid var(--border);background:var(--white);color:var(--text);cursor:pointer;transition:all .18s}
+.btn-retry:hover{border-color:var(--azul-m);color:var(--azul)}
+
+.footer-note{text-align:center;font-size:12px;color:var(--text-s);padding:30px 0 10px}
+
+.back-btn{display:flex;align-items:center;gap:6px;font-family:var(--font-b);font-size:12.5px;font-weight:600;color:var(--text-s);text-decoration:none;padding:7px 14px 7px 10px;border-radius:var(--rad-pill);border:1.5px solid var(--border);background:var(--white);transition:all .18s;white-space:nowrap;cursor:pointer}
+.back-btn:hover{border-color:var(--rosa);color:var(--rosa);background:var(--rosa-l)}
+@media(max-width:768px){.overview-grid{grid-template-columns:1fr 1fr}.chap-grid{grid-template-columns:1fr}.nav-title{display:none}}
+@media(max-width:640px){.back-btn span.txt{display:none}}
+@media(max-width:560px){.overview-grid{grid-template-columns:1fr}.ov-card.span2{grid-column:span 1}.hero{padding:30px 24px 26px}.sub-nav{flex-direction:column}.topic-body{padding:18px 18px 24px}.topic-head{padding:18px 18px 14px}.q-card{padding:22px 20px}.q-text{font-size:19px}}
+</style>
+</head>
+<body>
+
+<nav class="nav" id="mainNav">
+  <div class="nav-inner">
+    <a class="back-btn" href="index.html" title="Volver al portafolio">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span class="txt">Volver al portafolio</span>
+    </a>
+    <div class="nav-logo">
+      <img src="img/LogoUpla.png" alt="UPLA" class="logo-img" onerror="this.style.display='none'"/>
+      <span class="nav-title">SQL Azure · Resúmenes</span>
+    </div>
+    <div class="nav-tabs" id="navTabs"></div>
+  </div>
+</nav>
+
+<!-- PANEL INICIO -->
+<div class="panel active" id="panel-inicio">
+  <div class="hero">
+    <div style="position:absolute;inset:0;pointer-events:none">
+      <div class="deco-c a"></div><div class="deco-c b"></div><div class="deco-c c"></div>
+    </div>
+    <div class="hero-text">
+      <p class="hero-eyebrow">Universidad Peruana Los Andes · Base de Datos en la Nube</p>
+      <h1 class="hero-title">Microsoft SQL <em>Azure</em><br/>Capítulos 1 al 5</h1>
+      <p class="hero-sub">Resúmenes detallados y cuestionarios interactivos sobre los fundamentos de SQL Azure: conceptos y arquitectura, administración de seguridad y migración, copias y supervisión, desarrollo de aplicaciones, y las tecnologías para conectarse a la nube.</p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="sec-header">
+      <p class="sec-eyebrow">Sobre esta guía</p>
+      <h2 class="sec-title">¿Qué contiene este material?</h2>
+    </div>
+
+    <div class="overview-grid">
+      <div class="ov-card span2">
+        <p class="ov-label">Resumen del libro</p>
+        <p class="ov-intro">Este material resume los cinco primeros capítulos del libro <strong>"Microsoft SQL Azure. Administración y desarrollo en la nube"</strong> de María Pérez Marqués: los fundamentos y la arquitectura de SQL Azure, cómo administrar la seguridad y migrar bases de datos, cómo copiarlas y supervisarlas, qué considerar al desarrollar aplicaciones, y cómo conectarse desde distintas tecnologías.</p>
+        <div class="ov-chips">
+          <span class="chip">Portal y arquitectura</span>
+          <span class="chip naranja">Seguridad y migración</span>
+          <span class="chip lila">Firewall y supervisión</span>
+          <span class="chip menta">Conexión y desarrollo</span>
+        </div>
+      </div>
+      <div class="ov-card">
+        <p class="ov-label">Capítulos</p>
+        <span class="ov-stat-num">5</span>
+        <p class="ov-stat-label">del 1 al 5</p>
+      </div>
+      <div class="ov-card">
+        <p class="ov-label">Preguntas</p>
+        <span class="ov-stat-num">80</span>
+        <p class="ov-stat-label">16 por capítulo</p>
+      </div>
+    </div>
+
+    <div class="sec-header" style="padding-top:10px">
+      <p class="sec-eyebrow">Explora</p>
+      <h2 class="sec-title">Elige un capítulo</h2>
+      <p class="sec-desc">Cada capítulo incluye un resumen detallado organizado por subtemas (igual que el índice del libro) y un cuestionario interactivo de 16 preguntas con retroalimentación inmediata.</p>
+    </div>
+
+    <div class="chap-grid" id="chapGrid"></div>
+  </div>
+</div>
+
+<!-- PANELES DE CAPITULO (generados por JS) -->
+<div id="chapPanels"></div>
+
+<p class="footer-note">Universidad Peruana Los Andes · Material elaborado a partir de "Microsoft SQL Azure. Administración y desarrollo en la nube" — María Pérez Marqués (Alfaomega-RC Libros)</p>
+
+<script>
+/* ======================= DATOS DE CAPÍTULOS ======================= */
+const CAPS = ["c1","c2","c3","c4","c5"];
+const META = {
+  c1:{num:"Capítulo 1",title:"Base de Datos de SQL Azure. Conceptos y arquitectura",short:"Conceptos y arquitectura",desc:"El nuevo portal de administración, diferencias con SQL Server, acceso a datos, arquitectura en cuatro niveles, el modelo de aprovisionamiento y la facturación de SQL Azure."},
+  c2:{num:"Capítulo 2",title:"Base de Datos de SQL Azure. Administrar bases de datos e inicios de sesión",short:"Seguridad y migración",desc:"Administración de la seguridad, inicios de sesión y roles, y las tres formas de migrar y mover datos hacia SQL Azure."},
+  c3:{num:"Capítulo 3",title:"Base de Datos de SQL Azure. Copiar bases de datos y supervisión",short:"Copias, DMV y firewall",desc:"Cómo copiar bases de datos como mecanismo de respaldo, supervisar con vistas de administración dinámica, configurar el firewall y solucionar problemas comunes."},
+  c4:{num:"Capítulo 4",title:"Base de Datos de SQL Azure. Desarrollo de aplicaciones",short:"Compatibilidad y límites",desc:"Compatibilidad con Transact-SQL, herramientas admitidas, limitaciones generales, seguridad y las características de SQL Server no disponibles en SQL Azure."},
+  c5:{num:"Capítulo 5",title:"Base de Datos de SQL Azure. Conectar con SQL Azure",short:"Tecnologías de conexión",desc:"Consideraciones generales de conexión y cómo conectarse con sqlcmd, ADO.NET, ASP.NET, WCF Data Services, PHP, JDBC y ADO.NET Entity Framework."}
+};
+
+function hl(code){
+  // resaltador simple de sintaxis T-SQL
+  let out = code
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  out = out.replace(/(--.*)$/gm,'<span class="com">$1</span>');
+  out = out.replace(/('[^']*')/g,'<span class="str">$1</span>');
+  out = out.replace(/\b(\d+)\b/g,'<span class="num">$1</span>');
+  const kws = ['ALTER','CREATE','DROP','SELECT','INSERT','UPDATE','DELETE','GRANT','REVOKE','DENY','EXECUTE','EXEC','TO','FROM','ON','WITH','AS','INTO','VALUES','WHERE','AND','OR','NOT','NULL','DEFAULT','TABLE','DATABASE','FUNCTION','INDEX','LOGIN','PROCEDURE','TRIGGER','TYPE','USER','VIEW','SYNONYM','SPATIAL','MODIFY','NAME','EDITION','MAXSIZE','GB','CASCADE','OPTION','FOR','USE','TOP','PERCENT','OUTPUT','ENABLE','DISABLE','CALLER','SELF','OWNER','ALL','PRIVILEGES','SCHEMA','OBJECT','ROLE'];
+  const re = new RegExp('\\\\b('+kws.join('|')+')\\\\b','g');
+  out = out.replace(re,'<span class="kw">$1</span>');
+  out = out.replace(/(::|\|)/g,'<span class="op">$1</span>');
+  return out;
+}
+function codeBlock(code){ return '<div class="codebox"><pre>'+hl(code)+'</pre></div>'; }
+function tagList(arr,cls){ cls = cls||''; return '<div class="tag-list">'+arr.map(t=>'<span class="tag '+cls+'">'+t+'</span>').join('')+'</div>'; }
+function table(headers,rows){
+  let h = '<table class="mini-table"><thead><tr>'+headers.map(x=>'<th>'+x+'</th>').join('')+'</tr></thead><tbody>';
+  rows.forEach(r=>{ h += '<tr>'+r.map(c=>'<td>'+c+'</td>').join('')+'</tr>'; });
+  h += '</tbody></table>';
+  return h;
+}
+function callout(type,icon,text){ return '<div class="callout '+type+'"><span class="ic">'+icon+'</span><div>'+text+'</div></div>'; }
+
+/* ---------- CONTENIDO CAPÍTULO 1 ---------- */
+const CONTENT_c1 = [
+{icon:'01',title:'El nuevo portal y administración lógica frente a física',
+ body:`<p>Microsoft Base de Datos de SQL Azure es un servicio de base de datos relacional en la nube, creado con tecnologías SQL Server, que se ejecuta en centros de datos de Microsoft sobre hardware propiedad de Microsoft. El nuevo portal de administración ofrece una herramienta basada en web para diseñar y editar tablas, vistas y procedimientos almacenados, y para crear y ejecutar consultas Transact-SQL.</p>
+ <h4>Administración lógica frente a administración física</h4>
+ <p>A diferencia de una instancia local, SQL Azure separa la administración lógica de la física: el usuario sigue administrando bases de datos, inicios de sesión, usuarios y roles, pero Microsoft se encarga del hardware, la replicación y la conmutación por error.</p>
+ ${table(['Aspecto','SQL Server local','Base de Datos de SQL Azure'],[
+   ['Administración física','A cargo del DBA','A cargo de Microsoft'],
+   ['Copias de seguridad','RESTORE / BACKUP','No disponibles: se copia la base de datos a una nueva'],
+   ['Aprovisionamiento','Prepara el DBA/TI','Proceso automático de SQL Azure'],
+   ['Compatibilidad T-SQL','Completa','Parcial en instrucciones con rutas físicas']
+ ])}
+ ${callout('warn','⚠','Como el sistema de archivos no es accesible y los datos se replican automáticamente, los comandos <strong>BACKUP</strong> y <strong>RESTORE</strong> de SQL Server no están disponibles: la copia de seguridad se hace copiando la base de datos a una nueva base de datos en SQL Azure.')}
+ <h4>Características y tipos no admitidos</h4>
+ <p>Analysis Services, Replication y Service Broker no están disponibles como servicios en la plataforma. Se bloquea cualquier instrucción que intente manipular recursos físicos directamente, como el regulador de recursos o referencias a grupos de archivos.</p>`
+},
+{icon:'02',title:'Acceso a datos y arquitectura de SQL Azure',
+ body:`<p>Hay dos maneras generales de que una aplicación tenga acceso a datos en SQL Azure:</p>
+ ${table(['Escenario','Dónde vive el código','Dónde vive la base de datos'],[
+   ['Escenario A','En el centro de datos corporativo (local)','En SQL Azure'],
+   ['Escenario B','En Windows Azure','En SQL Azure']
+ ])}
+ ${callout('info','ℹ','Hospedar también el código de la aplicación en Windows Azure (escenario B) minimiza la latencia de red, porque el tráfico entre la aplicación y los datos recorre una distancia mucho más corta dentro del mismo centro de datos.')}
+ <h4>Arquitectura en cuatro niveles</h4>
+ <p>Desde una perspectiva arquitectónica, SQL Azure funciona mediante cuatro niveles de abstracción:</p>
+ ${table(['Nivel','Función principal'],[
+   ['Cliente','Se comunica directamente con SQL Azure mediante el flujo TDS; puede residir localmente o en Windows Azure'],
+   ['Servicios','Actúa como puerta de enlace: aprovisionamiento, facturación/medida y enrutamiento de conexiones'],
+   ['Plataforma','Instancias de SQL Server administradas por el tejido de SQL Azure (failover, balanceo, replicación)'],
+   ['Infraestructura','Administración de TI del hardware físico y los sistemas operativos']
+ ])}`
+},
+{icon:'03',title:'Modelo de aprovisionamiento de SQL Azure',
+ body:`<p>Para usar SQL Azure primero se crea una cuenta de la plataforma Windows Azure, que permite configurar y administrar las suscripciones. Cada suscripción puede enlazarse a uno o varios servidores SQL Azure.</p>
+ ${table(['Elemento','Descripción'],[
+   ['Cuenta de la plataforma','Da acceso a Windows Azure, AppFabric y Base de Datos de SQL Azure'],
+   ['Servidor SQL Azure','Grupo lógico de bases de datos; punto administrativo central con nombre de dominio único'],
+   ['Base de datos maestra (master)','Se crea automáticamente, es de solo lectura y rastrea inicios de sesión y permisos'],
+   ['Inicio de sesión inicial','Entidad de seguridad a nivel de servidor, similar al inicio de sesión sa de SQL Server']
+ ])}
+ ${callout('warn','⚠','De forma predeterminada, SQL Azure admite hasta <strong>6 servidores por suscripción</strong> y <strong>150 bases de datos por servidor</strong> (incluida la base de datos maestra). Este límite se puede ampliar contactando al soporte.')}
+ <p>Debe estar conectado a la base de datos maestra siempre que utilice CREATE, ALTER o DROP para crear, modificar o quitar inicios de sesión o bases de datos.</p>`
+},
+{icon:'04',title:'Cuentas y facturación en SQL Azure',
+ body:`<p>SQL Azure ofrece dos ediciones de base de datos. A diferencia de SQL Server local, la edición se aplica a la base de datos individual, no a toda la instancia, por lo que se pueden mezclar ediciones dentro de un mismo servidor.</p>
+ ${table(['Edición','Uso recomendado','MAXSIZE válido'],[
+   ['Web Edition','Aplicaciones web pequeñas y de grupos de trabajo','1 GB o 5 GB'],
+   ['Business Edition','ISV, aplicaciones LOB y empresariales','10, 20, 30, 40 o 50 GB (incrementos de 10 GB)']
+ ])}
+ <p>La facturación es mensual y se amortiza diariamente según el tamaño máximo alcanzado ese día y la edición de cada base de datos. Las bases de datos maestras no tienen costo.</p>
+ ${callout('warn','⚠','Si la base de datos alcanza el valor de <strong>MAXSIZE</strong>, se recibe el error <strong>40544</strong>: no se puede insertar, actualizar ni crear objetos nuevos, aunque sí se puede leer, eliminar datos, truncar tablas y reconstruir índices.')}
+ <p>El ancho de banda entre SQL Azure y Windows Azure/AppFabric es gratuito dentro de la misma subregión. Las vistas <span class="tag b" style="margin:0">sys.database_usage</span> y <span class="tag b" style="margin:0">sys.bandwidth_usage</span> permiten consultar el uso y la facturación.</p>`
+}
+];
+
+/* ---------- CONTENIDO CAPÍTULO 2 ---------- */
+const CONTENT_c2 = [
+{icon:'01',title:'Administración de la seguridad: SQL Server frente a SQL Azure',
+ body:`<p>La administración de la seguridad a nivel de base de datos es casi idéntica a la de una instancia local; las diferencias importantes están en la administración a nivel de servidor, ya que las bases de datos pueden residir en varios equipos físicos.</p>
+ ${table(['Diferencia','SQL Server local','Base de Datos de SQL Azure'],[
+   ['Dónde se administra la seguridad de servidor','Carpeta Seguridad en SSMS','Base de datos master'],
+   ['Rol para crear inicios de sesión','securityadmin','loginmanager'],
+   ['Rol para crear bases de datos','dbcreator','dbmanager'],
+   ['Ver todos los inicios de sesión','sys.sql_logins','sys.sql_logins (conectado a master)'],
+   ['Ver todas las bases de datos','sys.databases','sys.databases (conectado a master)']
+ ])}
+ ${callout('warn','⚠','No se admite el comando <strong>USE</strong> para cambiar entre bases de datos: hay que establecer una conexión directa con la base de datos de destino.')}`
+},
+{icon:'02',title:'Administrar inicios de sesión y roles de seguridad',
+ body:`<p>Para administrar inicios de sesión, primero debe conectarse a la base de datos <strong>master</strong> con el inicio de sesión de entidad de seguridad a nivel de servidor.</p>
+ ${codeBlock(`-- first, connect to the master database
+CREATE LOGIN login1 WITH password='<ProvidePassword>';`)}
+ <h4>Los roles loginmanager y dbmanager</h4>
+ <p>Solo se pueden asignar en la base de datos master:</p>
+ ${table(['Rol','Permite'],[
+   ['loginmanager','Crear, modificar y quitar inicios de sesión (equivalente a securityadmin)'],
+   ['dbmanager','Crear y quitar bases de datos (equivalente a dbcreator)']
+ ])}
+ <p>Para que un inicio de sesión nuevo pueda conectarse a una base de datos, hay que concederle permisos a nivel de base de datos mediante <strong>CREATE USER</strong>:</p>
+ ${codeBlock(`-- Establish a new connection to the database1 database
+CREATE USER login1User FROM LOGIN login1;`)}
+ ${callout('info','ℹ','Algunas herramientas requieren anexar el servidor al inicio de sesión con la notación <strong>&lt;login&gt;@&lt;server&gt;</strong> en la cadena de conexión.')}`
+},
+{icon:'03',title:'Migrar bases de datos a SQL Azure',
+ body:`<p>Para migrar una base de datos SQL Server existente, se exporta el esquema y después se transfieren los datos. Hay tres formas principales:</p>
+ ${table(['Método','Cuándo usarlo'],[
+   ['Asistente para generar y publicar scripts','Exportar el esquema como script de Transact-SQL y ejecutarlo en SQL Azure'],
+   ['Microsoft Sync Framework 2.1','Sincronizar de forma continua entre SQL Server local y SQL Azure, o entre bases de datos SQL Azure'],
+   ['Asistente de migración de SQL Server (SSMA)','Migrar esquema y datos guiado, incluso desde Access o MySQL']
+ ])}
+ ${callout('warn','⚠','SQL Azure admite solo un subconjunto de Transact-SQL: el script generado debe modificarse para incluir únicamente instrucciones admitidas antes de ejecutarlo en la nube.')}
+ <p>Un ejemplo típico del libro es migrar la base de datos de ejemplo <strong>School</strong>: generar el script en SQL Server Management Studio con el motor de destino establecido en "Base de datos de SQL Azure", crear la base de datos con <span class="tag" style="margin:0">CREATE DATABASE School</span> y ejecutar el script contra el nuevo servidor.</p>`
+},
+{icon:'04',title:'Mover datos a SQL Azure',
+ body:`<p>Además de migrar el esquema completo, SQL Azure admite dos herramientas para mover datos hacia y desde la nube:</p>
+ ${table(['Herramienta','Uso principal'],[
+   ['SQL Server Integration Services (SSIS)','Transferir datos con SQL Server 2008 o posterior; el Asistente para importación y exportación admite SQL Azure desde 2008 R2'],
+   ['Utilidad bcp (bcp.exe)','Copia masiva: importar un número elevado de filas nuevas o exportar datos de tablas a archivos']
+ ])}`
+}
+];
+
+/* ---------- CONTENIDO CAPÍTULO 3 ---------- */
+const CONTENT_c3 = [
+{icon:'01',title:'Copiar bases de datos en SQL Azure',
+ body:`<p>Como no existen los comandos de copia de seguridad tradicionales, SQL Azure permite crear una copia de seguridad copiando la base de datos a una nueva base de datos, ya sea en el mismo servidor o entre servidores diferentes.</p>
+ ${codeBlock(`-- execute on the master database
+CREATE DATABASE destination_database_name
+    AS COPY OF [source_server_name.]source_database_name`)}
+ <p>La copia es <strong>asincrónica</strong>: la instrucción CREATE DATABASE termina antes de que se complete la copia. El progreso se supervisa con <span class="tag b" style="margin:0">sys.databases</span> y <span class="tag b" style="margin:0">sys.dm_database_copies</span>.</p>
+ ${table(['Estado (state_desc)','Significado'],[
+   ['COPYING','La copia está en curso'],
+   ['ONLINE','La copia terminó correctamente; ya es una base de datos independiente'],
+   ['SUSPECT','La copia falló; hay que eliminarla (DROP) e intentarlo de nuevo']
+ ])}
+ ${callout('warn','⚠','Solo el <strong>DBO</strong> de la base de datos de origen puede copiarla, y en el servidor de destino el inicio de sesión debe ser miembro del rol <strong>dbmanager</strong>. Además, el inicio de sesión debe tener el mismo nombre y contraseña en ambos servidores.')}`
+},
+{icon:'02',title:'Supervisar SQL Azure con vistas de administración dinámica',
+ body:`<p>SQL Azure admite parcialmente tres categorías de vistas de administración dinámica (DMV), que a diferencia de SQL Server local devuelven información solo de la base de datos lógica actual:</p>
+ ${tagList(['Relacionadas con la base de datos','Relacionadas con ejecuciones','Relacionadas con transacciones'],'b')}
+ ${callout('info','ℹ','Para consultar una DMV se necesita el permiso <strong>VIEW DATABASE STATE</strong>, que se concede con <span class="tag" style="margin:0">GRANT VIEW DATABASE STATE TO database_user;</span>')}
+ ${table(['Vista','Para qué sirve'],[
+   ['sys.dm_db_partition_stats','Calcular el tamaño de la base de datos y de objetos individuales'],
+   ['sys.dm_exec_connections / sys.dm_exec_sessions','Supervisar conexiones y sesiones activas'],
+   ['sys.dm_exec_query_stats','Encontrar las consultas más costosas en CPU y sus planes'],
+   ['sys.dm_tran_locks','Supervisar consultas bloqueadas']
+ ])}`
+},
+{icon:'03',title:'Firewall de SQL Azure',
+ body:`<p>Por defecto, el firewall bloquea todo acceso al servidor. Hay que crear reglas que especifiquen qué direcciones IP tienen permiso, usando el Portal de administración o la base de datos maestra.</p>
+ ${table(['Forma de conectarse','Cómo se autoriza'],[
+   ['Desde Internet','El firewall compara la IP de origen contra las reglas configuradas'],
+   ['Desde Windows Azure','Una regla especial con IP inicial y final 0.0.0.0 habilita el acceso']
+ ])}
+ <p>En la base de datos maestra, las reglas se administran con procedimientos almacenados:</p>
+ ${codeBlock(`-- enable Windows Azure connections
+exec sp_set_firewall_rule N'Allow Windows Azure','0.0.0.0','0.0.0.0'
+
+-- remove a firewall rule
+exec sp_delete_firewall_rule N'Example setting 1'`)}
+ ${callout('warn','⚠','La <strong>primera</strong> regla de firewall siempre debe crearse desde el Portal de administración; solo el inicio de sesión de entidad de seguridad a nivel de servidor puede configurar el firewall por Transact-SQL.')}`
+},
+{icon:'04',title:'Solucionar problemas de SQL Azure',
+ body:`<p>El capítulo recopila los problemas más comunes al trabajar con SQL Azure y cómo abordarlos.</p>
+ ${table(['Problema','Causa / solución habitual'],[
+   ['Error de inicio de sesión','Credenciales inválidas o base de datos no disponible; el administrador de servicios puede restablecer contraseñas'],
+   ['Servicio no disponible','Revisar resolución de nombres (tracert), firewall del puerto 1433 o proxy mal configurado; consultar la página de estado de Azure'],
+   ['Errores generales de red','Conexión inactiva, uso excesivo de recursos o transacción bloqueada durante mucho tiempo'],
+   ['Servidor muy ocupado','Implementar lógica de reintento: al fallar, reconectar y volver a ejecutar la consulta']
+ ])}
+ ${callout('info','ℹ','Una sesión inactiva durante <strong>30 minutos</strong> se termina automáticamente. SQL Azure usa un subconjunto de los mensajes de error de SQL Server.')}`
+}
+];
+
+/* ---------- CONTENIDO CAPÍTULO 4 ---------- */
+const CONTENT_c4 = [
+{icon:'01',title:'Compatibilidad con Transact-SQL',
+ body:`<p>La compatibilidad de SQL Azure con Transact-SQL se describe en tres categorías principales:</p>
+ ${table(['Categoría','Significado'],[
+   ['Admitidos tal cual','Mismo comportamiento que en SQL Server 2008'],
+   ['No admitidos','No existen en SQL Azure'],
+   ['Parcialmente admitidos','Existen pero con un subconjunto de argumentos u opciones']
+ ])}
+ <h4>Características admitidas o parcialmente admitidas</h4>
+ ${tagList(['Constantes','Restricciones','Cursores','Datos e índices espaciales','Procedimientos almacenados','Estadísticas','Transacciones','Desencadenadores','Tablas y variables de tabla','Funciones definidas por el usuario','Vistas','Tablas temporales locales'],'m')}
+ <h4>Características no admitidas</h4>
+ ${tagList(['CLR','Colocación de archivos','Reflejo de la base de datos','Consultas distribuidas','Transacciones distribuidas','Grupos de archivos','Tablas temporales globales','Service Broker','Tablas del sistema','Marcas de seguimiento'],'r')}
+ ${callout('warn','⚠','Las características del motor de SQL Server marcadas como <strong>obsoletas</strong> tampoco se admiten en SQL Azure.')}`
+},
+{icon:'02',title:'Herramientas y utilidades compatibles',
+ body:`<p>Diversas herramientas de SQL Server se pueden usar con SQL Azure, cada una con matices propios:</p>
+ ${table(['Herramienta','Nota clave'],[
+   ['sqlcmd','Compatible; la utilidad similar osql NO se admite'],
+   ['SQL Server Management Studio','Requiere SSMS 2008 R2 o posterior'],
+   ['El administrador de base de datos para SQL Azure','Herramienta web para diseñar tablas, vistas y procedimientos'],
+   ['Aplicaciones de capa de datos (DAC)','Requiere el marco DAC 1.1 para actualizaciones en contexto'],
+   ['Asistente para generar y publicar scripts','Debe usarse el motor de destino "SQL Azure"'],
+   ['SSIS y la utilidad bcp','Transferencia de datos masiva'],
+   ['SSAS / SSRS / SQL Azure Reporting','SQL Azure como origen de datos, ejecutados localmente'],
+   ['SMO','Solo un subconjunto habilitado, sin uso pensado para aplicaciones'],
+   ['SSMA, Access, PowerPivot','Migración desde Access/MySQL y análisis de datos']
+ ])}`
+},
+{icon:'03',title:'Instrucciones y limitaciones generales',
+ body:`<p>Existen limitaciones transversales que afectan al desarrollo de cualquier aplicación sobre SQL Azure:</p>
+ ${table(['Aspecto','Limitación'],[
+   ['Protocolo TDS','Requiere cliente TDS 7.3 o posterior; no se admite OLE DB'],
+   ['Aislamiento','READ_COMMITTED_SNAPSHOT y ALLOW_SNAPSHOT_ISOLATION están fijos en ON y no se pueden cambiar'],
+   ['Intercalación','Predeterminada SQL_LATIN1_GENERAL_CP1_CI_AS; solo se puede cambiar a nivel de columna o expresión'],
+   ['Índice clúster','Toda tabla debe tener un índice clúster: no se admiten tablas de montón'],
+   ['Bases de datos por servidor','Hasta 150 (incluida master), ampliable'],
+   ['Nombres de usuario prohibidos','admin, administrator, guest, root, sa'],
+   ['Conexión','Puede cerrarse por uso excesivo de recursos o inactividad de 30 minutos o más']
+ ])}
+ ${callout('info','ℹ','SQL Azure no admite <strong>transacciones distribuidas</strong> (las que afectan a varios recursos), aunque .NET Framework puede promoverlas automáticamente en ciertos escenarios de TransactionScope.')}`
+},
+{icon:'04',title:'Seguridad y características de SQL Server no admitidas',
+ body:`<p>Las instrucciones y limitaciones de seguridad cubren cinco aspectos:</p>
+ ${tagList(['Firewall','Cifrado y validación de certificados','Autenticación','Inicios de sesión y usuarios','Procedimientos recomendados'],'b')}
+ ${callout('warn','⚠','Todas las comunicaciones requieren <strong>cifrado SSL</strong>. En ADO.NET, establezca <span class="tag" style="margin:0">Encrypt=True</span> y <span class="tag" style="margin:0">TrustServerCertificate=False</span> para evitar ataques "Man in the middle". Solo se admite autenticación de SQL Server, nunca la de Windows.</p>')}
+ <h4>Características de SQL Server no admitidas, por versión</h4>
+ ${table(['Versión de origen','Ejemplos no admitidos'],[
+   ['SQL Server 2008 R2','Utilidad de SQL Server, proveedor de PowerShell, Master Data Services'],
+   ['SQL Server 2008','Captura de datos modificados, compresión de datos, FILESTREAM, Resource Governor, cifrado transparente'],
+   ['SQL Server 2005','CLR y UDT de CLR, reflejo de la base de datos, Service Broker, particionamiento de tablas'],
+   ['Versiones anteriores','Copias de seguridad y restauración, replicación, procedimientos extendidos, Agente SQL Server']
+ ])}`
+}
+];
+
+/* ---------- CONTENIDO CAPÍTULO 5 ---------- */
+const CONTENT_c5 = [
+{icon:'01',title:'Consideraciones generales de conexión y sqlcmd',
+ body:`<p>Cualquier conexión a SQL Azure, sin importar la tecnología, comparte estas reglas:</p>
+ ${tagList(['Solo puerto TCP 1433','Requiere regla de firewall previa','Notación <login>@<server>','Sin base de datos = conecta a master','No admite USE para cambiar de BD','Solo autenticación de SQL Server','No admite OLE DB ni transacciones distribuidas'],'m')}
+ <h4>Conectar mediante sqlcmd</h4>
+ <p>No es posible conectar directamente con la utilidad sqlcmd estándar; hay que anexar el servidor al inicio de sesión:</p>
+ ${codeBlock(`C:\\>sqlcmd -U <ProvideLogin@Server> -P <ProvidePassword> -S <ProvideServerName> -d master
+1> CREATE DATABASE <ProvideDatabaseName>;
+2> GO
+3> QUIT`)}
+ ${callout('warn','⚠','SQL Azure no admite las opciones <strong>-z</strong> y <strong>-Z</strong> de sqlcmd para cambiar contraseñas; use <strong>ALTER LOGIN</strong> conectado a master.')}`
+},
+{icon:'02',title:'Conectar mediante ADO.NET y ASP.NET',
+ body:`<p>Conectar con ADO.NET es muy similar a hacerlo con una instancia local. Se recomienda usar <strong>SqlConnectionStringBuilder</strong> para evitar inyección de código y proteger la cadena de conexión.</p>
+ ${codeBlock(`Dim connStringBuilder As New SqlConnectionStringBuilder()
+With connStringBuilder
+    .DataSource = dataSource
+    .InitialCatalog = "master"
+    .Encrypt = True
+    .TrustServerCertificate = False
+    .UserID = userName
+    .Password = password
+End With`)}
+ ${callout('info','ℹ','Establecer <strong>Encrypt=True</strong> y <strong>TrustServerCertificate=False</strong> cifra la conexión e impide ataques "Man in the middle".')}
+ <h4>ASP.NET</h4>
+ <p>La clase <strong>SqlDataSource</strong> es compatible con SQL Azure, por lo que un control <strong>GridView</strong> puede insertar, actualizar y eliminar datos con solo cambiar la cadena de conexión en el Web.config, sin escribir código adicional.</p>`
+},
+{icon:'03',title:'Conectar mediante WCF Data Services, PHP y JDBC',
+ body:`<h4>Servicios de datos de WCF</h4>
+ <p>Permiten crear servicios de datos basados en REST, accesibles desde clientes .NET, usando el proveedor Entity Framework sobre una base de datos SQL Azure.</p>
+ <h4>PHP</h4>
+ <p>Se conecta con el Controlador de SQL Server para PHP (desde la versión 1.1) usando <span class="tag" style="margin:0">sqlsrv_connect()</span>:</p>
+ ${codeBlock(`$serverName = "tcp:ProvideServerName.database.windows.net,1433";
+$connectionInfo = array("Database"=>$dbName, "UID"=>$userName, "PWD"=>$userPassword);
+$conn = sqlsrv_connect( $serverName, $connectionInfo);`)}
+ <h4>JDBC</h4>
+ <p>Requiere el Controlador JDBC de SQL Server 3.0 o posterior:</p>
+ ${codeBlock(`String connectionUrl =
+  "jdbc:sqlserver://servername.database.windows.net;" +
+  "databaseName=School;user=username@servername;password=userpassword";`)}`
+},
+{icon:'04',title:'Conectar mediante ADO.NET Entity Framework',
+ body:`<p>Entity Framework permite programar contra un modelo de aplicación conceptual (Entity Data Model) en lugar de hacerlo directamente sobre el esquema relacional. El modelo <strong>.edmx</strong> se genera desde la base de datos y crea un tipo de entidad por cada tabla.</p>
+ ${callout('warn','⚠','En Visual Studio 2008, Entity Framework no puede generar el archivo .edmx directamente desde SQL Azure: hay que generarlo primero contra una instancia local y luego apuntar la cadena de conexión a SQL Azure.')}
+ <p>Una vez creado el modelo, las consultas se escriben con LINQ sobre los objetos CLR generados:</p>
+ ${codeBlock(`Dim departmentQuery = _
+    From d In schoolContext.Departments.Include("Courses") _
+    Order By d.Name _
+    Select d`)}
+ <p>Para apuntar la aplicación a SQL Azure basta con actualizar la cadena de conexión en el <strong>App.config</strong> o <strong>Web.config</strong>, cambiando el <span class="tag b" style="margin:0">Data Source</span> al nombre del servidor SQL Azure.</p>`
+}
+];
+
+const CONTENT = {c1:CONTENT_c1,c2:CONTENT_c2,c3:CONTENT_c3,c4:CONTENT_c4,c5:CONTENT_c5};
+
+/* ======================= PREGUNTAS ======================= */
+function Q(q,opts,correctIdx,exp){ return {q,opts,correctIdx,exp}; }
+
+const QUIZ_c1 = [
+Q("¿Qué gestiona Microsoft y qué sigue gestionando el usuario en SQL Azure?",["Microsoft gestiona todo, incluida la seguridad","El usuario gestiona el hardware físico","Microsoft administra el hardware físico; el usuario administra esquemas, seguridad y consultas","Ninguno administra nada, es automático al 100%"],2,"SQL Azure abstrae la administración física (hardware, replicación) a cargo de Microsoft, mientras el DBA sigue administrando esquemas, estadísticas, índices y seguridad."),
+Q("¿Por qué los comandos BACKUP y RESTORE de SQL Server no están disponibles en SQL Azure?",["Porque son muy lentos","Porque el sistema de archivos no es accesible y los datos se replican automáticamente","Porque están obsoletos","Porque requieren licencia adicional"],1,"Como el sistema de archivos del equipo no es accesible y todos los datos se replican automáticamente, los comandos de copia de seguridad y restauración no son aplicables."),
+Q("¿Cómo se hace una copia de seguridad de una base de datos en SQL Azure?",["Con el comando BACKUP DATABASE","Copiándola a una nueva base de datos en SQL Azure","No es posible hacer copias de seguridad","Exportando a un archivo .bak"],1,"SQL Azure permite hacer copia de seguridad copiando la base de datos a una nueva base de datos dentro de SQL Azure."),
+Q("¿Qué servicios de SQL Server NO están disponibles actualmente en la plataforma Windows Azure según el capítulo 1?",["Transact-SQL y vistas","Analysis Services, Replication y Service Broker","Procedimientos almacenados","Tipos de datos numéricos"],1,"Analysis Services, Replication y Service Broker no se proporcionan actualmente como servicios en la plataforma Windows Azure."),
+Q("En el escenario A de acceso a datos, ¿dónde reside el código de la aplicación?",["En Windows Azure","En SQL Azure","Localmente, en el centro de datos corporativo","No existe código de aplicación"],2,"En el escenario A, el código de la aplicación sigue siendo local del centro de datos corporativo, mientras que la base de datos reside en SQL Azure."),
+Q("¿Qué ventaja principal ofrece hospedar también la aplicación en Windows Azure (escenario B)?",["Reduce el costo de las licencias","Minimiza la latencia de red entre la aplicación y los datos","Permite usar autenticación de Windows","Elimina la necesidad de firewall"],1,"Hospedar el código en Windows Azure minimiza la latencia de red porque el tráfico entre aplicación y datos recorre una distancia mucho más corta dentro del mismo centro de datos."),
+Q("¿Cuáles son los cuatro niveles de la arquitectura de SQL Azure?",["Cliente, servicios, plataforma e infraestructura","Front-end, back-end, base de datos y caché","Web, aplicación, datos y red","Servidor, base de datos, tabla y columna"],0,"La arquitectura de SQL Azure tiene cuatro niveles: cliente, servicios, plataforma e infraestructura."),
+Q("¿Qué función cumple el nivel de servicios en la arquitectura de SQL Azure?",["Ejecuta las consultas Transact-SQL","Actúa como puerta de enlace: aprovisionamiento, facturación y enrutamiento de conexiones","Almacena físicamente los datos","Genera los certificados SSL"],1,"El nivel de servicios funciona como puerta de enlace entre el cliente y la plataforma, proporcionando aprovisionamiento, facturación/medida y enrutamiento de conexiones."),
+Q("¿Qué es el 'tejido de SQL Azure' (SQL Azure fabric)?",["Un tipo de dato espacial","El sistema distribuido que habilita conmutación por error, balanceo de carga y replicación automática","Una herramienta de facturación","El nombre del portal de administración"],1,"El tejido de SQL Azure es un sistema informático distribuido que habilita la conmutación automática por error, el equilibrio de carga y la replicación automática entre servidores físicos."),
+Q("¿Qué crea automáticamente el proceso de aprovisionamiento al crear un servidor SQL Azure?",["Una base de datos maestra (master) de solo lectura","Una regla de firewall abierta a todo Internet","Un certificado SSL personalizado","Una copia de seguridad inicial"],0,"El proceso de aprovisionamiento crea automáticamente una base de datos maestra (master) de solo lectura que rastrea inicios de sesión y permisos."),
+Q("Por defecto, ¿cuántos servidores por suscripción y bases de datos por servidor admite SQL Azure?",["3 servidores y 50 bases de datos","6 servidores y 150 bases de datos","10 servidores y 100 bases de datos","1 servidor y 500 bases de datos"],1,"De forma predeterminada, SQL Azure admite hasta 6 servidores por suscripción y 150 bases de datos por servidor, incluida la base de datos maestra."),
+Q("¿Cuáles son las dos ediciones de base de datos que ofrece SQL Azure?",["Standard y Enterprise","Web Edition y Business Edition","Basic y Premium","Free y Pro"],1,"SQL Azure proporciona dos ediciones: Web Edition y Business Edition, aplicadas a nivel de base de datos individual."),
+Q("¿Cuál es el tamaño máximo admitido para una base de datos Business Edition?",["5 GB","10 GB","50 GB, en incrementos de 10 GB","Sin límite"],2,"La base de datos Business Edition admite hasta 50 GB de datos, en incrementos de 10 GB."),
+Q("¿Qué error se recibe si una base de datos alcanza su valor de MAXSIZE?",["Error 40508","Error 40544","Error 40615","Error 40613"],1,"El error 40544 indica que la base de datos alcanzó su cuota de tamaño máximo (MAXSIZE)."),
+Q("Cuando se alcanza el límite de MAXSIZE, ¿qué operaciones siguen estando permitidas?",["Ninguna, la base de datos queda bloqueada por completo","Solo insertar datos nuevos","Leer y eliminar datos, truncar tablas y reconstruir índices","Solo cambiar la edición"],2,"Aunque no se puede insertar, actualizar ni crear objetos nuevos, todavía se puede leer y eliminar datos, truncar tablas, quitar tablas e índices y reconstruir índices."),
+Q("¿Qué vista del sistema describe el ancho de banda utilizado por cada base de datos?",["sys.database_usage","sys.bandwidth_usage","sys.dm_exec_connections","sys.firewall_rules"],1,"La vista sys.bandwidth_usage describe el ancho de banda utilizado con cada base de datos, mientras que sys.database_usage muestra número, tipo y duración de las bases de datos.")
+];
+
+const QUIZ_c2 = [
+Q("¿En qué base de datos se administra la seguridad a nivel de servidor en SQL Azure?",["En cualquier base de datos de usuario","En la base de datos master","En una base de datos llamada 'security'","No se administra centralizadamente"],1,"A diferencia de SQL Server local (carpeta Seguridad en SSMS), en SQL Azure la seguridad a nivel de servidor se administra desde la base de datos master."),
+Q("¿Qué rol de SQL Azure equivale al rol securityadmin de SQL Server local?",["dbmanager","loginmanager","db_owner","sysadmin"],1,"El rol loginmanager en SQL Azure cumple la misma función que securityadmin en una instancia local: permite crear inicios de sesión."),
+Q("¿Qué rol es necesario para crear y quitar bases de datos en SQL Azure?",["loginmanager","dbmanager","db_datareader","public"],1,"El rol dbmanager, equivalente a dbcreator en SQL Server local, es necesario para crear bases de datos."),
+Q("¿Qué instrucción se usa para crear un nuevo inicio de sesión en SQL Azure?",["CREATE USER","CREATE LOGIN","CREATE ACCOUNT","NEW LOGIN"],1,"Se usa CREATE LOGIN, estando conectado a la base de datos master, por ejemplo: CREATE LOGIN login1 WITH password='...'."),
+Q("Después de crear un inicio de sesión, ¿qué instrucción se necesita para que pueda conectarse a una base de datos concreta?",["GRANT CONNECT","CREATE USER ... FROM LOGIN ...","ALTER LOGIN ... ENABLE","ADD USER TO DATABASE"],1,"Hay que conceder permisos a nivel de base de datos con CREATE USER login1User FROM LOGIN login1, conectado a esa base de datos."),
+Q("¿Qué notación puede ser necesaria en la cadena de conexión debido a cómo algunas herramientas implementan el flujo TDS?",["<server>@<login>","<login>@<server>","<login>:<server>","<server>/<login>"],1,"Se puede requerir anexar el nombre del servidor al inicio de sesión con la notación <login>@<server> en la cadena de conexión."),
+Q("¿Cuáles son los tres métodos principales para migrar una base de datos a SQL Azure según el capítulo 2?",["FTP, email y USB","Asistente para generar scripts, Sync Framework 2.1 y SSMA","Solo el Portal de administración","Copiar y pegar manualmente cada tabla"],1,"Los tres métodos son: el Asistente para generar y publicar scripts, Microsoft Sync Framework 2.1, y el Asistente de migración de SQL Server (SSMA)."),
+Q("¿Qué permite Microsoft Sync Framework 2.1 en el contexto de SQL Azure?",["Solo generar scripts de Transact-SQL","Sincronización continua entre SQL Server local y SQL Azure, o entre bases de datos SQL Azure","Comprimir bases de datos","Cifrar contraseñas"],1,"Sync Framework 2.1 proporciona capacidades de sincronización entre servidores locales y SQL Azure, y entre bases de datos SQL Azure en distintos centros de datos."),
+Q("¿Qué hace el Asistente de migración de SQL Server (SSMA) además de migrar desde SQL Server?",["Solo funciona con Oracle","También permite migrar esquema y datos desde Access y MySQL","Solo migra procedimientos almacenados","Convierte SQL Azure a SQL Server local"],1,"SSMA para Access permite migrar esquema y datos de Microsoft Access, y SSMA para MySQL admite migrar desde MySQL a SQL Azure."),
+Q("Al generar un script con el Asistente para generar y publicar scripts, ¿qué parámetro debe establecerse para que sea compatible con SQL Azure?",["El tipo de motor de base de datos como 'Base de datos de SQL Azure'","El idioma como español","El formato de archivo como .csv","La compresión como 'alta'"],0,"En Opciones de scripting avanzadas, hay que establecer 'Script para el tipo de motor de base de datos' como 'Base de datos de SQL Azure'."),
+Q("¿Qué instrucción se debe ejecutar antes de correr el script generado para una base de datos, si esta ya existe en SQL Azure?",["DROP DATABASE","CREATE DATABASE","ALTER DATABASE","TRUNCATE DATABASE"],1,"Antes de ejecutar el script, se debe crear la base de datos en SQL Azure con CREATE DATABASE School (o mediante el Portal de administración)."),
+Q("¿Qué dos herramientas permiten mover datos hacia y desde SQL Azure, además de la migración completa de esquema?",["Excel y Access","SQL Server Integration Services (SSIS) y la utilidad bcp","Notepad y CMD","PowerPoint y Visio"],1,"SQL Azure admite SQL Server Integration Services (SSIS) y la utilidad de copia masiva bcp.exe para mover datos."),
+Q("¿Para qué se usa principalmente la utilidad bcp?",["Para crear índices espaciales","Para importar un número elevado de filas nuevas o exportar datos de tablas a archivos","Para configurar el firewall","Para administrar certificados SSL"],1,"La utilidad bcp se usa para importar un número elevado de filas nuevas en tablas de SQL Server o para exportar datos de tablas a archivos de datos."),
+Q("¿Qué versión de SQL Server Integration Services agrega compatibilidad con SQL Azure en el Asistente para importación y exportación?",["SQL Server 2005","SQL Server 2008 R2 o posterior","SQL Server 2000","No es compatible con ninguna versión"],1,"En SQL Server 2008 R2 o posterior, el Asistente para importación y exportación proporciona compatibilidad con Base de Datos de SQL Azure."),
+Q("¿Qué vista se debe consultar, conectado a master, para ver todas las bases de datos de un servidor SQL Azure?",["sys.tables","sys.databases","sys.objects","sys.views"],1,"La vista sys.databases, disponible en la base de datos master, muestra todas las bases de datos del servidor."),
+Q("¿Qué ocurre si un usuario que no es la entidad de seguridad a nivel de servidor intenta crear una base de datos sin ser miembro de dbmanager?",["Se le permite de todas formas","La operación falla por falta de permisos","Se crea automáticamente el rol","Solo puede crear tablas, no bases de datos"],1,"Solo el inicio de sesión de entidad de seguridad a nivel de servidor y los miembros del rol dbmanager tienen permiso para crear o quitar bases de datos.")
+];
+
+const QUIZ_c3 = [
+Q("¿Cómo se inicia la copia de una base de datos en SQL Azure?",["Con el comando BACKUP DATABASE","Con CREATE DATABASE ... AS COPY OF ...","Con COPY DATABASE","Con RESTORE DATABASE"],1,"La copia se inicia con CREATE DATABASE destination_database_name AS COPY OF source_database_name, ejecutado en la base de datos master."),
+Q("¿La copia de una base de datos en SQL Azure es sincrónica o asincrónica?",["Sincrónica: hay que esperar a que termine","Asincrónica: la instrucción CREATE DATABASE termina antes de que se complete la copia","No existe el concepto de copia","Depende del tamaño de la base de datos"],1,"Es un proceso asincrónico: la instrucción CREATE DATABASE finaliza de inmediato, mientras la copia continúa en segundo plano."),
+Q("¿Qué valor de state_desc indica que la copia de base de datos está en curso?",["ONLINE","SUSPECT","COPYING","PENDING"],2,"Mientras la copia está en curso, la columna state_desc de sys.databases para la nueva base de datos muestra COPYING."),
+Q("Si la copia de una base de datos falla, ¿qué valor mostrará state_desc y qué se debe hacer?",["ONLINE; no hacer nada","SUSPECT; eliminar la base de datos e intentarlo de nuevo","COPYING; esperar más tiempo","ERROR; reiniciar el servidor"],1,"Si la copia falla, state_desc mostrará SUSPECT; hay que ejecutar DROP DATABASE en la nueva base de datos e intentarlo de nuevo."),
+Q("Para copiar una base de datos, ¿quién debe ser el inicio de sesión en el servidor de origen?",["Cualquier usuario con permiso de lectura","El DBO (propietario) de la base de datos de origen","El administrador de servicios","No importa quién sea"],1,"Solo el inicio de sesión que creó la base de datos de origen (el DBO) puede copiarla a otra base de datos."),
+Q("¿Qué tres categorías de vistas de administración dinámica admite parcialmente SQL Azure?",["De seguridad, de red y de almacenamiento","Relacionadas con la base de datos, con ejecuciones y con transacciones","De usuarios, de roles y de permisos","De firewall, de facturación y de copias"],1,"SQL Azure admite parcialmente vistas de administración dinámica relacionadas con la base de datos, con ejecuciones y con transacciones."),
+Q("¿Qué permiso se necesita para consultar una vista de administración dinámica en SQL Azure?",["CONTROL SERVER","VIEW DATABASE STATE","ALTER ANY DATABASE","db_owner"],1,"Se necesita el permiso VIEW DATABASE STATE, concedido con GRANT VIEW DATABASE STATE TO database_user."),
+Q("¿Qué vista se usa para calcular el tamaño de una base de datos SQL Azure?",["sys.dm_db_partition_stats","sys.dm_exec_sessions","sys.firewall_rules","sys.dm_tran_locks"],0,"sys.dm_db_partition_stats devuelve información sobre páginas y filas por partición, usada para calcular el tamaño de la base de datos."),
+Q("¿Qué vista permite detectar consultas bloqueadas en SQL Azure?",["sys.dm_exec_query_stats","sys.dm_tran_locks","sys.dm_exec_connections","sys.databases"],1,"La vista sys.dm_tran_locks permite obtener información sobre la actividad de bloqueo actual en la base de datos."),
+Q("Por defecto, ¿qué hace el firewall de SQL Azure con todas las conexiones entrantes?",["Las permite todas","Las bloquea todas hasta que se configuren reglas","Solo bloquea las de Windows Azure","Solo bloquea las locales"],1,"Inicialmente, todo acceso al servidor está bloqueado por el firewall hasta que se especifiquen una o más reglas que permitan el acceso."),
+Q("¿Qué rango de IP en una regla de firewall habilita las conexiones desde Windows Azure?",["127.0.0.1 a 127.0.0.1","0.0.0.0 a 0.0.0.0","10.0.0.0 a 10.255.255.255","No existe esa opción"],1,"Una regla de firewall con dirección inicial y final igual a 0.0.0.0 indica que se permiten las conexiones desde Windows Azure."),
+Q("¿Qué procedimientos almacenados permiten administrar el firewall desde Transact-SQL?",["sp_configure y sp_help","sp_set_firewall_rule y sp_delete_firewall_rule","sp_addlogin y sp_droplogin","sp_grant_access y sp_revoke_access"],1,"sp_set_firewall_rule agrega o cambia reglas, y sp_delete_firewall_rule elimina una regla existente."),
+Q("¿Dónde debe crearse obligatoriamente la primera regla de firewall de un servidor SQL Azure?",["Desde Transact-SQL únicamente","Desde el Portal de administración","Desde SQL Server Management Studio","Desde el Panel de control de Windows"],1,"La primera configuración de firewall debe especificarse desde el Portal de administración (o la API de administración), no por Transact-SQL."),
+Q("¿Después de cuánto tiempo de inactividad se termina automáticamente una sesión en SQL Azure?",["5 minutos","15 minutos","30 minutos","2 horas"],2,"Una sesión iniciada que haya estado inactiva durante 30 minutos se termina automáticamente."),
+Q("Si un cliente no puede iniciar sesión y sospecha que sus credenciales son incorrectas, ¿a quién debe contactar?",["Al soporte de Microsoft únicamente","Al administrador de servicios","A cualquier otro usuario del servidor","No hay forma de recuperar el acceso"],1,"Si necesita recuperar nombres de inicio de sesión o contraseñas, debe contactar al administrador de servicios, que puede conceder acceso o restablecer contraseñas."),
+Q("¿Qué recomienda el libro implementar en las aplicaciones para manejar el cierre inesperado de conexiones?",["Ignorar el error y continuar","Lógica de reintento que reconecte y vuelva a ejecutar la operación","Cerrar la aplicación","Cambiar de proveedor de nube"],1,"Se recomienda implementar lógica de reintento: al producirse un error de conexión, reconectar y volver a ejecutar los comandos o la consulta.")
+];
+
+const QUIZ_c4 = [
+Q("¿Cuáles son las tres categorías principales de compatibilidad de Transact-SQL en SQL Azure?",["Rápido, medio y lento","Admitidos tal cual, no admitidos, y parcialmente admitidos","Público, privado y protegido","Local, remoto e híbrido"],1,"La compatibilidad se describe en tres categorías: elementos admitidos tal cual, elementos no admitidos, y elementos que admiten solo un subconjunto de argumentos."),
+Q("¿Las características marcadas como 'obsoletas' en SQL Server se admiten en SQL Azure?",["Sí, siempre","No, no se admiten en SQL Azure","Solo en la edición Business","Solo con una licencia adicional"],1,"Las características del motor de SQL Server marcadas como obsoletas no se admiten en Base de Datos de SQL Azure."),
+Q("¿Cuál de las siguientes NO se admite en absoluto en SQL Azure?",["Cursores","Vistas","Common Language Runtime (CLR)","Procedimientos almacenados"],2,"CLR (Common Language Runtime) es una de las características no admitidas por SQL Azure, junto con Service Broker y las transacciones distribuidas."),
+Q("¿Qué utilidad de línea de comandos NO se admite en SQL Azure, a diferencia de sqlcmd?",["bcp","osql","sqlcmd","SSMS"],1,"Aunque sqlcmd sí se admite, la utilidad similar denominada osql no se admite en SQL Azure."),
+Q("¿Qué versión mínima de SQL Server Management Studio se requiere para administrar SQL Azure?",["SSMS 2005","SSMS 2008 R2","SSMS 2000","Cualquier versión sirve"],1,"SQL Server Management Studio 2008 R2 (o Express) es necesario; no se admiten versiones anteriores."),
+Q("¿Qué marco se necesita para hacer actualizaciones 'en contexto' de paquetes DAC en SQL Azure?",["MDAC 1.0","MDAC 1.1","ADO.NET 4.0","Entity Framework 5"],1,"El marco MDAC 1.1, incluido en Visual Studio 2010 SP1, introduce actualizaciones en contexto compatibles con SQL Azure (MDAC 1.0 solo admitía actualizaciones en paralelo, no compatibles)."),
+Q("¿Qué versión mínima del protocolo TDS admite el cliente en SQL Azure?",["TDS 5.0","TDS 7.0","TDS 7.3","TDS 8.0"],2,"Base de Datos de SQL Azure admite el cliente del protocolo de flujo TDS versión 7.3 o posterior; las versiones anteriores no son compatibles."),
+Q("¿Qué opciones de aislamiento están fijas en ON en SQL Azure y no se pueden cambiar?",["SERIALIZABLE y REPEATABLE READ","READ_COMMITTED_SNAPSHOT y ALLOW_SNAPSHOT_ISOLATION","READ_UNCOMMITTED","AUTOCOMMIT"],1,"Las opciones READ_COMMITTED_SNAPSHOT y ALLOW_SNAPSHOT_ISOLATION están establecidas en ON y no se pueden modificar con ALTER DATABASE."),
+Q("¿Cuál es la intercalación (collation) predeterminada de las bases de datos SQL Azure?",["SQL_LATIN1_GENERAL_CP1_CI_AS","Latin1_General_BIN","SQL_Spanish_CI_AS","UTF8_GENERAL_CI"],0,"La intercalación predeterminada es SQL_LATIN1_GENERAL_CP1_CI_AS (inglés EE. UU., sin distinción entre mayúsculas/minúsculas, con distinción de acentos)."),
+Q("¿Qué requisito estructural obligatorio tiene toda tabla creada en SQL Azure?",["Debe tener una columna de tipo XML","Debe tener un índice clúster","Debe estar particionada","Debe tener al menos 3 columnas"],1,"SQL Azure no admite tablas de montón (heap): toda tabla debe tener un índice clúster antes de poder insertar datos."),
+Q("¿Cuál de estos nombres de usuario está prohibido por razones de seguridad en SQL Azure?",["usuario1","admin","cliente_final","reportes"],1,"Nombres como admin, administrator, guest, root y sa no se permiten como nombres de usuario en SQL Azure."),
+Q("¿Qué debe establecerse en la cadena de conexión ADO.NET para validar certificados y evitar ataques 'Man in the middle'?",["Encrypt=False y TrustServerCertificate=True","Encrypt=True y TrustServerCertificate=False","Integrated Security=True","Pooling=False"],1,"Establecer Encrypt=True y TrustServerCertificate=False garantiza que la conexión se cifre y se validen los certificados del servidor."),
+Q("¿Qué tipo de autenticación admite SQL Azure?",["Solo autenticación de Windows","Solo autenticación de SQL Server","Ambas por igual","Autenticación biométrica"],1,"Base de Datos de SQL Azure solo admite la autenticación de SQL Server; no se admite la autenticación de Windows (seguridad integrada)."),
+Q("¿Qué característica de SQL Server 2008 R2 NO admite SQL Azure?",["Master Data Services","Cursores","Vistas","Restricciones"],0,"Master Data Services, la Utilidad de SQL Server y el proveedor de PowerShell (con matices) son características de 2008 R2 no admitidas."),
+Q("¿Qué característica de SQL Server 2005 NO se admite en SQL Azure?",["Datos e índices espaciales","Service Broker","Cursores","Vistas"],1,"Service Broker, introducido en SQL Server 2005, no está disponible en SQL Azure, junto con CLR/UDT de CLR, reflejo de bases de datos y particionamiento de tablas."),
+Q("¿Qué característica NUNCA ha estado disponible en SQL Azure, independientemente de la versión de SQL Server?",["Copias de seguridad y restauración tradicionales","Tipos de datos numéricos","Funciones de cadena","Vistas del sistema"],0,"Las copias de seguridad y restauración clásicas, la replicación, los procedimientos extendidos y el Agente SQL Server no se admiten en ninguna versión.")
+];
+
+const QUIZ_c5 = [
+Q("¿Por qué puerto TCP se conecta exclusivamente el servicio de SQL Azure?",["1433","1434","80","443"],0,"El servicio Base de Datos de SQL Azure solo está disponible a través del puerto TCP 1433."),
+Q("¿Qué se debe hacer antes de conectarse por primera vez a un servidor SQL Azure?",["Instalar SQL Server local","Configurar una regla de firewall desde el Portal de administración","Comprar una licencia adicional","Nada, la conexión es automática"],1,"Antes de la primera conexión hay que usar el Portal de administración para crear una regla de firewall que permita el acceso."),
+Q("¿Qué comando de Transact-SQL NO se admite para cambiar entre bases de datos en SQL Azure?",["SELECT","USE","INSERT","JOIN"],1,"El comando USE no se admite para la conmutación entre bases de datos; hay que establecer una conexión directa con la base de datos de destino."),
+Q("Si no se especifica una base de datos en la cadena de conexión, ¿a cuál se conecta por defecto?",["A la última usada","A la base de datos master","Da un error","A una base de datos temporal"],1,"Si no se especifica una base de datos en la cadena de conexión, la conexión se establece con la base de datos maestra (master)."),
+Q("¿Qué opciones de sqlcmd NO se admiten en SQL Azure para cambiar contraseñas?",["-U y -P","-z y -Z","-S y -d","-N y -C"],1,"SQL Azure no admite las opciones -z y -Z de sqlcmd; para cambiar contraseñas se usa ALTER LOGIN conectado a master."),
+Q("¿Qué clase de .NET se recomienda usar para construir cadenas de conexión de forma segura?",["SqlCommand","SqlConnectionStringBuilder","SqlDataAdapter","SqlTransaction"],1,"Se recomienda usar SqlConnectionStringBuilder para simplificar la creación de la cadena de conexión y evitar ataques por inyección de código."),
+Q("¿Qué clase ASP.NET permite enlazar controles como GridView a una base de datos SQL Azure sin escribir código adicional?",["SqlDataSource","SqlDataReader","DataTable","SqlBulkCopy"],0,"La clase SqlDataSource es compatible con SQL Azure, permitiendo convertir aplicaciones existentes con solo cambiar la cadena de conexión."),
+Q("¿Qué tecnología de Microsoft, antes llamada 'ADO.NET Data Services', permite crear servicios de datos REST sobre SQL Azure?",["WCF Data Services","SQL Azure Reporting","SSIS","SMO"],0,"Servicios de datos de Microsoft WCF (antes ADO.NET Data Services) permite crear servicios de datos basados en REST accesibles desde clientes .NET Framework."),
+Q("¿Qué función de PHP se usa para establecer la conexión con SQL Azure mediante el Controlador de SQL Server para PHP?",["mysqli_connect()","sqlsrv_connect()","pg_connect()","odbc_connect()"],1,"La función sqlsrv_connect() del Controlador de SQL Server para PHP (1.1 o posterior) establece la conexión con SQL Azure."),
+Q("¿Qué versión mínima del Controlador JDBC de Microsoft SQL Server admite SQL Azure?",["2.0","3.0","1.5","4.5"],1,"Se requiere una versión actualizada del Controlador JDBC de Microsoft SQL Server 3.0 o posterior."),
+Q("En la cadena de conexión JDBC, ¿cómo se especifica el usuario para SQL Azure?",["Solo con el nombre de usuario","Con la notación user=username@servername","Con un token OAuth","No se necesita usuario, solo contraseña"],1,"La cadena de conexión JDBC especifica el usuario como user=username@servername, siguiendo la notación login@server."),
+Q("¿Qué es el archivo .edmx que se genera en un proyecto de Entity Framework?",["Un archivo de configuración de IIS","Un modelo que define un tipo de entidad por cada tabla de la base de datos","Un script de PowerShell","Un archivo de log de errores"],1,"El asistente Entity Data Model genera un archivo .edmx que define un tipo de entidad por cada tabla de la base de datos seleccionada."),
+Q("¿Qué limitación tiene Entity Framework en Visual Studio 2008 al trabajar contra SQL Azure?",["No puede generar el .edmx directamente desde SQL Azure; hay que generarlo contra una instancia local primero","No admite LINQ","No admite consultas SELECT","No existe esa limitación"],0,"En Visual Studio 2008, Entity Framework no puede crear el .edmx directamente desde SQL Azure; los archivos de modelo deben generarse contra una instancia local y luego apuntarse a SQL Azure."),
+Q("¿Qué lenguaje de consulta se usa típicamente sobre el modelo conceptual de Entity Framework?",["LINQ","XPath","Transact-SQL directo","GraphQL"],0,"Sobre el modelo conceptual de Entity Framework se escriben consultas fuertemente tipadas usando LINQ."),
+Q("¿Qué considera el libro que debe evitarse siempre al conectar con SQL Azure, sin importar la tecnología cliente?",["Usar autenticación de Windows (seguridad integrada)","Usar el puerto 1433","Usar cadenas de conexión","Usar SSL"],0,"SQL Azure no admite la autenticación de Windows: siempre se debe usar autenticación de SQL Server, cualquiera sea la tecnología cliente."),
+Q("Para migrar una aplicación basada en Entity Framework a SQL Azure, ¿qué archivo se debe modificar principalmente?",["El archivo .edmx completo","La cadena de conexión en App.config o Web.config","El código LINQ de las consultas","El archivo .sln del proyecto"],1,"Basta con actualizar la cadena de conexión en App.config o Web.config, apuntando el Data Source al servidor SQL Azure.")
+];
+
+const QUIZZES = {c1:QUIZ_c1,c2:QUIZ_c2,c3:QUIZ_c3,c4:QUIZ_c4,c5:QUIZ_c5};
+
+/* ======================= RENDERIZADO ======================= */
+const state = { quiz:{} };
+CAPS.forEach(c=>{ state.quiz[c] = {idx:0, score:0, answered:false, order: [...Array(QUIZZES[c].length).keys()], results:[]}; });
+
+function buildNav(){
+  const nav = document.getElementById('navTabs');
+  let html = `<button class="nav-tab active inicio" data-p="inicio" onclick="goPanel('inicio',this)">Inicio</button>`;
+  CAPS.forEach(c=>{ html += `<button class="nav-tab ${c}" data-p="${c}" onclick="goPanel('${c}',this)">${META[c].num}</button>`; });
+  nav.innerHTML = html;
+}
+function buildChapGrid(){
+  const g = document.getElementById('chapGrid');
+  g.innerHTML = CAPS.map(c=>`
+    <div class="chap-card ${c}" onclick="goPanel('${c}')">
+      <div class="chap-num">${META[c].num.replace('Capítulo ','')}</div>
+      <div class="chap-title">${META[c].title}</div>
+      <div class="chap-desc">${META[c].desc}</div>
+      <div class="chap-meta"><span>Resumen</span><span>16 preguntas</span></div>
+    </div>`).join('');
+}
+
+function buildChapPanel(c){
+  const m = META[c];
+  return `
+  <div class="panel" id="panel-${c}">
+    <div class="hero">
+      <div style="position:absolute;inset:0;pointer-events:none"><div class="deco-c a"></div><div class="deco-c b"></div><div class="deco-c c"></div></div>
+      <div class="hero-text">
+        <p class="hero-eyebrow">${m.num} · Microsoft SQL Azure</p>
+        <h1 class="hero-title">${m.title.split('. ')[0]}<br/><em>${m.title.split('. ').slice(1).join('. ')}</em></h1>
+        <p class="hero-sub">${m.desc}</p>
+      </div>
+    </div>
+    <div class="wrap">
+      <div class="sub-nav">
+        <button class="sub-tab ${c} active" id="subtab-${c}-resumen" onclick="goSub('${c}','resumen')">
+          <span class="n">01</span><div><strong>Resumen detallado</strong><span class="d">Subtemas y explicación</span></div>
+        </button>
+        <button class="sub-tab ${c}" id="subtab-${c}-quiz" onclick="goSub('${c}','quiz')">
+          <span class="n">02</span><div><strong>Cuestionario</strong><span class="d">16 preguntas interactivas</span></div>
+        </button>
+      </div>
+      <div class="sub-panel ${c}" id="sub-${c}-resumen">${CONTENT[c].map((t,i)=>`
+        <div class="topic-card ${c}">
+          <div class="topic-head"><div class="topic-num">${t.icon}</div><div class="topic-head-text"><span class="topic-order">Tema ${i+1} de ${CONTENT[c].length}</span><h3 class="topic-title">${t.title}</h3></div></div>
+          <div class="topic-body">${t.body}</div>
+        </div>`).join('')}
+      </div>
+      <div class="sub-panel ${c}" id="sub-${c}-quiz" style="display:none">
+        <div id="quizArea-${c}"></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function goPanel(p,el){
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+  document.getElementById('panel-'+p).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(x=>x.classList.remove('active'));
+  const btn = el || document.querySelector('.nav-tab[data-p="'+p+'"]');
+  if(btn) btn.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function goSub(c,which){
+  document.getElementById('sub-'+c+'-resumen').style.display = which==='resumen' ? 'block':'none';
+  document.getElementById('sub-'+c+'-quiz').style.display = which==='quiz' ? 'block':'none';
+  document.getElementById('subtab-'+c+'-resumen').classList.toggle('active', which==='resumen');
+  document.getElementById('subtab-'+c+'-quiz').classList.toggle('active', which==='quiz');
+  if(which==='quiz' && !document.getElementById('quizArea-'+c).dataset.built){
+    renderQuiz(c);
+    document.getElementById('quizArea-'+c).dataset.built = '1';
+  }
+}
+
+function renderQuiz(c){
+  const st = state.quiz[c];
+  const total = QUIZZES[c].length;
+  if(st.idx >= total){ renderResult(c); return; }
+  const qIndex = st.order[st.idx];
+  const q = QUIZZES[c][qIndex];
+  const letters = ['A','B','C','D'];
+  const area = document.getElementById('quizArea-'+c);
+  area.innerHTML = `
+    <div class="quiz-top">
+      <div class="quiz-score">Puntaje actual <span class="score-pill">${st.score} / ${total}</span></div>
+    </div>
+    <div class="progress-wrap ${c}">
+      <div class="progress-bar"><div class="progress-fill" style="width:${(st.idx/total)*100}%"></div></div>
+      <p class="progress-label">Pregunta ${st.idx+1} de ${total}</p>
+    </div>
+    <div class="quiz-dots">
+      ${Array.from({length:total}).map((_,i)=>{
+        const r = st.results[i];
+        const cls = i===st.idx ? 'current' : (r===true?'correct':r===false?'incorrect':'');
+        return `<span class="quiz-dot ${cls}"></span>`;
+      }).join('')}
+    </div>
+    <div class="q-card">
+      <p class="q-eyebrow">${META[c].num} · Pregunta ${st.idx+1}</p>
+      <p class="q-text">${q.q}</p>
+      <div class="q-options">
+        ${q.opts.map((o,i)=>`<button class="q-opt" data-i="${i}" onclick="answerQuiz('${c}',${i})"><span class="letter">${letters[i]}</span><span>${o}</span></button>`).join('')}
+      </div>
+      <div class="q-feedback" id="feedback-${c}"></div>
+      <div class="q-actions"><button class="btn-next" id="next-${c}" onclick="nextQuiz('${c}')">Siguiente →</button></div>
+    </div>`;
+  st.answered = false;
+}
+
+function answerQuiz(c,i){
+  const st = state.quiz[c];
+  if(st.answered) return;
+  st.answered = true;
+  const qIndex = st.order[st.idx];
+  const q = QUIZZES[c][qIndex];
+  const opts = document.querySelectorAll('#quizArea-'+c+' .q-opt');
+  opts.forEach((btn,idx)=>{
+    btn.disabled = true;
+    if(idx===q.correctIdx) btn.classList.add('correct');
+    else if(idx===i) btn.classList.add('incorrect');
+  });
+  const fb = document.getElementById('feedback-'+c);
+  const correct = (i===q.correctIdx);
+  if(correct) st.score++;
+  st.results[st.idx] = correct;
+  fb.className = 'q-feedback show ' + (correct?'ok':'bad');
+  fb.innerHTML = '<span class="fb-ic">'+(correct?'✓':'✕')+'</span><div class="fb-body"><strong class="fb-title">'+(correct?'Correcto — concepto clave':'No es correcto — para recordar')+'</strong>'+q.exp+'</div>';
+  document.getElementById('next-'+c).classList.add('show');
+}
+
+function nextQuiz(c){
+  state.quiz[c].idx++;
+  renderQuiz(c);
+}
+
+function renderResult(c){
+  const st = state.quiz[c];
+  const total = QUIZZES[c].length;
+  const pct = Math.round((st.score/total)*100);
+  const incorrect = total - st.score;
+  let msg = '', grade = '';
+  if(pct>=90){ msg = '¡Excelente! Dominas muy bien este capítulo.'; grade='a'; }
+  else if(pct>=70){ msg = 'Buen trabajo. Repasa los temas que fallaste para reforzar.'; grade='b'; }
+  else if(pct>=50){ msg = 'Vas por buen camino, conviene repasar el resumen antes de continuar.'; grade='c'; }
+  else { msg = 'Te recomendamos releer el resumen detallado del capítulo antes de reintentar.'; grade='d'; }
+  const gradeLabel = {a:'Dominado',b:'Bien',c:'Regular',d:'A reforzar'}[grade];
+  const R = 60, C = 2*Math.PI*R, offset = C - (pct/100)*C;
+  const area = document.getElementById('quizArea-'+c);
+  area.innerHTML = `
+    <div class="progress-wrap ${c}"><div class="progress-bar"><div class="progress-fill" style="width:100%"></div></div><p class="progress-label">Cuestionario completado</p></div>
+    <div class="result-card ${c}">
+      <span class="result-grade ${grade}">${gradeLabel}</span>
+      <div class="result-ring-wrap">
+        <svg class="result-ring" viewBox="0 0 150 150">
+          <circle class="ring-bg" cx="75" cy="75" r="${R}"/>
+          <circle class="ring-fg" cx="75" cy="75" r="${R}" style="stroke-dasharray:${C};stroke-dashoffset:${C}" data-final="${offset}"/>
+        </svg>
+        <div class="ring-center"><div class="ring-pct">${pct}%</div><div class="ring-frac">${st.score}/${total}</div></div>
+      </div>
+      <p class="result-label">${META[c].num} · resultado del cuestionario</p>
+      <div class="result-stats">
+        <span class="result-stat ok">✓ ${st.score} correctas</span>
+        <span class="result-stat bad">✕ ${incorrect} por repasar</span>
+      </div>
+      <p class="result-msg">${msg}</p>
+      <button class="btn-retry" onclick="retryQuiz('${c}')">Reintentar cuestionario</button>
+    </div>`;
+  requestAnimationFrame(()=>{
+    const ring = area.querySelector('.ring-fg');
+    if(ring) ring.style.strokeDashoffset = ring.dataset.final;
+  });
+}
+
+function shuffle(arr){ const a=[...arr]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function retryQuiz(c){
+  state.quiz[c] = {idx:0, score:0, answered:false, order: shuffle([...Array(QUIZZES[c].length).keys()]), results:[]};
+  renderQuiz(c);
+}
+
+/* init */
+buildNav();
+buildChapGrid();
+document.getElementById('chapPanels').innerHTML = CAPS.map(buildChapPanel).join('');
+window.addEventListener('scroll',()=>{ document.getElementById('mainNav').classList.toggle('scrolled', window.scrollY>10); });
+</script>
+</body>
+</html>
